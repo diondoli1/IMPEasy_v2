@@ -1,0 +1,785 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  email              String               @unique
+  passwordHash       String
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  userRoles          UserRole[]
+  assignedWorkOrders WorkOrder[]          @relation("WorkOrderAssignedOperator")
+  assignedOperations WorkOrderOperation[] @relation("OperationAssignedOperator")
+
+  @@map("users")
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userRoles   UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  roleId    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model Customer {
+  id                             Int          @id @default(autoincrement())
+  code                           String?      @unique
+  name                           String
+  email                          String?
+  phone                          String?
+  vatNumber                      String?
+  website                        String?
+  billingStreet                  String?
+  billingCity                    String?
+  billingPostcode                String?
+  billingStateRegion             String?
+  billingCountry                 String?
+  shippingStreet                 String?
+  shippingCity                   String?
+  shippingPostcode               String?
+  shippingStateRegion            String?
+  shippingCountry                String?
+  defaultPaymentTerm             String?
+  defaultShippingTerm            String?
+  defaultShippingMethod          String?
+  defaultDocumentDiscountPercent Float        @default(0)
+  defaultTaxRate                 Float        @default(0)
+  internalNotes                  String?
+  isActive                       Boolean      @default(true)
+  createdAt                      DateTime     @default(now())
+  updatedAt                      DateTime     @updatedAt
+  contacts                       Contact[]
+  quotes                         Quote[]
+  salesOrders                    SalesOrder[]
+  invoices                       Invoice[]
+
+  @@map("customers")
+}
+
+model Contact {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  name       String
+  jobTitle   String?
+  email      String?
+  phone      String?
+  isPrimary  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@map("contacts")
+}
+
+model Item {
+  id                    Int                    @id @default(autoincrement())
+  code                  String?                @unique
+  name                  String
+  description           String?
+  isActive              Boolean                @default(true)
+  itemGroup             String?
+  unitOfMeasure         String                 @default("pcs")
+  itemType              String                 @default("produced")
+  defaultBomId          Int?
+  defaultRoutingId      Int?
+  defaultPrice          Float                  @default(0)
+  reorderPoint          Int                    @default(0)
+  safetyStock           Int                    @default(0)
+  preferredVendorId     Int?
+  notes                 String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  quoteLines            QuoteLine[]
+  salesOrderLines       SalesOrderLine[]
+  boms                  Bom[]                  @relation("ItemBoms")
+  bomItems              BomItem[]
+  routings              Routing[]              @relation("ItemRoutings")
+  defaultBom            Bom?                   @relation("ItemDefaultBom", fields: [defaultBomId], references: [id])
+  defaultRouting        Routing?               @relation("ItemDefaultRouting", fields: [defaultRoutingId], references: [id])
+  inventoryItem         InventoryItem?
+  inventoryTransactions InventoryTransaction[]
+  itemVendorTerms       ItemVendorTerm[]
+  purchaseOrderLines    PurchaseOrderLine[]
+  preferredVendor       Supplier?              @relation(fields: [preferredVendorId], references: [id])
+  stockLots             StockLot[]
+
+  @@index([defaultBomId])
+  @@index([defaultRoutingId])
+  @@index([preferredVendorId])
+  @@map("items")
+}
+
+model Quote {
+  id                      Int         @id @default(autoincrement())
+  customerId              Int
+  status                  String      @default("draft")
+  quoteDate               DateTime    @default(now())
+  validityDate            DateTime?
+  promisedDate            DateTime?
+  customerReference       String?
+  salespersonName         String?
+  salespersonEmail        String?
+  paymentTerm             String?
+  shippingTerm            String?
+  shippingMethod          String?
+  taxMode                 String      @default("exclusive")
+  documentDiscountPercent Float       @default(0)
+  notes                   String?
+  internalNotes           String?
+  contactName             String?
+  contactEmail            String?
+  contactPhone            String?
+  billingStreet           String?
+  billingCity             String?
+  billingPostcode         String?
+  billingStateRegion      String?
+  billingCountry          String?
+  shippingStreet          String?
+  shippingCity            String?
+  shippingPostcode        String?
+  shippingStateRegion     String?
+  shippingCountry         String?
+  subtotalAmount          Float       @default(0)
+  discountAmount          Float       @default(0)
+  taxAmount               Float       @default(0)
+  totalAmount             Float       @default(0)
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+  customer                Customer    @relation(fields: [customerId], references: [id])
+  quoteLines              QuoteLine[]
+  salesOrder              SalesOrder?
+
+  @@index([customerId])
+  @@map("quotes")
+}
+
+model QuoteLine {
+  id                   Int       @id @default(autoincrement())
+  quoteId              Int
+  itemId               Int
+  itemCode             String?
+  itemName             String?
+  description          String?
+  quantity             Int
+  unit                 String    @default("pcs")
+  unitPrice            Float
+  lineDiscountPercent  Float     @default(0)
+  taxRate              Float     @default(0)
+  deliveryDateOverride DateTime?
+  lineTotal            Float
+  taxAmount            Float     @default(0)
+  totalAmount          Float     @default(0)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  quote                Quote     @relation(fields: [quoteId], references: [id])
+  item                 Item      @relation(fields: [itemId], references: [id])
+
+  @@index([quoteId])
+  @@index([itemId])
+  @@map("quote_lines")
+}
+
+model SalesOrder {
+  id                      Int               @id @default(autoincrement())
+  quoteId                 Int               @unique
+  customerId              Int
+  status                  String            @default("draft")
+  orderDate               DateTime          @default(now())
+  promisedDate            DateTime?
+  customerReference       String?
+  salespersonName         String?
+  salespersonEmail        String?
+  paymentTerm             String?
+  shippingTerm            String?
+  shippingMethod          String?
+  taxMode                 String            @default("exclusive")
+  documentDiscountPercent Float             @default(0)
+  notes                   String?
+  internalNotes           String?
+  contactName             String?
+  contactEmail            String?
+  contactPhone            String?
+  billingStreet           String?
+  billingCity             String?
+  billingPostcode         String?
+  billingStateRegion      String?
+  billingCountry          String?
+  shippingStreet          String?
+  shippingCity            String?
+  shippingPostcode        String?
+  shippingStateRegion     String?
+  shippingCountry         String?
+  subtotalAmount          Float             @default(0)
+  discountAmount          Float             @default(0)
+  taxAmount               Float             @default(0)
+  totalAmount             Float             @default(0)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  quote                   Quote             @relation(fields: [quoteId], references: [id])
+  customer                Customer          @relation(fields: [customerId], references: [id])
+  salesOrderLines         SalesOrderLine[]
+  salesOrderAudits        SalesOrderAudit[]
+  shipments               Shipment[]
+
+  @@index([customerId])
+  @@map("sales_orders")
+}
+
+model SalesOrderLine {
+  id                   Int            @id @default(autoincrement())
+  salesOrderId         Int
+  itemId               Int
+  itemCode             String?
+  itemName             String?
+  description          String?
+  quantity             Int
+  unit                 String         @default("pcs")
+  unitPrice            Float
+  lineDiscountPercent  Float          @default(0)
+  taxRate              Float          @default(0)
+  deliveryDateOverride DateTime?
+  lineTotal            Float
+  taxAmount            Float          @default(0)
+  totalAmount          Float          @default(0)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  salesOrder           SalesOrder     @relation(fields: [salesOrderId], references: [id])
+  item                 Item           @relation(fields: [itemId], references: [id])
+  workOrder            WorkOrder?
+  shipmentLines        ShipmentLine[]
+
+  @@index([salesOrderId])
+  @@index([itemId])
+  @@map("sales_order_lines")
+}
+
+model SalesOrderAudit {
+  id           Int        @id @default(autoincrement())
+  salesOrderId Int
+  action       String
+  fromStatus   String?
+  toStatus     String
+  actor        String
+  createdAt    DateTime   @default(now())
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id])
+
+  @@index([salesOrderId])
+  @@map("sales_order_audits")
+}
+
+model Bom {
+  id              Int         @id @default(autoincrement())
+  itemId          Int
+  code            String?
+  name            String
+  description     String?
+  status          String      @default("draft")
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  item            Item        @relation("ItemBoms", fields: [itemId], references: [id])
+  bomItems        BomItem[]
+  defaultForItems Item[]      @relation("ItemDefaultBom")
+  workOrders      WorkOrder[]
+
+  @@index([itemId])
+  @@map("boms")
+}
+
+model BomItem {
+  id               Int               @id @default(autoincrement())
+  bomId            Int
+  itemId           Int
+  quantity         Int
+  rowOrder         Int               @default(10)
+  notes            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  bom              Bom               @relation(fields: [bomId], references: [id])
+  item             Item              @relation(fields: [itemId], references: [id])
+  materialBookings MaterialBooking[]
+
+  @@index([bomId])
+  @@index([itemId])
+  @@map("bom_items")
+}
+
+model Routing {
+  id                Int                @id @default(autoincrement())
+  itemId            Int
+  code              String?
+  name              String
+  description       String?
+  status            String             @default("draft")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  item              Item               @relation("ItemRoutings", fields: [itemId], references: [id])
+  defaultForItems   Item[]             @relation("ItemDefaultRouting")
+  routingOperations RoutingOperation[]
+  workOrders        WorkOrder[]
+
+  @@index([itemId])
+  @@map("routings")
+}
+
+model RoutingOperation {
+  id                  Int                  @id @default(autoincrement())
+  routingId           Int
+  sequence            Int
+  name                String
+  description         String?
+  workstation         String?
+  setupTimeMinutes    Int                  @default(0)
+  runTimeMinutes      Int                  @default(0)
+  queueNotes          String?
+  moveNotes           String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  routing             Routing              @relation(fields: [routingId], references: [id])
+  workOrderOperations WorkOrderOperation[]
+
+  @@index([routingId])
+  @@map("routing_operations")
+}
+
+model WorkOrder {
+  id                  Int                  @id @default(autoincrement())
+  salesOrderLineId    Int                  @unique
+  bomId               Int?
+  routingId           Int
+  quantity            Int
+  status              String               @default("planned")
+  dueDate             DateTime?
+  notes               String?
+  assignedWorkstation String?
+  assignedOperatorId  Int?
+  releasedAt          DateTime?
+  completedAt         DateTime?
+  finishedGoodsLotId  Int?                 @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  salesOrderLine      SalesOrderLine       @relation(fields: [salesOrderLineId], references: [id])
+  bom                 Bom?                 @relation(fields: [bomId], references: [id])
+  routing             Routing              @relation(fields: [routingId], references: [id])
+  assignedOperator    User?                @relation("WorkOrderAssignedOperator", fields: [assignedOperatorId], references: [id])
+  finishedGoodsLot    StockLot?            @relation("FinishedGoodsLot", fields: [finishedGoodsLotId], references: [id])
+  workOrderOperations WorkOrderOperation[]
+  materialBookings    MaterialBooking[]
+  historyEntries      WorkOrderHistory[]
+  producedLots        StockLot[]           @relation("WorkOrderProducedLots")
+
+  @@index([bomId])
+  @@index([routingId])
+  @@index([assignedOperatorId])
+  @@map("work_orders")
+}
+
+model WorkOrderOperation {
+  id                      Int                 @id @default(autoincrement())
+  workOrderId             Int
+  routingOperationId      Int
+  sequence                Int
+  plannedQuantity         Int
+  status                  String              @default("queued")
+  reworkSourceOperationId Int?                @unique
+  workstation             String?
+  assignedOperatorId      Int?
+  startedAt               DateTime?
+  pausedAt                DateTime?
+  completedAt             DateTime?
+  goodQuantity            Int?
+  scrapQuantity           Int?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  workOrder               WorkOrder           @relation(fields: [workOrderId], references: [id])
+  routingOperation        RoutingOperation    @relation(fields: [routingOperationId], references: [id])
+  reworkSourceOperation   WorkOrderOperation? @relation("ReworkOperationLink", fields: [reworkSourceOperationId], references: [id])
+  reworkChildOperation    WorkOrderOperation? @relation("ReworkOperationLink")
+  assignedOperator        User?               @relation("OperationAssignedOperator", fields: [assignedOperatorId], references: [id])
+  productionLogs          ProductionLog[]
+  inspection              Inspection?
+
+  @@index([workOrderId])
+  @@index([routingOperationId])
+  @@index([assignedOperatorId])
+  @@map("work_order_operations")
+}
+
+model ProductionLog {
+  id          Int                @id @default(autoincrement())
+  operationId Int
+  quantity    Int
+  notes       String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  operation   WorkOrderOperation @relation(fields: [operationId], references: [id])
+
+  @@index([operationId])
+  @@map("production_logs")
+}
+
+model InventoryItem {
+  id                    Int                    @id @default(autoincrement())
+  itemId                Int                    @unique
+  quantityOnHand        Int                    @default(0)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  item                  Item                   @relation(fields: [itemId], references: [id])
+  inventoryTransactions InventoryTransaction[]
+
+  @@map("inventory_items")
+}
+
+model InventoryTransaction {
+  id                  Int                @id @default(autoincrement())
+  inventoryItemId     Int
+  itemId              Int
+  stockLotId          Int?
+  purchaseOrderLineId Int?
+  transactionType     String
+  quantity            Int
+  referenceType       String?
+  referenceId         Int?
+  referenceNumber     String?
+  transactionDate     DateTime           @default(now())
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  inventoryItem       InventoryItem      @relation(fields: [inventoryItemId], references: [id])
+  item                Item               @relation(fields: [itemId], references: [id])
+  stockLot            StockLot?          @relation(fields: [stockLotId], references: [id])
+  purchaseOrderLine   PurchaseOrderLine? @relation(fields: [purchaseOrderLineId], references: [id])
+
+  @@index([inventoryItemId])
+  @@index([itemId])
+  @@index([stockLotId])
+  @@index([purchaseOrderLineId])
+  @@map("inventory_transactions")
+}
+
+model StockLot {
+  id                    Int               @id @default(autoincrement())
+  itemId                Int
+  lotNumber             String            @unique
+  quantityOnHand        Int
+  sourceType            String?
+  sourceReference       String?
+  receivedAt            DateTime?
+  status                String            @default("available")
+  notes                 String?
+  sourceWorkOrderId     Int?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  item                  Item              @relation(fields: [itemId], references: [id])
+  sourceWorkOrder       WorkOrder?        @relation("WorkOrderProducedLots", fields: [sourceWorkOrderId], references: [id])
+  inventoryTransactions InventoryTransaction[]
+  materialBookings      MaterialBooking[]
+  finishedForWorkOrders WorkOrder[]       @relation("FinishedGoodsLot")
+  shipmentPicks         ShipmentPick[]
+
+  @@index([itemId])
+  @@index([sourceWorkOrderId])
+  @@map("stock_lots")
+}
+
+model MaterialBooking {
+  id          Int       @id @default(autoincrement())
+  workOrderId Int
+  bomItemId   Int
+  stockLotId  Int
+  quantity    Int
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+  bomItem     BomItem   @relation(fields: [bomItemId], references: [id])
+  stockLot    StockLot  @relation(fields: [stockLotId], references: [id])
+
+  @@unique([workOrderId, bomItemId, stockLotId])
+  @@index([workOrderId])
+  @@index([bomItemId])
+  @@index([stockLotId])
+  @@map("material_bookings")
+}
+
+model WorkOrderHistory {
+  id          Int       @id @default(autoincrement())
+  workOrderId Int
+  eventType   String
+  actor       String
+  message     String
+  createdAt   DateTime  @default(now())
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+
+  @@index([workOrderId])
+  @@map("work_order_history")
+}
+
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  code           String?         @unique
+  name           String
+  email          String?
+  phone          String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  itemVendorTerms ItemVendorTerm[]
+  purchaseOrders PurchaseOrder[]
+  preferredItems Item[]
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id                 Int                 @id @default(autoincrement())
+  supplierId         Int
+  number             String?             @unique
+  status             String              @default("draft")
+  supplierReference  String?
+  orderDate          DateTime            @default(now())
+  expectedDate       DateTime?
+  buyer              String?
+  currency           String              @default("EUR")
+  paymentTerm        String?
+  notes              String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  supplier           Supplier            @relation(fields: [supplierId], references: [id])
+  purchaseOrderLines PurchaseOrderLine[]
+
+  @@index([supplierId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderLine {
+  id                    Int                    @id @default(autoincrement())
+  purchaseOrderId       Int
+  itemId                Int
+  quantity              Int
+  unitPrice             Float
+  lineTotal             Float
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  purchaseOrder         PurchaseOrder          @relation(fields: [purchaseOrderId], references: [id])
+  item                  Item                   @relation(fields: [itemId], references: [id])
+  inventoryTransactions InventoryTransaction[]
+
+  @@index([purchaseOrderId])
+  @@index([itemId])
+  @@map("purchase_order_lines")
+}
+
+model Inspection {
+  id               Int                @id @default(autoincrement())
+  operationId      Int                @unique
+  status           String             @default("pending")
+  notes            String?
+  passedQuantity   Int?
+  failedQuantity   Int?
+  reworkQuantity   Int?
+  scrappedQuantity Int?
+  scrapNotes       String?
+  scrappedAt       DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  operation        WorkOrderOperation @relation(fields: [operationId], references: [id])
+
+  @@map("inspections")
+}
+
+model Shipment {
+  id            Int            @id @default(autoincrement())
+  salesOrderId  Int
+  number        String?        @unique
+  status        String         @default("draft")
+  shipDate      DateTime?
+  carrierMethod String?
+  trackingNumber String?
+  deliveredAt   DateTime?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  salesOrder    SalesOrder     @relation(fields: [salesOrderId], references: [id])
+  shipmentLines ShipmentLine[]
+  invoice       Invoice?
+
+  @@index([salesOrderId])
+  @@map("shipments")
+}
+
+model ShipmentLine {
+  id               Int            @id @default(autoincrement())
+  shipmentId       Int
+  salesOrderLineId Int
+  quantity         Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  shipment         Shipment       @relation(fields: [shipmentId], references: [id])
+  salesOrderLine   SalesOrderLine @relation(fields: [salesOrderLineId], references: [id])
+  invoiceLines     InvoiceLine[]
+  shipmentPicks    ShipmentPick[]
+
+  @@index([shipmentId])
+  @@index([salesOrderLineId])
+  @@map("shipment_lines")
+}
+
+model Invoice {
+  id           Int           @id @default(autoincrement())
+  shipmentId   Int           @unique
+  customerId   Int
+  number       String?       @unique
+  status       String        @default("issued")
+  issueDate    DateTime      @default(now())
+  dueDate      DateTime?
+  paidAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  shipment     Shipment      @relation(fields: [shipmentId], references: [id])
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  invoiceLines InvoiceLine[]
+
+  @@index([customerId])
+  @@map("invoices")
+}
+
+model InvoiceLine {
+  id             Int          @id @default(autoincrement())
+  invoiceId      Int
+  shipmentLineId Int
+  quantity       Int
+  unitPrice      Float
+  lineTotal      Float
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  invoice        Invoice      @relation(fields: [invoiceId], references: [id])
+  shipmentLine   ShipmentLine @relation(fields: [shipmentLineId], references: [id])
+
+  @@index([invoiceId])
+  @@index([shipmentLineId])
+  @@map("invoice_lines")
+}
+
+model ItemVendorTerm {
+  id             Int      @id @default(autoincrement())
+  itemId         Int
+  supplierId     Int
+  vendorItemCode String?
+  leadTimeDays   Int      @default(0)
+  unitPrice      Float    @default(0)
+  minimumQuantity Int     @default(1)
+  isPreferred    Boolean  @default(false)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  item           Item     @relation(fields: [itemId], references: [id])
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+
+  @@unique([itemId, supplierId])
+  @@index([itemId])
+  @@index([supplierId])
+  @@map("item_vendor_terms")
+}
+
+model ShipmentPick {
+  id             Int          @id @default(autoincrement())
+  shipmentLineId Int
+  stockLotId     Int
+  quantity       Int
+  pickedAt       DateTime?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  shipmentLine   ShipmentLine @relation(fields: [shipmentLineId], references: [id])
+  stockLot       StockLot     @relation(fields: [stockLotId], references: [id])
+
+  @@unique([shipmentLineId, stockLotId])
+  @@index([shipmentLineId])
+  @@index([stockLotId])
+  @@map("shipment_picks")
+}
+
+model CompanySetting {
+  id          Int      @id @default(autoincrement())
+  companyName String
+  legalName   String?
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  taxNumber   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("company_settings")
+}
+
+model NumberingSetting {
+  id           Int      @id @default(autoincrement())
+  documentType String   @unique
+  prefix       String
+  separator    String   @default("-")
+  padding      Int      @default(5)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("numbering_settings")
+}
+
+model SettingsListEntry {
+  id           Int      @id @default(autoincrement())
+  listType     String
+  code         String
+  label        String
+  numericValue Float?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([listType, code])
+  @@index([listType, sortOrder, id])
+  @@map("settings_list_entries")
+}
+
+model DocumentTemplateSetting {
+  id                  Int      @id @default(autoincrement())
+  templateType        String   @unique
+  outputFormat        String   @default("pdf")
+  headerFieldsEnabled Boolean  @default(true)
+  footerNotesEnabled  Boolean  @default(true)
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("document_template_settings")
+}
