@@ -60,10 +60,7 @@ export default function PurchaseOrderDetailPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <p>
-        <Link href="/purchase-orders">Back to purchase orders</Link>
-      </p>
+    <section className="page-stack">
       <PurchaseOrderDetailView
         purchaseOrder={purchaseOrder}
         items={items}

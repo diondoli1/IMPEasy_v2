@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { PageShell } from '../../../../components/ui/page-templates';
-import { Badge, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../../components/ui/primitives';
+import { Badge, ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../../components/ui/primitives';
 import { formatDate } from '../../../../lib/commercial';
 import { getStockLot } from '../../../../lib/api';
 import type { StockLotDetail } from '../../../../types/inventory';
@@ -45,9 +44,9 @@ export default function StockLotDetailPage(): JSX.Element {
       actions={
         <>
           <Badge tone="info">{lot.status}</Badge>
-          <Link className="button button--secondary" href="/stock/lots">
+          <ButtonLink href="/stock/lots" tone="secondary">
             Back to lots
-          </Link>
+          </ButtonLink>
         </>
       }
     >

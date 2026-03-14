@@ -1,10 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { InventoryItemDetailView } from '../../../../components/inventory-item-detail-view';
+import { PageShell } from '../../../../components/ui/page-templates';
+import { ButtonLink } from '../../../../components/ui/primitives';
 import {
   adjustInventoryItem,
   getInventoryItem,
@@ -49,20 +50,20 @@ export default function InventoryItemDetailPage(): JSX.Element {
 
   if (error || !inventoryItem) {
     return (
-      <section>
+      <PageShell eyebrow="Inventory" title="Inventory Item" description="">
         <p role="alert">{error ?? 'Inventory item not found.'}</p>
-        <p>
-          <Link href="/inventory/items">Back to inventory items</Link>
-        </p>
-      </section>
+        <ButtonLink href="/inventory/items" tone="secondary">Back to inventory items</ButtonLink>
+      </PageShell>
     );
   }
 
   return (
-    <section>
-      <p>
-        <Link href="/inventory/items">Back to inventory items</Link>
-      </p>
+    <PageShell
+      eyebrow="Inventory"
+      title={`Inventory Item #${inventoryItem.id}`}
+      description={item?.name ?? `Item #${inventoryItem.itemId}`}
+      actions={<ButtonLink href="/inventory/items" tone="secondary">Back to inventory items</ButtonLink>}
+    >
       <InventoryItemDetailView
         inventoryItem={inventoryItem}
         item={item}
@@ -92,7 +93,7 @@ export default function InventoryItemDetailPage(): JSX.Element {
           );
         }}
       />
-    </section>
+    </PageShell>
   );
 }
 

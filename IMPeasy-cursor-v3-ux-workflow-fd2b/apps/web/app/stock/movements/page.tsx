@@ -1,9 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { ListTemplate } from '../../../components/ui/page-templates';
-import { EmptyState } from '../../../components/ui/primitives';
+import { ButtonLink, EmptyState } from '../../../components/ui/primitives';
 import { formatDate } from '../../../lib/commercial';
 import { listStockMovements } from '../../../lib/api';
 import type { StockMovement } from '../../../types/inventory';
@@ -38,19 +39,24 @@ export default function StockMovementsPage(): JSX.Element {
       eyebrow="Inventory"
       title="Stock Movements"
       description="Movement ledger across receipts, material consumption, finished output, picks, and shipment issue."
+      actions={<ButtonLink href="/stock/items" tone="secondary">Stock items</ButtonLink>}
       tableTitle="Movement ledger"
       tableDescription="Use the ledger when you need date-ordered traceability rather than current stock position."
       table={{
         columns: [
-          { header: 'Date', width: '130px', cell: (movement) => formatDate(movement.transactionDate) },
+          { header: 'Date', width: '130px', cell: (movement) => <span className="mono">{formatDate(movement.transactionDate)}</span> },
           {
-            header: 'Item',
+            header: 'Item Code',
+            width: '140px',
             cell: (movement) => (
-              <div className="stack stack--tight">
-                <strong>{movement.itemName}</strong>
-                <span className="muted-copy--small mono">{movement.itemCode ?? `Item ${movement.itemId}`}</span>
-              </div>
+              <Link href={`/stock/items/${movement.itemId}`} className="table-link mono">
+                {movement.itemCode ?? `Item ${movement.itemId}`}
+              </Link>
             ),
+          },
+          {
+            header: 'Item Name',
+            cell: (movement) => movement.itemName,
           },
           { header: 'Lot', width: '120px', cell: (movement) => movement.lotNumber ?? '-' },
           { header: 'Type', width: '160px', cell: (movement) => movement.movementType },
@@ -59,6 +65,11 @@ export default function StockMovementsPage(): JSX.Element {
         ],
         rows: movements,
         getRowKey: (movement) => String(movement.id),
+        renderRowActions: (movement) => (
+          <ButtonLink href={`/stock/items/${movement.itemId}`} tone="ghost">
+            View item
+          </ButtonLink>
+        ),
         emptyState: <EmptyState title="No movements" description="Movements will populate after receipts, manufacturing output, and shipment activity." />,
       }}
     />

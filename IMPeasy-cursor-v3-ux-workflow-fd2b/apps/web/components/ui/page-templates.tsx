@@ -10,6 +10,7 @@ export type PageShellProps = {
   description: string;
   actions?: ReactNode;
   children: ReactNode;
+  titleClassName?: string;
 };
 
 export type DashboardTemplateProps = {
@@ -61,13 +62,14 @@ export function PageShell({
   description,
   actions,
   children,
+  titleClassName,
 }: PageShellProps): JSX.Element {
   return (
     <div className="page-shell">
       <header className="page-shell__header">
         <div className="page-shell__title-block">
           <div className="page-shell__eyebrow">{eyebrow}</div>
-          <h1 className="page-shell__title">{title}</h1>
+          <h1 className={`page-shell__title${titleClassName ? ` ${titleClassName}` : ''}`}>{title}</h1>
           <p className="page-shell__description">{description}</p>
         </div>
         {actions ? <div className="page-shell__actions">{actions}</div> : null}
@@ -87,28 +89,30 @@ export function DashboardTemplate({
 }: DashboardTemplateProps): JSX.Element {
   return (
     <PageShell eyebrow={eyebrow} title={title} description={description} actions={actions}>
-      <StatGrid>
-        {cards.map((card) => (
-          <StatCard
-            key={`${card.label}-${String(card.value)}`}
-            label={card.label}
-            value={card.value}
-            hint={card.hint}
-            href={card.href}
-          />
-        ))}
-      </StatGrid>
-      {children ?? (
-        <Panel
-          title="No exceptions"
-          description="Module issues and escalations will surface here as future slices connect live data."
-        >
-          <EmptyState
-            title="Dashboard shell is ready"
-            description="Use this page to verify card density, quick-link affordances, and panel spacing before slice-specific reporting is connected."
-          />
-        </Panel>
-      )}
+      <div className="dashboard-layout">
+        <div className="stat-grid stat-grid--dashboard">
+          {cards.map((card) => (
+            <StatCard
+              key={`${card.label}-${String(card.value)}`}
+              label={card.label}
+              value={card.value}
+              hint={card.hint}
+              href={card.href}
+            />
+          ))}
+        </div>
+        {children ?? (
+          <Panel
+            title="No exceptions"
+            description="Module issues and escalations will surface here as future slices connect live data."
+          >
+            <EmptyState
+              title="Dashboard shell is ready"
+              description="Use this page to verify card density, quick-link affordances, and panel spacing before slice-specific reporting is connected."
+            />
+          </Panel>
+        )}
+      </div>
     </PageShell>
   );
 }

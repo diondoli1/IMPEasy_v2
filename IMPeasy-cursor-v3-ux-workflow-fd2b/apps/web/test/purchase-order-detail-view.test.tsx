@@ -128,7 +128,7 @@ describe('PurchaseOrderDetailView', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'PO-0012' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Purchase order PO-0012' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Lines' }));
 

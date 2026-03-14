@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { PageShell } from '../../../../components/ui/page-templates';
-import { Badge, DataTable, EmptyState, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../../components/ui/primitives';
+import { Badge, ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../../components/ui/primitives';
 import { formatDate } from '../../../../lib/commercial';
 import { getStockItem } from '../../../../lib/api';
 import type { StockItemDetail } from '../../../../types/inventory';
@@ -48,9 +48,9 @@ export default function StockItemDetailPage(): JSX.Element {
       actions={
         <>
           <Badge tone="info">{item.unitOfMeasure}</Badge>
-          <Link className="button button--secondary" href="/stock/items">
+          <ButtonLink href="/stock/items" tone="secondary">
             Back to stock items
-          </Link>
+          </ButtonLink>
         </>
       }
     >
@@ -105,7 +105,7 @@ export default function StockItemDetailPage(): JSX.Element {
                 header: 'Lot',
                 cell: (lot) => (
                   <div className="stack stack--tight">
-                    <Link href={`/stock/lots/${lot.id}`} className="mono">
+                    <Link href={`/stock/lots/${lot.id}`} className="table-link mono">
                       {lot.lotNumber}
                     </Link>
                     <span className="muted-copy--small">{lot.sourceDocument ?? '-'}</span>

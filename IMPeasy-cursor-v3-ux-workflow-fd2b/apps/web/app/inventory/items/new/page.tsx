@@ -1,10 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { InventoryItemForm } from '../../../../components/inventory-item-form';
+import { PageShell } from '../../../../components/ui/page-templates';
+import { ButtonLink } from '../../../../components/ui/primitives';
 import { createInventoryItem, listItems } from '../../../../lib/api';
 import type { Item } from '../../../../types/item';
 
@@ -33,21 +34,20 @@ export default function NewInventoryItemPage(): JSX.Element {
 
   if (error) {
     return (
-      <section>
+      <PageShell eyebrow="Inventory" title="New Inventory Item" description="">
         <p role="alert">{error}</p>
-        <p>
-          <Link href="/inventory/items">Back to inventory items</Link>
-        </p>
-      </section>
+        <ButtonLink href="/inventory/items" tone="secondary">Back to inventory items</ButtonLink>
+      </PageShell>
     );
   }
 
   return (
-    <section>
-      <h1>Track Inventory Item</h1>
-      <p>
-        <Link href="/inventory/items">Back to inventory items</Link>
-      </p>
+    <PageShell
+      eyebrow="Inventory"
+      title="Track Inventory Item"
+      description="Create a new inventory item to track stock for a product."
+      actions={<ButtonLink href="/inventory/items" tone="secondary">Back to inventory items</ButtonLink>}
+    >
       <InventoryItemForm
         items={items.map((item) => ({ id: item.id, name: item.name }))}
         submitLabel="Create inventory item"
@@ -56,6 +56,6 @@ export default function NewInventoryItemPage(): JSX.Element {
           router.push(`/inventory/items/${created.id}`);
         }}
       />
-    </section>
+    </PageShell>
   );
 }

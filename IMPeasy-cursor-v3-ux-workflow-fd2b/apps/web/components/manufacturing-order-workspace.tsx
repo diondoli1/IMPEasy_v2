@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -37,8 +38,6 @@ import {
   FormGrid,
   Notice,
   Panel,
-  StatCard,
-  StatGrid,
   Toolbar,
   ToolbarGroup,
 } from './ui/primitives';
@@ -46,8 +45,6 @@ import {
 type ManufacturingOrderWorkspaceProps = {
   manufacturingOrderId: number;
 };
-
-type ManufacturingOrderTab = 'header' | 'materials' | 'operations' | 'output' | 'history';
 
 type HeaderFormState = {
   dueDate: string;
@@ -63,14 +60,6 @@ type MaterialEditorState = {
 };
 
 type OperationAssignmentState = Record<number, string>;
-
-const WORKSPACE_TABS: Array<{ value: ManufacturingOrderTab; label: string }> = [
-  { value: 'header', label: 'Header' },
-  { value: 'materials', label: 'Materials' },
-  { value: 'operations', label: 'Operations' },
-  { value: 'output', label: 'Output' },
-  { value: 'history', label: 'History' },
-];
 
 function createHeaderState(order: ManufacturingOrderDetail): HeaderFormState {
   return {
@@ -138,7 +127,6 @@ export function ManufacturingOrderWorkspace({
 }: ManufacturingOrderWorkspaceProps): JSX.Element {
   const [order, setOrder] = useState<ManufacturingOrderDetail | null>(null);
   const [users, setUsers] = useState<AuthUser[]>([]);
-  const [activeTab, setActiveTab] = useState<ManufacturingOrderTab>('header');
   const [headerForm, setHeaderForm] = useState<HeaderFormState | null>(null);
   const [materialEditors, setMaterialEditors] = useState<Record<number, MaterialEditorState>>({});
   const [operationAssignments, setOperationAssignments] = useState<OperationAssignmentState>({});
@@ -150,6 +138,7 @@ export function ManufacturingOrderWorkspace({
   const [releasing, setReleasing] = useState(false);
   const [savingMaterialId, setSavingMaterialId] = useState<number | null>(null);
   const [savingOperationId, setSavingOperationId] = useState<number | null>(null);
+  const [bookingAll, setBookingAll] = useState(false);
 
   async function loadWorkspace(): Promise<void> {
     const [orderData, userData] = await Promise.all([
@@ -189,26 +178,41 @@ export function ManufacturingOrderWorkspace({
     );
   }
 
+  const canRelease = order.status === 'planned' && order.bookingCompletenessPercent >= 100;
+
   return (
     <PageShell
       eyebrow="Production"
-      title={order.documentNumber}
-      description="Main production control workspace for planning, booking, release, assignments, output, and execution history."
+      title={`Manufacturing order ${order.documentNumber}`}
+      description=""
       actions={
         <>
-          <Badge tone={manufacturingOrderStatusTone(order.status)}>
-            {normalizeProductionStatus(order.status)}
-          </Badge>
-          <Badge tone={releaseStateTone(order.releaseState)}>
-            {normalizeProductionStatus(order.releaseState)}
-          </Badge>
-          <ButtonLink href="/manufacturing-orders">Back to list</ButtonLink>
-          <ButtonLink href={`/customer-orders/sales-order-${order.salesOrderId}`}>
-            Source sales order
-          </ButtonLink>
+          <ButtonLink href="/manufacturing-orders">Back</ButtonLink>
+          {message ? (
+            <span className="mo-detail__saved-badge">Saved</span>
+          ) : null}
+          <Button tone="utility" disabled title="Delete not implemented">
+            Delete
+          </Button>
+          <Button tone="utility" disabled title="Copy not implemented">
+            Copy
+          </Button>
+          <span className="mo-detail__action-divider" />
+          <Button tone="utility" disabled title="PDF export not implemented">
+            PDF wide
+          </Button>
+          <Button tone="utility" disabled title="PDF export not implemented">
+            PDF medium
+          </Button>
+          <Button tone="utility" disabled title="PDF export not implemented">
+            PDF narrow
+          </Button>
+          <Button tone="utility" disabled title="Print not implemented">
+            Print
+          </Button>
           <Button
             tone="primary"
-            disabled={order.status !== 'planned' || releasing}
+            disabled={!canRelease || releasing}
             onClick={() => {
               void (async () => {
                 setReleasing(true);
@@ -231,582 +235,526 @@ export function ManufacturingOrderWorkspace({
               })();
             }}
           >
-            {releasing ? 'Releasing...' : 'Release MO'}
+            {releasing ? 'Releasing...' : 'Go to production'}
           </Button>
         </>
       }
     >
-      <StatGrid>
-        <StatCard
-          label="Item"
-          value={order.itemName}
-          hint={<span className="mono">{order.itemCode}</span>}
-        />
-        <StatCard label="Customer" value={order.customerName} hint={order.salesOrderNumber} />
-        <StatCard label="Booking" value={`${order.bookingCompletenessPercent}%`} />
-        <StatCard
-          label="Current Operation"
-          value={order.currentOperationName ?? 'Completed'}
-          hint={order.currentWorkstation ?? order.assignedWorkstation ?? '-'}
-        />
-        <StatCard label="Finished Lot" value={order.finishedGoodsLotNumber ?? 'Pending'} />
-      </StatGrid>
+      {workspaceError ? (
+        <Notice title="Action failed" tone="warning">
+          {workspaceError}
+        </Notice>
+      ) : null}
+      {message ? <Notice title="Saved">{message}</Notice> : null}
 
-      <Panel
-        title="Manufacturing workspace"
-        description="The lean MVP keeps one dense workspace for all planner actions: header edits, material booking, operation assignments, output review, and history."
-      >
-        <Toolbar>
-          <ToolbarGroup>
-            {WORKSPACE_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                className={`workspace-tab${activeTab === tab.value ? ' workspace-tab--active' : ''}`}
-                onClick={() => setActiveTab(tab.value)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </ToolbarGroup>
-          <ToolbarGroup>
-            <Badge tone={bookingCompletenessTone(order.bookingCompletenessPercent)}>
-              {order.bookingCompletenessPercent}% booked
-            </Badge>
-            <span className="muted-copy">
-              {order.itemCode} / Qty {order.quantity} / Due {formatProductionDate(order.dueDate)}
-            </span>
-          </ToolbarGroup>
-        </Toolbar>
-
-        {workspaceError ? <Notice title="Action failed" tone="warning">{workspaceError}</Notice> : null}
-        {message ? <Notice title="Saved">{message}</Notice> : null}
-
-        {activeTab === 'header' ? (
-          <div className="split-grid">
-            <Panel
-              title="Header"
-              description="Planner-facing header controls stay on one form: due date, workstation, operator, and notes."
+      {/* Two-column order info - MRPeasy layout */}
+      <div className="mo-detail__order-info split-grid">
+        <div className="mo-detail__order-info-col">
+          <Panel title="Order info" compactHeader>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void (async () => {
+                  setSavingHeader(true);
+                  setWorkspaceError(null);
+                  setMessage(null);
+                  try {
+                    const updatedOrder = await updateManufacturingOrder(order.id, {
+                      dueDate: headerForm.dueDate || undefined,
+                      assignedOperatorId: headerForm.assignedOperatorId
+                        ? Number(headerForm.assignedOperatorId)
+                        : undefined,
+                      assignedWorkstation: headerForm.assignedWorkstation.trim() || undefined,
+                      notes: headerForm.notes.trim() || undefined,
+                    });
+                    setOrder(updatedOrder);
+                    setHeaderForm(createHeaderState(updatedOrder));
+                    setMaterialEditors(createMaterialEditors(updatedOrder));
+                    setOperationAssignments(createOperationAssignments(updatedOrder));
+                    setMessage('Manufacturing Order saved.');
+                  } catch {
+                    setWorkspaceError('Unable to save the Manufacturing Order.');
+                  } finally {
+                    setSavingHeader(false);
+                  }
+                })();
+              }}
             >
-              <form
-                className="page-stack"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void (async () => {
-                    setSavingHeader(true);
-                    setWorkspaceError(null);
-                    setMessage(null);
-                    try {
-                      const updatedOrder = await updateManufacturingOrder(order.id, {
-                        dueDate: headerForm.dueDate || undefined,
-                        assignedOperatorId: headerForm.assignedOperatorId
-                          ? Number(headerForm.assignedOperatorId)
-                          : undefined,
-                        assignedWorkstation: headerForm.assignedWorkstation.trim() || undefined,
-                        notes: headerForm.notes.trim() || undefined,
-                      });
-                      setOrder(updatedOrder);
-                      setHeaderForm(createHeaderState(updatedOrder));
-                      setMaterialEditors(createMaterialEditors(updatedOrder));
-                      setOperationAssignments(createOperationAssignments(updatedOrder));
-                      setMessage('Manufacturing Order header saved.');
-                    } catch {
-                      setWorkspaceError('Unable to save the Manufacturing Order header.');
-                    } finally {
-                      setSavingHeader(false);
-                    }
-                  })();
-                }}
-              >
-                <FormGrid columns={2}>
-                  <Field label="MO Number">
-                    <input className="control" value={order.documentNumber} readOnly />
-                  </Field>
-                  <Field label="Source Sales Line">
-                    <input
-                      className="control"
-                      value={`${order.salesOrderNumber} / Line ${order.salesOrderLineId}`}
-                      readOnly
-                    />
-                  </Field>
-                  <Field label="Item">
-                    <input className="control" value={`${order.itemCode} ${order.itemName}`} readOnly />
-                  </Field>
-                  <Field label="Quantity">
-                    <input className="control" value={String(order.quantity)} readOnly />
-                  </Field>
-                  <Field label="BOM">
-                    <input className="control" value={order.bomName ?? 'No BOM'} readOnly />
-                  </Field>
-                  <Field label="Routing">
-                    <input className="control" value={order.routingName} readOnly />
-                  </Field>
-                  <Field label="Due Date">
-                    <input
-                      className="control"
-                      type="date"
-                      value={headerForm.dueDate}
-                      onChange={(event) =>
-                        setHeaderForm((current) =>
-                          current
-                            ? {
-                                ...current,
-                                dueDate: event.target.value,
-                              }
-                            : current,
-                        )
-                      }
-                    />
-                  </Field>
-                  <Field label="Assigned Operator">
-                    <select
-                      className="control"
-                      value={headerForm.assignedOperatorId}
-                      onChange={(event) =>
-                        setHeaderForm((current) =>
-                          current
-                            ? {
-                                ...current,
-                                assignedOperatorId: event.target.value,
-                              }
-                            : current,
-                        )
-                      }
-                    >
-                      <option value="">Unassigned</option>
-                      {users.map((user) => (
-                        <option key={user.id} value={String(user.id)}>
-                          {user.name}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Assigned Workstation">
-                    <input
-                      className="control"
-                      value={headerForm.assignedWorkstation}
-                      onChange={(event) =>
-                        setHeaderForm((current) =>
-                          current
-                            ? {
-                                ...current,
-                                assignedWorkstation: event.target.value,
-                              }
-                            : current,
-                        )
-                      }
-                    />
-                  </Field>
-                  <Field label="Status">
-                    <input className="control" value={normalizeProductionStatus(order.status)} readOnly />
-                  </Field>
-                </FormGrid>
-                <Field label="Notes">
-                  <textarea
+              <FormGrid columns={2}>
+                <Field label="Number" required>
+                  <input className="control" value={order.documentNumber} readOnly />
+                </Field>
+                <Field label="Product group">
+                  <input className="control" value="—" readOnly />
+                </Field>
+                <Field label="Product">
+                  <input
                     className="control"
-                    value={headerForm.notes}
+                    value={`${order.itemCode} ${order.itemName}`}
+                    readOnly
+                  />
+                </Field>
+                <Field label="Files">
+                  <input className="control" value="—" readOnly />
+                </Field>
+                <Field label="Quantity" required>
+                  <input className="control" value={String(order.quantity)} readOnly />
+                </Field>
+                <Field label="Due date">
+                  <input
+                    className="control"
+                    type="date"
+                    value={headerForm.dueDate}
                     onChange={(event) =>
                       setHeaderForm((current) =>
-                        current
-                          ? {
-                              ...current,
-                              notes: event.target.value,
-                            }
-                          : current,
+                        current ? { ...current, dueDate: event.target.value } : current,
                       )
                     }
                   />
                 </Field>
-                <div>
-                  <Button type="submit" tone="primary" disabled={savingHeader}>
-                    {savingHeader ? 'Saving...' : 'Save header'}
-                  </Button>
-                </div>
-              </form>
-            </Panel>
-
-            <div className="page-stack">
-              <Panel
-                title="Header summary"
-                description="The planner can change due date and assignment without leaving this workspace."
-              >
-                <DataTable
-                  columns={[
-                    { header: 'Field', width: '140px', cell: (row) => row.label },
-                    { header: 'Value', cell: (row) => row.value },
-                  ]}
-                  rows={[
-                    { id: 'created', label: 'Created', value: formatProductionDateTime(order.createdAt) },
-                    { id: 'updated', label: 'Updated', value: formatProductionDateTime(order.updatedAt) },
-                    { id: 'operator', label: 'Assigned Operator', value: order.assignedOperatorName ?? 'Unassigned' },
-                    { id: 'workstation', label: 'Workstation', value: order.assignedWorkstation ?? 'Unassigned' },
-                  ]}
-                  getRowKey={(row) => row.id}
+                <Field label="Assigned to" required>
+                  <select
+                    className="control"
+                    value={headerForm.assignedOperatorId}
+                    onChange={(event) =>
+                      setHeaderForm((current) =>
+                        current
+                          ? { ...current, assignedOperatorId: event.target.value }
+                          : current,
+                      )
+                    }
+                  >
+                    <option value="">Unassigned</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={String(user.id)}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Target lot">
+                  <input
+                    className="control"
+                    value={order.finishedGoodsLotNumber ?? '—'}
+                    readOnly
+                  />
+                </Field>
+                <Field label="Customer orders">
+                  <input
+                    className="control"
+                    value={order.salesOrderNumber}
+                    readOnly
+                  />
+                </Field>
+              </FormGrid>
+              <Field label="Notes">
+                <textarea
+                  className="control"
+                  value={headerForm.notes}
+                  onChange={(event) =>
+                    setHeaderForm((current) =>
+                      current ? { ...current, notes: event.target.value } : current,
+                    )
+                  }
                 />
-              </Panel>
-            </div>
-          </div>
-        ) : null}
-
-        {activeTab === 'materials' ? (
-          <Panel
-            title="Material booking"
-            description="Release stays blocked until each required component quantity is fully booked from real lots."
-          >
-            {order.materials.length === 0 ? (
-              <EmptyState
-                title="No material requirements"
-                description="This Manufacturing Order has no BOM-linked material requirements."
-              />
-            ) : (
-              <div className="dense-table-wrap">
-                <table className="dense-table">
-                  <thead>
-                    <tr>
-                      <th>Component</th>
-                      <th>Required</th>
-                      <th>Booked</th>
-                      <th>Available</th>
-                      <th>Existing Bookings</th>
-                      <th>Lot Selection</th>
-                      <th>Qty</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {order.materials.map((material) => {
-                      const editor = materialEditors[material.bomItemId] ?? createMaterialEditor(material);
-                      const lotOptions = getLotOptionLabels(material);
-
-                      return (
-                        <tr key={material.bomItemId}>
-                          <td>
-                            <div className="stack stack--tight">
-                              <strong>{material.componentItemName}</strong>
-                              <span className="muted-copy--small mono">
-                                {material.componentItemCode} / {material.unitOfMeasure}
-                              </span>
-                              {material.notes ? (
-                                <span className="muted-copy--small">{material.notes}</span>
-                              ) : null}
-                            </div>
-                          </td>
-                          <td className="dense-table__cell--right mono">{material.requiredQuantity}</td>
-                          <td className="dense-table__cell--right mono">{material.bookedQuantity}</td>
-                          <td className="dense-table__cell--right mono">{material.availableQuantity}</td>
-                          <td>
-                            {material.bookings.length > 0 ? (
-                              <div className="stack stack--tight">
-                                {material.bookings.map((booking) => (
-                                  <button
-                                    key={booking.id}
-                                    type="button"
-                                    className="button button--ghost"
-                                    onClick={() => {
-                                      setMaterialEditors((current) => ({
-                                        ...current,
-                                        [material.bomItemId]: {
-                                          bookingId: booking.id,
-                                          stockLotId: String(booking.stockLotId),
-                                          quantity: String(booking.quantity),
-                                        },
-                                      }));
-                                    }}
-                                  >
-                                    {booking.lotNumber} / {booking.quantity}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="muted-copy--small">No lot booked yet</span>
-                            )}
-                          </td>
-                          <td>
-                            <select
-                              className="control control--dense"
-                              value={editor.stockLotId}
-                              onChange={(event) =>
-                                setMaterialEditors((current) => ({
-                                  ...current,
-                                  [material.bomItemId]: {
-                                    ...editor,
-                                    stockLotId: event.target.value,
-                                  },
-                                }))
-                              }
-                            >
-                              <option value="">Select lot</option>
-                              {lotOptions.map((option) => (
-                                <option key={option.id} value={option.id}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            <input
-                              className="control control--dense"
-                              type="number"
-                              min={1}
-                              step="1"
-                              value={editor.quantity}
-                              onChange={(event) =>
-                                setMaterialEditors((current) => ({
-                                  ...current,
-                                  [material.bomItemId]: {
-                                    ...editor,
-                                    quantity: event.target.value,
-                                  },
-                                }))
-                              }
-                            />
-                          </td>
-                          <td>
-                            <Button
-                              disabled={savingMaterialId === material.bomItemId}
-                              onClick={() => {
-                                if (!editor.stockLotId || Number(editor.quantity) <= 0) {
-                                  setWorkspaceError('Select a lot and enter a booking quantity greater than zero.');
-                                  return;
-                                }
-
-                                void (async () => {
-                                  setSavingMaterialId(material.bomItemId);
-                                  setWorkspaceError(null);
-                                  setMessage(null);
-                                  try {
-                                    const updatedOrder = editor.bookingId
-                                      ? await updateManufacturingOrderMaterialBooking(
-                                          order.id,
-                                          editor.bookingId,
-                                          {
-                                            quantity: Number(editor.quantity),
-                                          },
-                                        )
-                                      : await createOrUpdateMaterialBooking(order.id, {
-                                          bomItemId: material.bomItemId,
-                                          stockLotId: Number(editor.stockLotId),
-                                          quantity: Number(editor.quantity),
-                                        });
-
-                                    setOrder(updatedOrder);
-                                    setHeaderForm(createHeaderState(updatedOrder));
-                                    setMaterialEditors(createMaterialEditors(updatedOrder));
-                                    setOperationAssignments(createOperationAssignments(updatedOrder));
-                                    setMessage('Material booking saved.');
-                                  } catch {
-                                    setWorkspaceError('Unable to save the material booking.');
-                                  } finally {
-                                    setSavingMaterialId(null);
-                                  }
-                                })();
-                              }}
-                            >
-                              {savingMaterialId === material.bomItemId
-                                ? 'Saving...'
-                                : editor.bookingId
-                                  ? 'Update'
-                                  : 'Book'}
-                            </Button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              </Field>
+              <div style={{ marginTop: 12 }}>
+                <Button type="submit" tone="primary" disabled={savingHeader}>
+                  {savingHeader ? 'Saving...' : 'Save'}
+                </Button>
               </div>
-            )}
+            </form>
           </Panel>
-        ) : null}
+        </div>
 
-        {activeTab === 'operations' ? (
-          <Panel
-            title="Operations"
-            description="Assign operators, review sequence status, and jump into the fixed kiosk execution view."
-          >
+        <div className="mo-detail__order-info-col">
+          <Panel title="Status & costs" compactHeader>
             <DataTable
               columns={[
+                { header: 'Field', width: '160px', cell: (row) => row.label },
+                { header: 'Value', cell: (row) => row.value },
+              ]}
+              rows={[
                 {
-                  header: 'Seq',
-                  width: '64px',
-                  align: 'right',
-                  cell: (operation) => <span className="mono">{operation.sequence}</span>,
+                  id: 'created',
+                  label: 'Created',
+                  value: formatProductionDateTime(order.createdAt),
                 },
                 {
-                  header: 'Operation',
-                  cell: (operation) => (
-                    <div className="stack stack--tight">
-                      <strong>{operation.operationName}</strong>
-                      <span className="muted-copy--small">{operation.description ?? 'No description'}</span>
-                    </div>
-                  ),
-                },
-                {
-                  header: 'Workstation',
-                  width: '120px',
-                  cell: (operation) => operation.workstation ?? '-',
-                },
-                {
-                  header: 'Operator',
-                  width: '180px',
-                  cell: (operation) => (
-                    <select
-                      className="control control--dense"
-                      value={operationAssignments[operation.id] ?? ''}
-                      onChange={(event) =>
-                        setOperationAssignments((current) => ({
-                          ...current,
-                          [operation.id]: event.target.value,
-                        }))
-                      }
-                    >
-                      <option value="">Unassigned</option>
-                      {users.map((user) => (
-                        <option key={user.id} value={String(user.id)}>
-                          {user.name}
-                        </option>
-                      ))}
-                    </select>
-                  ),
-                },
-                {
-                  header: 'Status',
-                  width: '110px',
-                  cell: (operation) => (
-                    <Badge tone={operationStatusTone(operation.status)}>
-                      {normalizeProductionStatus(operation.status)}
+                  id: 'status',
+                  label: 'Status',
+                  value: (
+                    <Badge tone={manufacturingOrderStatusTone(order.status)}>
+                      {normalizeProductionStatus(order.status)}
                     </Badge>
                   ),
                 },
                 {
-                  header: 'Planned Qty',
-                  width: '100px',
-                  align: 'right',
-                  cell: (operation) => <span className="mono">{operation.plannedQuantity}</span>,
-                },
-                {
-                  header: 'Completion',
-                  cell: (operation) => operation.completionSummary ?? '-',
-                },
-                {
-                  header: 'Actions',
-                  width: '190px',
-                  cell: (operation) => (
-                    <div className="toolbar__group">
-                      <Button
-                        disabled={savingOperationId === operation.id}
-                        onClick={() => {
-                          const nextAssignedOperatorId = operationAssignments[operation.id];
-
-                          if (!nextAssignedOperatorId) {
-                            setWorkspaceError('Select an operator before saving an operation assignment.');
-                            return;
-                          }
-
-                          void (async () => {
-                            setSavingOperationId(operation.id);
-                            setWorkspaceError(null);
-                            setMessage(null);
-                            try {
-                              await updateOperation(operation.id, {
-                                assignedOperatorId: Number(nextAssignedOperatorId),
-                              });
-                              await loadWorkspace();
-                              setMessage(`Operation ${operation.sequence} assignment saved.`);
-                            } catch {
-                              setWorkspaceError('Unable to update the operation assignment.');
-                            } finally {
-                              setSavingOperationId(null);
-                            }
-                          })();
-                        }}
-                      >
-                        {savingOperationId === operation.id ? 'Saving...' : 'Assign'}
-                      </Button>
-                      <ButtonLink href={`/kiosk/operations/${operation.id}`}>Open kiosk</ButtonLink>
-                    </div>
+                  id: 'release',
+                  label: 'Release',
+                  value: (
+                    <Badge tone={releaseStateTone(order.releaseState)}>
+                      {normalizeProductionStatus(order.releaseState)}
+                    </Badge>
                   ),
                 },
+                { id: 'start', label: 'Start', value: '—' },
+                { id: 'finish', label: 'Finish', value: '—' },
+                { id: 'total-cost', label: 'Total cost', value: '—' },
+                { id: 'cost-per-pcs', label: 'Cost per 1 pcs', value: '—' },
+                { id: 'cost-materials', label: 'Cost of materials', value: '—' },
+                { id: 'overhead', label: 'Applied overhead cost', value: '—' },
+                { id: 'labor', label: 'Labor cost', value: '—' },
               ]}
-              rows={order.operations}
-              getRowKey={(operation) => String(operation.id)}
-              emptyState={
-                <EmptyState
-                  title="No operations"
-                  description="This Manufacturing Order has no routing-backed operations."
-                />
-              }
+              getRowKey={(row) => row.id}
             />
           </Panel>
-        ) : null}
+        </div>
+      </div>
 
-        {activeTab === 'output' ? (
-          <div className="split-grid">
-            <Panel
-              title="Output"
-              description="The final operation writes finished-goods output and closes the Manufacturing Order."
+      {/* Parts section - MRPeasy layout */}
+      <Panel
+        title="Parts"
+        description={order.bomName ?? 'No BOM'}
+        actions={
+          <ToolbarGroup>
+            <Button
+              tone="secondary"
+              disabled={
+                bookingAll ||
+                order.materials.length === 0 ||
+                order.materials.every(
+                  (m) =>
+                    m.bookedQuantity >= m.requiredQuantity ||
+                    (m.availableLots.length === 0 && m.bookings.length === 0),
+                )
+              }
+              onClick={() => {
+                void (async () => {
+                  setBookingAll(true);
+                  setWorkspaceError(null);
+                  setMessage(null);
+                  try {
+                    let currentOrder = order;
+                    for (const material of order.materials) {
+                      if (material.bookedQuantity >= material.requiredQuantity) continue;
+                      const lot = material.availableLots[0];
+                      const existingBooking = material.bookings[0];
+                      const lotId = lot
+                        ? lot.id
+                        : existingBooking
+                          ? existingBooking.stockLotId
+                          : null;
+                      if (lotId == null) continue;
+                      currentOrder = await createOrUpdateMaterialBooking(order.id, {
+                        bomItemId: material.bomItemId,
+                        stockLotId: lotId,
+                        quantity: material.requiredQuantity,
+                      });
+                    }
+                    setOrder(currentOrder);
+                    setMaterialEditors(createMaterialEditors(currentOrder));
+                    setMessage('All parts booked.');
+                  } catch {
+                    setWorkspaceError('Unable to book all parts. Some materials may have insufficient stock.');
+                  } finally {
+                    setBookingAll(false);
+                  }
+                })();
+              }}
             >
-              <StatGrid>
-                <StatCard label="Finished Lot" value={order.finishedGoodsLotNumber ?? 'Not created'} />
-                <StatCard label="Produced Quantity" value={<span className="mono">{order.producedQuantity}</span>} />
-                <StatCard label="Scrap Quantity" value={<span className="mono">{order.scrapQuantity}</span>} />
-                <StatCard label="Updated" value={formatProductionDateTime(order.updatedAt)} />
-              </StatGrid>
-            </Panel>
+              {bookingAll ? 'Booking...' : 'Book all parts'}
+            </Button>
+            <Button tone="utility" disabled title="Release all booked parts not implemented">
+              Release all booked parts
+            </Button>
+          </ToolbarGroup>
+        }
+      >
+        {order.materials.length === 0 ? (
+          <EmptyState
+            title="No material requirements"
+            description="This Manufacturing Order has no BOM-linked material requirements."
+          />
+        ) : (
+          <div className="dense-table-wrap">
+            <table className="dense-table">
+              <thead>
+                <tr>
+                  <th>Stock item</th>
+                  <th>Consumed</th>
+                  <th>Booked</th>
+                  <th>Lot</th>
+                  <th>Status</th>
+                  <th>Storage location</th>
+                  <th>Available from</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.materials.map((material) => {
+                  const editor = materialEditors[material.bomItemId] ?? createMaterialEditor(material);
+                  const lotOptions = getLotOptionLabels(material);
+                  const consumedQty = material.bookings.reduce(
+                    (sum, b) => sum + (b.consumedAt ? b.quantity : 0),
+                    0,
+                  );
+                  const bookedQty = material.bookedQuantity;
+                  const primaryBooking = material.bookings[0];
+                  const status =
+                    bookedQty >= material.requiredQuantity
+                      ? 'Booked'
+                      : bookedQty > 0
+                        ? 'Partial'
+                        : 'Not booked';
 
-            <div className="page-stack">
-              <Panel
-                title="Output rule"
-                description="Booked materials are auto-consumed when the final operation completes."
-              >
-                <Notice title="Current state">
-                  {order.finishedGoodsLotNumber
-                    ? `Finished lot ${order.finishedGoodsLotNumber} is already linked to this Manufacturing Order.`
-                    : 'No finished-goods lot has been created yet. It will be created or updated when the final operation completes.'}
-                </Notice>
-              </Panel>
-            </div>
+                  return (
+                    <tr key={material.bomItemId}>
+                      <td>
+                        <div className="stack stack--tight">
+                          <strong>{material.componentItemName}</strong>
+                          <span className="muted-copy--small mono">
+                            {material.componentItemCode} / {material.unitOfMeasure}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="dense-table__cell--right mono">{consumedQty}</td>
+                      <td className="dense-table__cell--right mono">{bookedQty}</td>
+                      <td>
+                        {primaryBooking ? (
+                          <span className="mono">{primaryBooking.lotNumber}</span>
+                        ) : (
+                          <select
+                            className="control control--dense"
+                            value={editor.stockLotId}
+                            onChange={(event) =>
+                              setMaterialEditors((current) => ({
+                                ...current,
+                                [material.bomItemId]: { ...editor, stockLotId: event.target.value },
+                              }))
+                            }
+                          >
+                            <option value="">Select lot</option>
+                            {lotOptions.map((opt) => (
+                              <option key={opt.id} value={opt.id}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </td>
+                      <td>
+                        <Badge
+                          tone={
+                            status === 'Booked'
+                              ? 'success'
+                              : status === 'Partial'
+                                ? 'warning'
+                                : 'neutral'
+                          }
+                        >
+                          {status}
+                        </Badge>
+                      </td>
+                      <td className="muted-copy--small">—</td>
+                      <td className="muted-copy--small">—</td>
+                      <td>
+                        <input
+                          className="control control--dense"
+                          type="number"
+                          min={1}
+                          step="1"
+                          value={editor.quantity}
+                          onChange={(event) =>
+                            setMaterialEditors((current) => ({
+                              ...current,
+                              [material.bomItemId]: { ...editor, quantity: event.target.value },
+                            }))
+                          }
+                          style={{ width: 70, marginRight: 8 }}
+                        />
+                        <Button
+                          disabled={savingMaterialId === material.bomItemId}
+                          onClick={() => {
+                            if (!editor.stockLotId || Number(editor.quantity) <= 0) {
+                              setWorkspaceError(
+                                'Select a lot and enter a booking quantity greater than zero.',
+                              );
+                              return;
+                            }
+                            void (async () => {
+                              setSavingMaterialId(material.bomItemId);
+                              setWorkspaceError(null);
+                              setMessage(null);
+                              try {
+                                const updatedOrder = editor.bookingId
+                                  ? await updateManufacturingOrderMaterialBooking(
+                                      order.id,
+                                      editor.bookingId,
+                                      { quantity: Number(editor.quantity) },
+                                    )
+                                  : await createOrUpdateMaterialBooking(order.id, {
+                                      bomItemId: material.bomItemId,
+                                      stockLotId: Number(editor.stockLotId),
+                                      quantity: Number(editor.quantity),
+                                    });
+                                setOrder(updatedOrder);
+                                setHeaderForm(createHeaderState(updatedOrder));
+                                setMaterialEditors(createMaterialEditors(updatedOrder));
+                                setOperationAssignments(createOperationAssignments(updatedOrder));
+                                setMessage('Material booking saved.');
+                              } catch {
+                                setWorkspaceError('Unable to save the material booking.');
+                              } finally {
+                                setSavingMaterialId(null);
+                              }
+                            })();
+                          }}
+                        >
+                          {savingMaterialId === material.bomItemId
+                            ? 'Saving...'
+                            : editor.bookingId
+                              ? 'Update'
+                              : 'Book'}
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        ) : null}
+        )}
+      </Panel>
 
-        {activeTab === 'history' ? (
-          <Panel
-            title="History"
-            description="Every key planner and execution event is logged here to preserve downstream traceability."
-          >
-            <DataTable
-              columns={[
-                {
-                  header: 'When',
-                  width: '140px',
-                  cell: (entry) => <span className="mono">{formatProductionDateTime(entry.createdAt)}</span>,
-                },
-                {
-                  header: 'Event',
-                  width: '120px',
-                  cell: (entry) => entry.eventType,
-                },
-                {
-                  header: 'Actor',
-                  width: '120px',
-                  cell: (entry) => entry.actor,
-                },
-                {
-                  header: 'Message',
-                  cell: (entry) => entry.message,
-                },
-              ]}
-              rows={order.history}
-              getRowKey={(entry) => String(entry.id)}
-              emptyState={
-                <EmptyState
-                  title="No history entries"
-                  description="Planner and execution actions will appear here as the Manufacturing Order moves through release and completion."
-                />
-              }
+      {/* Operations table - MRPeasy layout */}
+      <Panel
+        title="Operations"
+        description="Operation sequence with workstation, worker assignment, and planned/actual times."
+      >
+        <DataTable
+          columns={[
+            {
+              header: 'Operation',
+              cell: (op) => (
+                <div className="stack stack--tight">
+                  <strong>{op.operationName}</strong>
+                  <span className="muted-copy--small">{op.description ?? ''}</span>
+                </div>
+              ),
+            },
+            {
+              header: 'Workstation',
+              width: '120px',
+              cell: (op) => op.workstation ?? '—',
+            },
+            {
+              header: 'Planned start',
+              width: '110px',
+              cell: () => '—',
+            },
+            {
+              header: 'Planned finish',
+              width: '110px',
+              cell: () => '—',
+            },
+            {
+              header: 'Worker',
+              width: '160px',
+              cell: (op) => (
+                <select
+                  className="control control--dense"
+                  value={operationAssignments[op.id] ?? ''}
+                  onChange={(event) =>
+                    setOperationAssignments((current) => ({
+                      ...current,
+                      [op.id]: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Unassigned</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={String(user.id)}>
+                      {user.name}
+                    </option>
+                  ))}
+                </select>
+              ),
+            },
+            {
+              header: 'Actual start',
+              width: '110px',
+              cell: () => '—',
+            },
+            {
+              header: 'Actual finish',
+              width: '110px',
+              cell: () => '—',
+            },
+            {
+              header: 'Quantity',
+              width: '90px',
+              align: 'right',
+              cell: (op) => <span className="mono">{op.plannedQuantity}</span>,
+            },
+            {
+              header: 'Status',
+              width: '100px',
+              cell: (op) => (
+                <Badge tone={operationStatusTone(op.status)}>
+                  {normalizeProductionStatus(op.status)}
+                </Badge>
+              ),
+            },
+            {
+              header: 'Actions',
+              width: '140px',
+              cell: (op) => (
+                <div className="toolbar__group">
+                  <Button
+                    disabled={savingOperationId === op.id}
+                    onClick={() => {
+                      const nextAssignedOperatorId = operationAssignments[op.id];
+                      if (!nextAssignedOperatorId) {
+                        setWorkspaceError(
+                          'Select an operator before saving an operation assignment.',
+                        );
+                        return;
+                      }
+                      void (async () => {
+                        setSavingOperationId(op.id);
+                        setWorkspaceError(null);
+                        setMessage(null);
+                        try {
+                          await updateOperation(op.id, {
+                            assignedOperatorId: Number(nextAssignedOperatorId),
+                          });
+                          await loadWorkspace();
+                          setMessage(`Operation ${op.sequence} assignment saved.`);
+                        } catch {
+                          setWorkspaceError('Unable to update the operation assignment.');
+                        } finally {
+                          setSavingOperationId(null);
+                        }
+                      })();
+                    }}
+                  >
+                    {savingOperationId === op.id ? 'Saving...' : 'Assign'}
+                  </Button>
+                  <ButtonLink href={`/kiosk/operations/${op.id}`}>Kiosk</ButtonLink>
+                </div>
+              ),
+            },
+          ]}
+          rows={order.operations}
+          getRowKey={(op) => String(op.id)}
+          emptyState={
+            <EmptyState
+              title="No operations"
+              description="This Manufacturing Order has no routing-backed operations."
             />
-          </Panel>
-        ) : null}
+          }
+        />
       </Panel>
     </PageShell>
   );

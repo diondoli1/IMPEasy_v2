@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import type { InventoryAdjustmentInput } from '../types/inventory';
+import { Button, Field, FormGrid } from './ui/primitives';
 
 type InventoryAdjustmentFormProps = {
   submitLabel: string;
@@ -58,32 +59,36 @@ export function InventoryAdjustmentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Adjustment Delta
-        <input
-          type="number"
-          step="1"
-          value={delta}
-          onChange={(event) => setDelta(event.target.value)}
-          name="delta"
-        />
-      </label>
-      <label>
-        Notes
-        <input
-          type="text"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          name="notes"
-          placeholder="Optional"
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Adjustment Delta" required>
+          <input
+            className="control"
+            type="number"
+            step="1"
+            value={delta}
+            onChange={(event) => setDelta(event.target.value)}
+            name="delta"
+          />
+        </Field>
+        <Field label="Notes">
+          <input
+            className="control"
+            type="text"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            name="notes"
+            placeholder="Optional"
+          />
+        </Field>
+      </FormGrid>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button type="submit" disabled={loading} tone="primary">
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+        {error ? <p role="alert" style={{ color: 'var(--color-danger)', margin: 0 }}>{error}</p> : null}
+        {success ? <p style={{ color: 'var(--color-success)', margin: 0 }}>{success}</p> : null}
+      </div>
     </form>
   );
 }

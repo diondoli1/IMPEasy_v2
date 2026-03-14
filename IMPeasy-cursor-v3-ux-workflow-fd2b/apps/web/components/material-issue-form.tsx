@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import type { MaterialIssueInput } from '../types/inventory';
+import { Button, Field, FormGrid } from './ui/primitives';
 
 type MaterialIssueFormProps = {
   submitLabel: string;
@@ -55,32 +56,36 @@ export function MaterialIssueForm({ submitLabel, onSubmit }: MaterialIssueFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Issue Quantity
-        <input
-          type="number"
-          min={1}
-          value={quantity}
-          onChange={(event) => setQuantity(event.target.value)}
-          name="quantity"
-        />
-      </label>
-      <label>
-        Notes
-        <input
-          type="text"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          name="notes"
-          placeholder="Optional"
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Issue Quantity" required>
+          <input
+            className="control"
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            name="quantity"
+          />
+        </Field>
+        <Field label="Notes">
+          <input
+            className="control"
+            type="text"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            name="notes"
+            placeholder="Optional"
+          />
+        </Field>
+      </FormGrid>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button type="submit" disabled={loading} tone="primary">
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+        {error ? <p role="alert" style={{ color: 'var(--color-danger)', margin: 0 }}>{error}</p> : null}
+        {success ? <p style={{ color: 'var(--color-success)', margin: 0 }}>{success}</p> : null}
+      </div>
     </form>
   );
 }

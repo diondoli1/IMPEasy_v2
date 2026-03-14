@@ -75,44 +75,55 @@ export function PurchaseOrderLineForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Item
-        <select value={itemId} onChange={(event) => setItemId(event.target.value)} name="itemId">
-          <option value="">Select item</option>
-          {items.map((item) => (
-            <option key={item.id} value={String(item.id)}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Quantity
-        <input
-          type="number"
-          min={1}
-          value={quantity}
-          onChange={(event) => setQuantity(event.target.value)}
-          name="quantity"
-        />
-      </label>
-      <label>
-        Unit Price
-        <input
-          type="number"
-          min={0}
-          step="0.01"
-          value={unitPrice}
-          onChange={(event) => setUnitPrice(event.target.value)}
-          name="unitPrice"
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="po-line-form">
+      <div className="form-grid form-grid--two" style={{ maxWidth: 520 }}>
+        <label className="field">
+          <span className="field__label">Item</span>
+          <select
+            className="control"
+            value={itemId}
+            onChange={(event) => setItemId(event.target.value)}
+            name="itemId"
+          >
+            <option value="">Select item</option>
+            {items.map((item) => (
+              <option key={item.id} value={String(item.id)}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field__label">Quantity</span>
+          <input
+            className="control"
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            name="quantity"
+          />
+        </label>
+        <label className="field">
+          <span className="field__label">Unit Price</span>
+          <input
+            className="control"
+            type="number"
+            min={0}
+            step="0.01"
+            value={unitPrice}
+            onChange={(event) => setUnitPrice(event.target.value)}
+            name="unitPrice"
+          />
+        </label>
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <button type="submit" className="button button--primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </button>
+      </div>
+      {error ? <p role="alert" className="muted-copy">{error}</p> : null}
+      {success ? <p className="muted-copy">{success}</p> : null}
     </form>
   );
 }

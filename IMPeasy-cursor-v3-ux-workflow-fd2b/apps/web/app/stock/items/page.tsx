@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { ListTemplate } from '../../../components/ui/page-templates';
-import { Badge, EmptyState } from '../../../components/ui/primitives';
+import { Badge, ButtonLink, EmptyState } from '../../../components/ui/primitives';
 import { listStockItems } from '../../../lib/api';
 import type { StockItem } from '../../../types/inventory';
 
@@ -38,20 +38,26 @@ export default function StockItemsPage(): JSX.Element {
       eyebrow="Inventory"
       title="Stock Items"
       description="One-line stock view across on hand, available, booked, expected, and WIP quantities."
-      actions={<Link className="button button--secondary" href="/stock/critical-on-hand">Critical on-hand</Link>}
+      actions={<ButtonLink href="/stock/critical-on-hand" tone="secondary">Critical on-hand</ButtonLink>}
       tableTitle="Stock item list"
       tableDescription="Start here when you need the current position for a stocked item."
       table={{
         columns: [
           {
-            header: 'Item',
+            header: 'Item Code',
+            width: '140px',
             cell: (item) => (
-              <div className="stack stack--tight">
-                <Link href={`/stock/items/${item.itemId}`} className="mono">
-                  {item.itemCode ?? `Item ${item.itemId}`}
-                </Link>
-                <strong>{item.itemName}</strong>
-              </div>
+              <Link href={`/stock/items/${item.itemId}`} className="table-link mono">
+                {item.itemCode ?? `Item ${item.itemId}`}
+              </Link>
+            ),
+          },
+          {
+            header: 'Name',
+            cell: (item) => (
+              <Link href={`/stock/items/${item.itemId}`} className="table-link">
+                {item.itemName}
+              </Link>
             ),
           },
           { header: 'On Hand', width: '90px', align: 'right', cell: (item) => item.onHandQuantity },
@@ -68,6 +74,11 @@ export default function StockItemsPage(): JSX.Element {
         ],
         rows: items,
         getRowKey: (item) => String(item.itemId),
+        renderRowActions: (item) => (
+          <ButtonLink href={`/stock/items/${item.itemId}`} tone="ghost">
+            View
+          </ButtonLink>
+        ),
         emptyState: (
           <EmptyState
             title="No stock items"

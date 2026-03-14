@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { ListTemplate } from '../../../components/ui/page-templates';
-import { Badge, EmptyState } from '../../../components/ui/primitives';
+import { Badge, ButtonLink, EmptyState } from '../../../components/ui/primitives';
 import { listCriticalOnHand } from '../../../lib/api';
 import type { CriticalOnHandItem } from '../../../types/inventory';
 
@@ -38,20 +38,26 @@ export default function CriticalOnHandPage(): JSX.Element {
       eyebrow="Inventory"
       title="Critical On-Hand"
       description="Shortage-focused stock review for office and planner users."
-      actions={<Link className="button button--secondary" href="/stock/items">Back to stock items</Link>}
+      actions={<ButtonLink href="/stock/items" tone="secondary">Back to stock items</ButtonLink>}
       tableTitle="Shortage review"
       tableDescription="Items surface here when available quantity hits or falls below the reorder point."
       table={{
         columns: [
           {
-            header: 'Item',
+            header: 'Item Code',
+            width: '140px',
             cell: (item) => (
-              <div className="stack stack--tight">
-                <Link href={`/stock/items/${item.itemId}`} className="mono">
-                  {item.itemCode ?? `Item ${item.itemId}`}
-                </Link>
-                <strong>{item.itemName}</strong>
-              </div>
+              <Link href={`/stock/items/${item.itemId}`} className="table-link mono">
+                {item.itemCode ?? `Item ${item.itemId}`}
+              </Link>
+            ),
+          },
+          {
+            header: 'Name',
+            cell: (item) => (
+              <Link href={`/stock/items/${item.itemId}`} className="table-link">
+                {item.itemName}
+              </Link>
             ),
           },
           { header: 'On Hand', width: '90px', align: 'right', cell: (item) => item.onHandQuantity },
@@ -69,6 +75,11 @@ export default function CriticalOnHandPage(): JSX.Element {
         ],
         rows: items,
         getRowKey: (item) => String(item.itemId),
+        renderRowActions: (item) => (
+          <ButtonLink href={`/stock/items/${item.itemId}`} tone="ghost">
+            View
+          </ButtonLink>
+        ),
         emptyState: <EmptyState title="No shortages" description="Items at or below reorder point will appear here." />,
       }}
     />
