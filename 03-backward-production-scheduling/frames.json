@@ -1,0 +1,68 @@
+[
+  {
+    "fileName": "frame_0001.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0001.jpg",
+    "timestampSeconds": 0,
+    "timestampLabel": "00:00:00"
+  },
+  {
+    "fileName": "frame_0002.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0002.jpg",
+    "timestampSeconds": 29.9,
+    "timestampLabel": "00:00:29"
+  },
+  {
+    "fileName": "frame_0003.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0003.jpg",
+    "timestampSeconds": 51.5,
+    "timestampLabel": "00:00:51"
+  },
+  {
+    "fileName": "frame_0004.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0004.jpg",
+    "timestampSeconds": 58.0667,
+    "timestampLabel": "00:00:58"
+  },
+  {
+    "fileName": "frame_0005.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0005.jpg",
+    "timestampSeconds": 59.6333,
+    "timestampLabel": "00:00:59"
+  },
+  {
+    "fileName": "frame_0006.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0006.jpg",
+    "timestampSeconds": 69.8,
+    "timestampLabel": "00:01:09"
+  },
+  {
+    "fileName": "frame_0007.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0007.jpg",
+    "timestampSeconds": 111.867,
+    "timestampLabel": "00:01:51"
+  },
+  {
+    "fileName": "frame_0008.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0008.jpg",
+    "timestampSeconds": 116.133,
+    "timestampLabel": "00:01:56"
+  },
+  {
+    "fileName": "frame_0009.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0009.jpg",
+    "timestampSeconds": 125.167,
+    "timestampLabel": "00:02:05"
+  },
+  {
+    "fileName": "frame_0010.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0010.jpg",
+    "timestampSeconds": 163.233,
+    "timestampLabel": "00:02:43"
+  },
+  {
+    "fileName": "frame_0011.jpg",
+    "filePath": "screens/enterprise-functions/03-backward-production-scheduling/frame_0011.jpg",
+    "timestampSeconds": 184.3,
+    "timestampLabel": "00:03:04"
+  }
+]

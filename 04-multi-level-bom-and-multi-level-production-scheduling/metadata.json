@@ -1,0 +1,155 @@
+{
+  "categoryId": 1,
+  "categoryName": "How-To videos",
+  "itemIndex": 3,
+  "title": "Multi-Level BOM and Multi-Level Production Scheduling",
+  "videoId": "vBxylirK4PA",
+  "pageUrl": "https://www.mrpeasy.com/demo-videos/multi-level-bom-and-multi-level-production-scheduling/",
+  "youtubeUrl": "https://www.youtube.com/watch?v=vBxylirK4PA",
+  "outputKey": "how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling",
+  "status": "ok",
+  "durationSeconds": 335.966667,
+  "videoPath": "videos/how-to-videos/vBxylirK4PA.mp4",
+  "frameDirectory": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling",
+  "frameCount": 23,
+  "frames": [
+    {
+      "fileName": "frame_0001.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0001.jpg",
+      "timestampSeconds": 0,
+      "timestampLabel": "00:00:00"
+    },
+    {
+      "fileName": "frame_0002.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0002.jpg",
+      "timestampSeconds": 4.4,
+      "timestampLabel": "00:00:04"
+    },
+    {
+      "fileName": "frame_0003.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0003.jpg",
+      "timestampSeconds": 9.4,
+      "timestampLabel": "00:00:09"
+    },
+    {
+      "fileName": "frame_0004.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0004.jpg",
+      "timestampSeconds": 139.9,
+      "timestampLabel": "00:02:19"
+    },
+    {
+      "fileName": "frame_0005.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0005.jpg",
+      "timestampSeconds": 140.833,
+      "timestampLabel": "00:02:20"
+    },
+    {
+      "fileName": "frame_0006.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0006.jpg",
+      "timestampSeconds": 142.033,
+      "timestampLabel": "00:02:22"
+    },
+    {
+      "fileName": "frame_0007.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0007.jpg",
+      "timestampSeconds": 155.433,
+      "timestampLabel": "00:02:35"
+    },
+    {
+      "fileName": "frame_0008.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0008.jpg",
+      "timestampSeconds": 156.233,
+      "timestampLabel": "00:02:36"
+    },
+    {
+      "fileName": "frame_0009.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0009.jpg",
+      "timestampSeconds": 157.067,
+      "timestampLabel": "00:02:37"
+    },
+    {
+      "fileName": "frame_0010.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0010.jpg",
+      "timestampSeconds": 213.533,
+      "timestampLabel": "00:03:33"
+    },
+    {
+      "fileName": "frame_0011.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0011.jpg",
+      "timestampSeconds": 246.967,
+      "timestampLabel": "00:04:06"
+    },
+    {
+      "fileName": "frame_0012.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0012.jpg",
+      "timestampSeconds": 249.6,
+      "timestampLabel": "00:04:09"
+    },
+    {
+      "fileName": "frame_0013.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0013.jpg",
+      "timestampSeconds": 251.367,
+      "timestampLabel": "00:04:11"
+    },
+    {
+      "fileName": "frame_0014.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0014.jpg",
+      "timestampSeconds": 262.2,
+      "timestampLabel": "00:04:22"
+    },
+    {
+      "fileName": "frame_0015.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0015.jpg",
+      "timestampSeconds": 269.867,
+      "timestampLabel": "00:04:29"
+    },
+    {
+      "fileName": "frame_0016.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0016.jpg",
+      "timestampSeconds": 274.7,
+      "timestampLabel": "00:04:34"
+    },
+    {
+      "fileName": "frame_0017.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0017.jpg",
+      "timestampSeconds": 281.633,
+      "timestampLabel": "00:04:41"
+    },
+    {
+      "fileName": "frame_0018.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0018.jpg",
+      "timestampSeconds": 285.567,
+      "timestampLabel": "00:04:45"
+    },
+    {
+      "fileName": "frame_0019.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0019.jpg",
+      "timestampSeconds": 310.133,
+      "timestampLabel": "00:05:10"
+    },
+    {
+      "fileName": "frame_0020.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0020.jpg",
+      "timestampSeconds": 311.233,
+      "timestampLabel": "00:05:11"
+    },
+    {
+      "fileName": "frame_0021.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0021.jpg",
+      "timestampSeconds": 312.7,
+      "timestampLabel": "00:05:12"
+    },
+    {
+      "fileName": "frame_0022.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0022.jpg",
+      "timestampSeconds": 313.6,
+      "timestampLabel": "00:05:13"
+    },
+    {
+      "fileName": "frame_0023.jpg",
+      "filePath": "screens/how-to-videos/04-multi-level-bom-and-multi-level-production-scheduling/frame_0023.jpg",
+      "timestampSeconds": 315.333,
+      "timestampLabel": "00:05:15"
+    }
+  ]
+}
