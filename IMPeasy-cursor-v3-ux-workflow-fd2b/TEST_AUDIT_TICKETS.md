@@ -117,7 +117,7 @@
 
 ---
 
-### TICKET-B6: Create Customer Order — Status & Field Alignment
+### TICKET-B6: Create Customer Order — Status & Field Alignment ✅ DONE
 **Priority:** P2 (Medium)  
 **UX Spec:** Status = Quotation, Waiting for confirmation, Confirmed. Fields: Delivery Terms, Shipping Address. Product group/Product dropdowns with create new.  
 **Current:** Status uses draft/sent/approved; different field set (payment term, shipping term, tax mode, etc.)  

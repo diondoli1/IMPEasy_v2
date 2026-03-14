@@ -195,24 +195,22 @@ function toWorkspaceFormFromSalesOrder(salesOrder: SalesOrderDetail): WorkspaceF
   };
 }
 
+/** UX spec: Status = Quotation, Waiting for confirmation, Confirmed (+ auto: In production, Ready for shipment) */
+function getStatusDisplayLabel(status: string, kind: 'quote' | 'sales-order'): string {
+  const map: Record<string, string> = {
+    draft: 'Quotation',
+    sent: 'Waiting for confirmation',
+    approved: 'Confirmed',
+    confirmed: 'Confirmed',
+    released: 'Ready for shipment',
+    rejected: 'Rejected',
+    converted: 'Converted',
+  };
+  return map[status] ?? status;
+}
+
 function getQuoteActionLabel(status: string): string {
-  if (status === 'approved') {
-    return 'Approved quote';
-  }
-
-  if (status === 'sent') {
-    return 'Sent quote';
-  }
-
-  if (status === 'rejected') {
-    return 'Rejected quote';
-  }
-
-  if (status === 'converted') {
-    return 'Converted quote';
-  }
-
-  return 'Draft quote';
+  return getStatusDisplayLabel(status, 'quote');
 }
 
 function includeStringOption(options: string[], value: string): string[] {
@@ -748,7 +746,7 @@ export function CustomerOrderWorkspace({
       actions={
         <>
           <Badge tone={currentKind === 'quote' ? 'info' : 'success'}>
-            {currentKind === 'quote' ? getQuoteActionLabel(currentStatus) : currentStatus}
+            {getStatusDisplayLabel(currentStatus, currentKind ?? 'quote')}
           </Badge>
           <ButtonLink href="/customer-orders">Back</ButtonLink>
           {customer ? <ButtonLink href={`/customers/${customer.id}`}>Open customer</ButtonLink> : null}
@@ -760,12 +758,12 @@ export function CustomerOrderWorkspace({
               <Button tone="danger" onClick={() => void handleDeleteQuote()}>
                 Delete
               </Button>
-              <Button onClick={() => void handleQuoteStatus('sent')}>Send Quote</Button>
+              <Button onClick={() => void handleQuoteStatus('sent')}>Send for confirmation</Button>
             </>
           ) : null}
           {quote && quote.status === 'sent' ? (
             <>
-              <Button onClick={() => void handleQuoteStatus('approved')}>Approve Quote</Button>
+              <Button onClick={() => void handleQuoteStatus('approved')}>Confirm</Button>
               <Button tone="danger" onClick={() => void handleQuoteStatus('rejected')}>
                 Reject Quote
               </Button>
@@ -831,7 +829,7 @@ export function CustomerOrderWorkspace({
                   <input className="control" value={currentKind === 'quote' ? 'Quote' : 'Sales Order'} disabled />
                 </Field>
                 <Field label="Status">
-                  <input className="control" value={currentStatus} disabled />
+                  <input className="control" value={getStatusDisplayLabel(currentStatus, currentKind ?? 'quote')} disabled />
                 </Field>
                 <Field label={currentKind === 'quote' ? 'Quote Date' : 'Order Date'}>
                   <input
@@ -948,13 +946,13 @@ export function CustomerOrderWorkspace({
                     ))}
                   </select>
                 </Field>
-                <Field label="Shipping Term">
+                <Field label="Delivery Terms">
                   <select
                     className="control"
                     value={form.shippingTerm}
                     onChange={(event) => setForm((current) => ({ ...current, shippingTerm: event.target.value }))}
                   >
-                    <option value="">Select shipping term</option>
+                    <option value="">Select delivery terms</option>
                     {availableShippingTerms.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -1009,10 +1007,51 @@ export function CustomerOrderWorkspace({
                     }
                   />
                 </Field>
+                <Field label="Notes">
+                  <textarea
+                    className="control"
+                    rows={3}
+                    value={form.notes}
+                    onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
+                    placeholder="Order notes"
+                  />
+                </Field>
               </FormGrid>
             </Panel>
             <div className="page-stack">
-              {(['billingAddress', 'shippingAddress'] as const).map((addressKey) => (
+              <Panel
+                key="shippingAddress"
+                title="Shipping Address"
+                description="Delivery destination. Values copied from the customer card, editable per document."
+              >
+                <FormGrid>
+                  {(['street', 'city', 'postcode', 'stateRegion', 'country'] as const).map((field) => (
+                    <Field
+                      key={field}
+                      label={
+                        field === 'stateRegion'
+                          ? 'State / Region'
+                          : field.charAt(0).toUpperCase() + field.slice(1)
+                      }
+                    >
+                      <input
+                        className="control"
+                        value={form.shippingAddress[field] ?? ''}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            shippingAddress: {
+                              ...current.shippingAddress,
+                              [field]: event.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </Field>
+                  ))}
+                </FormGrid>
+              </Panel>
+              {(['billingAddress'] as const).map((addressKey) => (
                 <Panel
                   key={addressKey}
                   title={addressKey === 'billingAddress' ? 'Billing address' : 'Shipping address'}
@@ -1072,7 +1111,8 @@ export function CustomerOrderWorkspace({
               <table className="dense-table dense-table--editor">
                 <thead>
                   <tr>
-                    <th>Item</th>
+                    <th>Product group</th>
+                    <th>Product</th>
                     <th>Description</th>
                     <th>Qty</th>
                     <th>Unit</th>
@@ -1094,8 +1134,14 @@ export function CustomerOrderWorkspace({
                         line.taxRate,
                       );
 
+                      const selectedItem = items.find((i) => i.id === line.itemId);
                       return (
                         <tr key={line.key}>
+                        <td>
+                          <span className="muted-copy--small">
+                            {selectedItem?.itemGroup ?? '-'}
+                          </span>
+                        </td>
                         <td>
                           <div className="stack stack--tight">
                             <select
@@ -1132,7 +1178,7 @@ export function CustomerOrderWorkspace({
                               }}
                             >
                               <option value="__add_new__">Add new product</option>
-                              <option value={0}>Select item</option>
+                              <option value={0}>Select product</option>
                               {items.map((item) => (
                                 <option key={item.id} value={item.id}>
                                   {item.code ?? `ITEM-${String(item.id).padStart(4, '0')}`} {item.name}
