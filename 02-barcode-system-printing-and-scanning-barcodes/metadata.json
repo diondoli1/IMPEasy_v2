@@ -1,0 +1,179 @@
+{
+  "categoryId": 3,
+  "categoryName": "Enterprise functions",
+  "itemIndex": 1,
+  "title": "Barcode System: Printing and Scanning Barcodes",
+  "videoId": "CcF-b9-4i-E",
+  "pageUrl": "https://www.mrpeasy.com/demo-videos/barcode-system-printing-and-scanning-barcodes/",
+  "youtubeUrl": "https://www.youtube.com/watch?v=CcF-b9-4i-E",
+  "outputKey": "enterprise-functions/02-barcode-system-printing-and-scanning-barcodes",
+  "status": "ok",
+  "durationSeconds": 198.333333,
+  "videoPath": "videos/enterprise-functions/CcF-b9-4i-E.mp4",
+  "frameDirectory": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes",
+  "frameCount": 27,
+  "frames": [
+    {
+      "fileName": "frame_0001.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0001.jpg",
+      "timestampSeconds": 0,
+      "timestampLabel": "00:00:00"
+    },
+    {
+      "fileName": "frame_0002.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0002.jpg",
+      "timestampSeconds": 11.8,
+      "timestampLabel": "00:00:11"
+    },
+    {
+      "fileName": "frame_0003.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0003.jpg",
+      "timestampSeconds": 15.4667,
+      "timestampLabel": "00:00:15"
+    },
+    {
+      "fileName": "frame_0004.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0004.jpg",
+      "timestampSeconds": 34.7,
+      "timestampLabel": "00:00:34"
+    },
+    {
+      "fileName": "frame_0005.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0005.jpg",
+      "timestampSeconds": 37.3667,
+      "timestampLabel": "00:00:37"
+    },
+    {
+      "fileName": "frame_0006.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0006.jpg",
+      "timestampSeconds": 40.8667,
+      "timestampLabel": "00:00:40"
+    },
+    {
+      "fileName": "frame_0007.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0007.jpg",
+      "timestampSeconds": 45.1667,
+      "timestampLabel": "00:00:45"
+    },
+    {
+      "fileName": "frame_0008.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0008.jpg",
+      "timestampSeconds": 47.4333,
+      "timestampLabel": "00:00:47"
+    },
+    {
+      "fileName": "frame_0009.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0009.jpg",
+      "timestampSeconds": 49.9333,
+      "timestampLabel": "00:00:49"
+    },
+    {
+      "fileName": "frame_0010.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0010.jpg",
+      "timestampSeconds": 51.1,
+      "timestampLabel": "00:00:51"
+    },
+    {
+      "fileName": "frame_0011.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0011.jpg",
+      "timestampSeconds": 61.2333,
+      "timestampLabel": "00:01:01"
+    },
+    {
+      "fileName": "frame_0012.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0012.jpg",
+      "timestampSeconds": 68.2667,
+      "timestampLabel": "00:01:08"
+    },
+    {
+      "fileName": "frame_0013.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0013.jpg",
+      "timestampSeconds": 71.0333,
+      "timestampLabel": "00:01:11"
+    },
+    {
+      "fileName": "frame_0014.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0014.jpg",
+      "timestampSeconds": 78.4333,
+      "timestampLabel": "00:01:18"
+    },
+    {
+      "fileName": "frame_0015.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0015.jpg",
+      "timestampSeconds": 86.5667,
+      "timestampLabel": "00:01:26"
+    },
+    {
+      "fileName": "frame_0016.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0016.jpg",
+      "timestampSeconds": 94.5667,
+      "timestampLabel": "00:01:34"
+    },
+    {
+      "fileName": "frame_0017.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0017.jpg",
+      "timestampSeconds": 101.233,
+      "timestampLabel": "00:01:41"
+    },
+    {
+      "fileName": "frame_0018.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0018.jpg",
+      "timestampSeconds": 110.2,
+      "timestampLabel": "00:01:50"
+    },
+    {
+      "fileName": "frame_0019.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0019.jpg",
+      "timestampSeconds": 122.367,
+      "timestampLabel": "00:02:02"
+    },
+    {
+      "fileName": "frame_0020.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0020.jpg",
+      "timestampSeconds": 127.467,
+      "timestampLabel": "00:02:07"
+    },
+    {
+      "fileName": "frame_0021.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0021.jpg",
+      "timestampSeconds": 141.033,
+      "timestampLabel": "00:02:21"
+    },
+    {
+      "fileName": "frame_0022.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0022.jpg",
+      "timestampSeconds": 147.033,
+      "timestampLabel": "00:02:27"
+    },
+    {
+      "fileName": "frame_0023.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0023.jpg",
+      "timestampSeconds": 151.233,
+      "timestampLabel": "00:02:31"
+    },
+    {
+      "fileName": "frame_0024.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0024.jpg",
+      "timestampSeconds": 155.4,
+      "timestampLabel": "00:02:35"
+    },
+    {
+      "fileName": "frame_0025.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0025.jpg",
+      "timestampSeconds": 162.9,
+      "timestampLabel": "00:02:42"
+    },
+    {
+      "fileName": "frame_0026.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0026.jpg",
+      "timestampSeconds": 169.2,
+      "timestampLabel": "00:02:49"
+    },
+    {
+      "fileName": "frame_0027.jpg",
+      "filePath": "screens/enterprise-functions/02-barcode-system-printing-and-scanning-barcodes/frame_0027.jpg",
+      "timestampSeconds": 179.133,
+      "timestampLabel": "00:02:59"
+    }
+  ]
+}

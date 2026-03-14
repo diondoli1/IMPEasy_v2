@@ -40,9 +40,7 @@
 }
 
 html {
-  background:
-    radial-gradient(circle at top left, rgba(120, 168, 227, 0.22), transparent 30%),
-    linear-gradient(180deg, #f7f9fc 0%, var(--color-shell) 58%, #edf2f7 100%);
+  background: #f0f2f5;
   color: var(--color-ink);
   font-family: var(--font-ui);
   min-height: 100%;
@@ -78,18 +76,18 @@ button {
   color: var(--color-ink);
 }
 
-.app-shell__banner {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
-    linear-gradient(135deg, var(--color-nav-strong), var(--color-nav));
-  border-bottom: 1px solid rgba(215, 223, 234, 0.18);
-  box-shadow: 0 14px 28px -26px rgba(4, 9, 18, 0.9);
-  color: #f5f8fd;
+/* MRPeasy-style: Top Header Bar - light grey, logo (blue), version, date/time | company, user, icons */
+.app-shell__top-bar {
+  background: #e8ecf1;
+  border-bottom: 1px solid #d1d9e2;
+  color: var(--color-ink);
+  padding: 8px 0;
   position: sticky;
   top: 0;
   z-index: 20;
 }
 
+.app-shell__top-bar-inner,
 .app-shell__banner-inner,
 .app-shell__main {
   margin: 0 auto;
@@ -98,57 +96,85 @@ button {
   padding-right: 20px;
 }
 
-.app-shell__brand-row {
+.app-shell__top-bar-inner {
   align-items: center;
   display: flex;
-  gap: 18px;
+  gap: 16px;
   justify-content: space-between;
-  padding: 14px 0 12px;
 }
 
-.app-shell__brand {
-  align-items: baseline;
-  display: flex;
-  gap: 10px;
-}
-
-.app-shell__brand-mark {
-  color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.app-shell__brand-copy {
-  color: rgba(245, 248, 253, 0.74);
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.app-shell__identity {
+.app-shell__top-bar-left {
   align-items: center;
   display: flex;
   gap: 12px;
 }
 
-.app-shell__identity-copy {
-  display: grid;
+.app-shell__logo {
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.app-shell__logo:hover {
+  color: var(--color-accent-strong);
+}
+
+.app-shell__version {
+  color: var(--color-ink-muted);
+  font-size: 0.78rem;
+}
+
+.app-shell__datetime {
+  color: var(--color-ink-soft);
+  font-size: 0.8rem;
+}
+
+.app-shell__top-bar-right {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.app-shell__company-switcher {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #c5cdd8;
+  border-radius: 6px;
+  color: var(--color-ink);
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+.app-shell__company-plus {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.app-shell__company-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell__chevron {
+  color: var(--color-ink-muted);
+}
+
+.app-shell__user-info {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
-  min-width: 180px;
-  text-align: right;
+  min-width: 0;
 }
 
-.app-shell__identity-label {
-  color: rgba(245, 248, 253, 0.68);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.app-shell__identity-value {
-  color: #ffffff;
+.app-shell__user-name {
+  color: var(--color-ink-strong);
   font-size: 0.86rem;
   font-weight: 600;
 }
@@ -157,52 +183,118 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  justify-content: flex-end;
 }
 
-.app-shell__top-nav {
+.app-shell__icon-btn {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  padding: 6px;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.app-shell__icon-btn:hover {
+  background: rgba(47, 109, 179, 0.08);
+  color: var(--color-accent);
+}
+
+.app-shell__icon-btn--accent {
+  color: var(--color-accent);
+}
+
+.app-shell__icon-btn--accent:hover {
+  color: var(--color-accent-strong);
+}
+
+.app-shell__icon-btn--profile {
+  margin-left: 4px;
+}
+
+.app-shell__logout-btn {
+  background: transparent;
+  border: 1px solid #c5cdd8;
+  border-radius: 6px;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.app-shell__logout-btn:hover {
+  background: rgba(162, 67, 67, 0.08);
+  border-color: rgba(162, 67, 67, 0.3);
+  color: var(--color-danger);
+}
+
+.app-shell__top-bar-actions {
+  align-items: center;
+  border-left: 1px solid #d1d9e2;
+  display: flex;
+  gap: 4px;
+  margin-left: 4px;
+  padding-left: 12px;
+}
+
+/* Secondary Navigation - Module tabs (Customer Orders, Production, etc.) */
+.app-shell__module-nav {
+  background: #ffffff;
+  border-bottom: 1px solid #e0e6ec;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.app-shell__module-nav-inner {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 0 12px;
+  gap: 4px;
+  margin: 0 auto;
+  max-width: var(--shell-max-width);
+  padding: 0 20px;
 }
 
-.app-shell__top-link,
+.app-shell__module-link,
 .app-shell__sub-link {
   border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  border-radius: 6px;
   display: inline-flex;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 10px 16px;
   transition:
     background-color 140ms ease,
     border-color 140ms ease,
-    color 140ms ease,
-    transform 140ms ease;
+    color 140ms ease;
 }
 
-.app-shell__top-link {
-  color: rgba(245, 248, 253, 0.78);
-  font-size: 0.84rem;
+.app-shell__module-link {
+  color: var(--color-ink-soft);
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
-.app-shell__top-link:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+.app-shell__module-link:hover {
+  background: rgba(47, 109, 179, 0.06);
+  color: var(--color-accent);
 }
 
-.app-shell__top-link--active {
-  background: rgba(120, 168, 227, 0.16);
-  border-color: rgba(120, 168, 227, 0.42);
-  color: #ffffff;
+.app-shell__module-link--active {
+  background: rgba(47, 109, 179, 0.08);
+  color: var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -1px;
 }
 
+/* Tertiary Navigation - Context tabs (Board, Customers, Dashboard, etc.) */
 .app-shell__subnav {
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(182, 194, 211, 0.6);
-  box-shadow: var(--shadow-shell);
+  background: #f5f7fa;
+  border-bottom: 1px solid #e0e6ec;
 }
 
 .app-shell__subnav-inner {
@@ -210,7 +302,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  min-height: 52px;
+  min-height: 48px;
   padding: 8px 0;
 }
 
@@ -232,7 +324,7 @@ button {
 
 .app-shell__sub-link {
   background: transparent;
-  border-color: rgba(182, 194, 211, 0.84);
+  border-color: #c5cdd8;
   color: var(--color-ink-soft);
   font-size: 0.83rem;
   font-weight: 600;
@@ -244,9 +336,9 @@ button {
 }
 
 .app-shell__sub-link--active {
-  background: var(--color-panel-strong);
+  background: #ffffff;
   border-color: rgba(47, 109, 179, 0.45);
-  box-shadow: 0 8px 22px -18px rgba(31, 79, 132, 0.7);
+  box-shadow: 0 1px 3px rgba(47, 109, 179, 0.12);
   color: var(--color-accent-strong);
 }
 
@@ -447,24 +539,39 @@ button {
 }
 
 .button--primary {
-  background: linear-gradient(180deg, var(--color-accent), var(--color-accent-strong));
-  box-shadow: 0 12px 28px -20px rgba(31, 79, 132, 0.92);
+  background: var(--color-accent);
+  border-color: var(--color-accent-strong);
+  border-width: 1px;
   color: #ffffff;
 }
 
 .button--primary:hover:not(:disabled) {
+  background: var(--color-accent-strong);
   transform: translateY(-1px);
 }
 
 .button--secondary {
   background: #ffffff;
-  border-color: var(--color-line-strong);
-  color: var(--color-ink);
+  border-color: var(--color-accent);
+  color: var(--color-accent-strong);
 }
 
 .button--secondary:hover:not(:disabled) {
-  border-color: rgba(47, 109, 179, 0.42);
-  color: var(--color-accent-strong);
+  background: rgba(47, 109, 179, 0.06);
+  border-color: var(--color-accent-strong);
+}
+
+.button--utility {
+  background: #f0f2f5;
+  border-color: var(--color-line-ctrl);
+  color: var(--color-ink-soft);
+  font-weight: 600;
+}
+
+.button--utility:hover:not(:disabled) {
+  background: #e8ecf0;
+  border-color: var(--color-line-strong);
+  color: var(--color-ink);
 }
 
 .button--ghost {
@@ -595,8 +702,9 @@ button {
 }
 
 .dense-table-wrap {
-  border: 1px solid var(--color-line);
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--color-line-ctrl);
+  border-radius: 6px;
   overflow: auto;
 }
 
@@ -614,34 +722,43 @@ button {
 }
 
 .dense-table thead {
-  background: linear-gradient(180deg, #eef3f9, #e7edf6);
+  background: var(--color-table-header);
+  border-bottom: 1px solid var(--color-table-header-border);
 }
 
 .dense-table th,
 .dense-table td {
-  border-bottom: 1px solid var(--color-line-soft);
+  border: 1px solid var(--color-line-ctrl);
   font-size: 0.83rem;
   line-height: 1.45;
   padding: 10px 12px;
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .dense-table th {
   color: var(--color-ink-muted);
-  font-size: 0.73rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+.dense-table tbody tr:nth-child(even) {
+  background: var(--color-table-row-alt);
+}
+
+.dense-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
 .dense-table tbody tr:hover {
-  background: rgba(47, 109, 179, 0.03);
+  background: rgba(47, 109, 179, 0.04);
 }
 
 .dense-table tbody tr:last-child td {
-  border-bottom: none;
+  border-bottom: 1px solid var(--color-line-ctrl);
 }
 
 .dense-table__cell--right {
@@ -650,6 +767,11 @@ button {
 
 .dense-table__cell--center {
   text-align: center;
+}
+
+.dense-table__cell--actions {
+  text-align: right;
+  white-space: nowrap;
 }
 
 .muted-copy {
@@ -675,6 +797,22 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.detail-page__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.detail-page__form-section {
+  margin-bottom: 24px;
+}
+
+.detail-page__table-section {
+  margin-top: 24px;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -688,6 +826,11 @@ button {
   text-transform: uppercase;
 }
 
+.field__label--required::after {
+  color: var(--color-danger);
+  content: ' *';
+}
+
 .field__hint {
   color: var(--color-ink-muted);
   font-size: 0.76rem;
@@ -697,8 +840,8 @@ button {
 
 .control {
   background: #ffffff;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-control);
+  border: 1px solid var(--color-line-ctrl);
+  border-radius: 6px;
   color: var(--color-ink);
   min-height: 40px;
   padding: 9px 12px;
@@ -713,6 +856,14 @@ button {
   border-color: rgba(47, 109, 179, 0.72);
   box-shadow: 0 0 0 3px rgba(47, 109, 179, 0.12);
   outline: none;
+}
+
+select.control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2362708b' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  padding-right: 36px;
 }
 
 .control--dense {
@@ -987,20 +1138,18 @@ textarea.control {
 }
 
 @media (max-width: 820px) {
-  .app-shell__brand-row,
-  .page-shell__header {
-    align-items: flex-start;
-    flex-direction: column;
+  .app-shell__top-bar-inner {
+    flex-wrap: wrap;
   }
 
-  .app-shell__identity {
-    align-items: flex-start;
+  .app-shell__top-bar-right {
+    flex-wrap: wrap;
     width: 100%;
   }
 
-  .app-shell__identity-copy {
-    min-width: 0;
-    text-align: left;
+  .app-shell__user-info {
+    order: 1;
+    width: 100%;
   }
 
   .app-shell__role-row {
@@ -1012,25 +1161,32 @@ textarea.control {
     width: 100%;
   }
 
+  .page-shell__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .calendar-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 640px) {
+  .app-shell__top-bar-inner,
   .app-shell__banner-inner,
+  .app-shell__module-nav-inner,
   .app-shell__main {
     padding-left: 14px;
     padding-right: 14px;
   }
 
-  .app-shell__top-link,
+  .app-shell__module-link,
   .app-shell__sub-link,
   .button {
     width: 100%;
   }
 
-  .app-shell__top-nav,
+  .app-shell__module-nav-inner,
   .app-shell__subnav-links,
   .toolbar,
   .toolbar__group,

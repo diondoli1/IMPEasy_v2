@@ -80,13 +80,13 @@ describe('AppShell', () => {
       expect(screen.getByText('Protected content')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('planner@impeasy.local')).toBeInTheDocument();
+    expect(screen.getByText('Planner User')).toBeInTheDocument();
     expect(screen.getByText('planner')).toBeInTheDocument();
     expect(screen.getByText('Production')).toBeInTheDocument();
     expect(screen.getByText('Manufacturing Orders')).toBeInTheDocument();
     expect(screen.queryByText('Settings')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
+    fireEvent.click(screen.getByText('Log out'));
 
     expect(clearAuthTokenMock).toHaveBeenCalledTimes(1);
     expect(routerReplaceMock).toHaveBeenCalledWith('/login');

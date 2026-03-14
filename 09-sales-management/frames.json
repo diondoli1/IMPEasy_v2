@@ -1,0 +1,20 @@
+[
+  {
+    "fileName": "frame_0001.jpg",
+    "filePath": "screens/enterprise-functions/09-sales-management/frame_0001.jpg",
+    "timestampSeconds": 0,
+    "timestampLabel": "00:00:00"
+  },
+  {
+    "fileName": "frame_0002.jpg",
+    "filePath": "screens/enterprise-functions/09-sales-management/frame_0002.jpg",
+    "timestampSeconds": 12.4,
+    "timestampLabel": "00:00:12"
+  },
+  {
+    "fileName": "frame_0003.jpg",
+    "filePath": "screens/enterprise-functions/09-sales-management/frame_0003.jpg",
+    "timestampSeconds": 54.9,
+    "timestampLabel": "00:00:54"
+  }
+]

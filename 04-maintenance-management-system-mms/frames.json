@@ -1,0 +1,38 @@
+[
+  {
+    "fileName": "frame_0001.jpg",
+    "filePath": "screens/enterprise-functions/04-maintenance-management-system-mms/frame_0001.jpg",
+    "timestampSeconds": 0,
+    "timestampLabel": "00:00:00"
+  },
+  {
+    "fileName": "frame_0002.jpg",
+    "filePath": "screens/enterprise-functions/04-maintenance-management-system-mms/frame_0002.jpg",
+    "timestampSeconds": 23.8,
+    "timestampLabel": "00:00:23"
+  },
+  {
+    "fileName": "frame_0003.jpg",
+    "filePath": "screens/enterprise-functions/04-maintenance-management-system-mms/frame_0003.jpg",
+    "timestampSeconds": 49.5667,
+    "timestampLabel": "00:00:49"
+  },
+  {
+    "fileName": "frame_0004.jpg",
+    "filePath": "screens/enterprise-functions/04-maintenance-management-system-mms/frame_0004.jpg",
+    "timestampSeconds": 75.3333,
+    "timestampLabel": "00:01:15"
+  },
+  {
+    "fileName": "frame_0005.jpg",
+    "filePath": "screens/enterprise-functions/04-maintenance-management-system-mms/frame_0005.jpg",
+    "timestampSeconds": 77.3333,
+    "timestampLabel": "00:01:17"
+  },
+  {
+    "fileName": "frame_0006.jpg",
+    "filePath": "screens/enterprise-functions/04-maintenance-management-system-mms/frame_0006.jpg",
+    "timestampSeconds": 97.7667,
+    "timestampLabel": "00:01:37"
+  }
+]

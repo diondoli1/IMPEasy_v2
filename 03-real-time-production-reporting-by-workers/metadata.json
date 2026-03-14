@@ -1,0 +1,251 @@
+{
+  "categoryId": 1,
+  "categoryName": "How-To videos",
+  "itemIndex": 2,
+  "title": "Real-Time Production Reporting by Workers",
+  "videoId": "OXA5VbaxBxU",
+  "pageUrl": "https://www.mrpeasy.com/demo-videos/manufacturing-execution-system-software-for-smb/",
+  "youtubeUrl": "https://www.youtube.com/watch?v=OXA5VbaxBxU",
+  "outputKey": "how-to-videos/03-real-time-production-reporting-by-workers",
+  "status": "ok",
+  "durationSeconds": 571,
+  "videoPath": "videos/how-to-videos/OXA5VbaxBxU.mp4",
+  "frameDirectory": "screens/how-to-videos/03-real-time-production-reporting-by-workers",
+  "frameCount": 39,
+  "frames": [
+    {
+      "fileName": "frame_0001.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0001.jpg",
+      "timestampSeconds": 0,
+      "timestampLabel": "00:00:00"
+    },
+    {
+      "fileName": "frame_0002.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0002.jpg",
+      "timestampSeconds": 4.4,
+      "timestampLabel": "00:00:04"
+    },
+    {
+      "fileName": "frame_0003.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0003.jpg",
+      "timestampSeconds": 9.4,
+      "timestampLabel": "00:00:09"
+    },
+    {
+      "fileName": "frame_0004.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0004.jpg",
+      "timestampSeconds": 42.7667,
+      "timestampLabel": "00:00:42"
+    },
+    {
+      "fileName": "frame_0005.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0005.jpg",
+      "timestampSeconds": 45.7667,
+      "timestampLabel": "00:00:45"
+    },
+    {
+      "fileName": "frame_0006.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0006.jpg",
+      "timestampSeconds": 74.2667,
+      "timestampLabel": "00:01:14"
+    },
+    {
+      "fileName": "frame_0007.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0007.jpg",
+      "timestampSeconds": 129.4,
+      "timestampLabel": "00:02:09"
+    },
+    {
+      "fileName": "frame_0008.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0008.jpg",
+      "timestampSeconds": 133.333,
+      "timestampLabel": "00:02:13"
+    },
+    {
+      "fileName": "frame_0009.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0009.jpg",
+      "timestampSeconds": 138.4,
+      "timestampLabel": "00:02:18"
+    },
+    {
+      "fileName": "frame_0010.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0010.jpg",
+      "timestampSeconds": 142.333,
+      "timestampLabel": "00:02:22"
+    },
+    {
+      "fileName": "frame_0011.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0011.jpg",
+      "timestampSeconds": 146.167,
+      "timestampLabel": "00:02:26"
+    },
+    {
+      "fileName": "frame_0012.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0012.jpg",
+      "timestampSeconds": 175.433,
+      "timestampLabel": "00:02:55"
+    },
+    {
+      "fileName": "frame_0013.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0013.jpg",
+      "timestampSeconds": 179.1,
+      "timestampLabel": "00:02:59"
+    },
+    {
+      "fileName": "frame_0014.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0014.jpg",
+      "timestampSeconds": 182.067,
+      "timestampLabel": "00:03:02"
+    },
+    {
+      "fileName": "frame_0015.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0015.jpg",
+      "timestampSeconds": 184.8,
+      "timestampLabel": "00:03:04"
+    },
+    {
+      "fileName": "frame_0016.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0016.jpg",
+      "timestampSeconds": 195.3,
+      "timestampLabel": "00:03:15"
+    },
+    {
+      "fileName": "frame_0017.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0017.jpg",
+      "timestampSeconds": 196.333,
+      "timestampLabel": "00:03:16"
+    },
+    {
+      "fileName": "frame_0018.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0018.jpg",
+      "timestampSeconds": 236.867,
+      "timestampLabel": "00:03:56"
+    },
+    {
+      "fileName": "frame_0019.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0019.jpg",
+      "timestampSeconds": 237.633,
+      "timestampLabel": "00:03:57"
+    },
+    {
+      "fileName": "frame_0020.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0020.jpg",
+      "timestampSeconds": 270.667,
+      "timestampLabel": "00:04:30"
+    },
+    {
+      "fileName": "frame_0021.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0021.jpg",
+      "timestampSeconds": 271.467,
+      "timestampLabel": "00:04:31"
+    },
+    {
+      "fileName": "frame_0022.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0022.jpg",
+      "timestampSeconds": 326.833,
+      "timestampLabel": "00:05:26"
+    },
+    {
+      "fileName": "frame_0023.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0023.jpg",
+      "timestampSeconds": 338.5,
+      "timestampLabel": "00:05:38"
+    },
+    {
+      "fileName": "frame_0024.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0024.jpg",
+      "timestampSeconds": 340.8,
+      "timestampLabel": "00:05:40"
+    },
+    {
+      "fileName": "frame_0025.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0025.jpg",
+      "timestampSeconds": 377.233,
+      "timestampLabel": "00:06:17"
+    },
+    {
+      "fileName": "frame_0026.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0026.jpg",
+      "timestampSeconds": 389.233,
+      "timestampLabel": "00:06:29"
+    },
+    {
+      "fileName": "frame_0027.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0027.jpg",
+      "timestampSeconds": 394.467,
+      "timestampLabel": "00:06:34"
+    },
+    {
+      "fileName": "frame_0028.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0028.jpg",
+      "timestampSeconds": 405.267,
+      "timestampLabel": "00:06:45"
+    },
+    {
+      "fileName": "frame_0029.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0029.jpg",
+      "timestampSeconds": 419.633,
+      "timestampLabel": "00:06:59"
+    },
+    {
+      "fileName": "frame_0030.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0030.jpg",
+      "timestampSeconds": 420.833,
+      "timestampLabel": "00:07:00"
+    },
+    {
+      "fileName": "frame_0031.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0031.jpg",
+      "timestampSeconds": 421.6,
+      "timestampLabel": "00:07:01"
+    },
+    {
+      "fileName": "frame_0032.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0032.jpg",
+      "timestampSeconds": 429.3,
+      "timestampLabel": "00:07:09"
+    },
+    {
+      "fileName": "frame_0033.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0033.jpg",
+      "timestampSeconds": 439.1,
+      "timestampLabel": "00:07:19"
+    },
+    {
+      "fileName": "frame_0034.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0034.jpg",
+      "timestampSeconds": 522.1,
+      "timestampLabel": "00:08:42"
+    },
+    {
+      "fileName": "frame_0035.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0035.jpg",
+      "timestampSeconds": 530.133,
+      "timestampLabel": "00:08:50"
+    },
+    {
+      "fileName": "frame_0036.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0036.jpg",
+      "timestampSeconds": 531.7,
+      "timestampLabel": "00:08:51"
+    },
+    {
+      "fileName": "frame_0037.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0037.jpg",
+      "timestampSeconds": 532.7,
+      "timestampLabel": "00:08:52"
+    },
+    {
+      "fileName": "frame_0038.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0038.jpg",
+      "timestampSeconds": 547.1,
+      "timestampLabel": "00:09:07"
+    },
+    {
+      "fileName": "frame_0039.jpg",
+      "filePath": "screens/how-to-videos/03-real-time-production-reporting-by-workers/frame_0039.jpg",
+      "timestampSeconds": 550.1,
+      "timestampLabel": "00:09:10"
+    }
+  ]
+}
