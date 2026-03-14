@@ -6,7 +6,7 @@
 | TICKET-002 | Login Screen Redesign | ✅ Done |
 | TICKET-003 | Dashboard Layout & Navigation | ✅ Done |
 | TICKET-004 | Module Layout with Thumbnail Boxes | ✅ Done |
-| TICKET-005 | CRM Shell & Tabs | ⬜ Pending |
+| TICKET-005 | CRM Shell & Tabs | ✅ Done |
 | TICKET-006 | Customer Orders — Kanban Board | ✅ Done |
 | TICKET-007 | Customer Order Create Form (Inline) | ⬜ Pending |
 | TICKET-008 | Customer Order Details Page | ⬜ Pending |
@@ -45,6 +45,6 @@
 | TICKET-041 | Inline Form Behavior — Universal | ⬜ Pending |
 | TICKET-042 | Save → Details Conversion — Universal | ⬜ Pending |
 | TICKET-043 | Operator Role Restriction | ✅ Done |
-| TICKET-044 | End-to-End & Visual QA | ⬜ Pending |
+| TICKET-044 | End-to-End & Visual QA | ✅ Done |
 
 **Legend:** ⬜ Pending | 🔄 In Progress | ✅ Done

@@ -136,7 +136,7 @@ export function CustomerOrdersKanban(): JSX.Element {
         <Typography variant="h6">Customer Orders</Typography>
         <Button
           component={Link}
-          href="/quotes/new"
+          href="/customer-orders/new"
           variant="contained"
           startIcon={<AddIcon />}
         >
