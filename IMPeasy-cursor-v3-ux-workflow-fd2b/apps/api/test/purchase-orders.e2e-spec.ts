@@ -19,8 +19,10 @@ type ItemRecord = {
   code: string | null;
   name: string;
   isActive: boolean;
+  itemGroup: string | null;
   unitOfMeasure: string;
   reorderPoint: number;
+  defaultPrice: number;
 };
 
 type PurchaseOrderRecord = {
@@ -107,8 +109,10 @@ class PrismaServiceMock {
       code: 'RM-AL-10',
       name: 'Aluminum Plate 10mm',
       isActive: true,
+      itemGroup: null,
       unitOfMeasure: 'pcs',
       reorderPoint: 2,
+      defaultPrice: 0,
     },
   ];
 
@@ -197,11 +201,13 @@ class PrismaServiceMock {
       }
 
       return items.map((entry) => ({
-        id: select.id ? entry.id : undefined,
-        code: select.code ? entry.code : undefined,
-        name: select.name ? entry.name : undefined,
-        unitOfMeasure: select.unitOfMeasure ? entry.unitOfMeasure : undefined,
-        reorderPoint: select.reorderPoint ? entry.reorderPoint : undefined,
+        id: select?.id ? entry.id : undefined,
+        code: select?.code ? entry.code : undefined,
+        name: select?.name ? entry.name : undefined,
+        itemGroup: select?.itemGroup ? entry.itemGroup : undefined,
+        unitOfMeasure: select?.unitOfMeasure ? entry.unitOfMeasure : undefined,
+        reorderPoint: select?.reorderPoint ? entry.reorderPoint : undefined,
+        defaultPrice: select?.defaultPrice ? entry.defaultPrice : undefined,
       }));
     },
     findUnique: async ({ where, select }: { where: { id: number }; select?: any }): Promise<any> => {
@@ -529,6 +535,10 @@ class PrismaServiceMock {
       this.inventoryTransactions.push(created);
       return created;
     },
+  };
+
+  productGroup = {
+    findMany: async (): Promise<any[]> => [],
   };
 
   materialBooking = {
