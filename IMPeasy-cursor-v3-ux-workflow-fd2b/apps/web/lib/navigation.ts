@@ -86,27 +86,32 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     key: 'production',
     href: '/manufacturing-orders',
-    label: 'Production',
+    label: 'Production Planning',
     roles: ['admin', 'planner', 'operator'],
     tabs: [
-      {
-        href: '/manufactured-items',
-        label: 'Manufactured Items',
-        roles: ['admin', 'planner'],
-      },
       {
         href: '/manufacturing-orders',
         label: 'Manufacturing Orders',
         roles: ['admin', 'planner'],
       },
       {
-        href: '/production/calendar',
-        label: 'Calendar',
+        href: '/workstations',
+        label: 'Workstations',
         roles: ['admin', 'planner'],
       },
       {
-        href: '/dashboards/production',
-        label: 'Dashboard',
+        href: '/workstation-groups',
+        label: 'Workstation Group',
+        roles: ['admin', 'planner'],
+      },
+      {
+        href: '/boms',
+        label: 'BOM',
+        roles: ['admin', 'planner'],
+      },
+      {
+        href: '/routings',
+        label: 'Routings',
         roles: ['admin', 'planner'],
       },
       {
@@ -128,6 +133,8 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         '/work-orders',
         '/operations',
         '/production',
+        '/workstations',
+        '/workstation-groups',
       ]),
   },
   {
@@ -252,7 +259,7 @@ const EXPLICIT_PATH_ACCESS_RULES: Array<{
   roles: RoleName[];
 }> = [
   {
-    prefixes: ['/items', '/boms', '/routings', '/work-orders', '/operations', '/production'],
+    prefixes: ['/items', '/boms', '/routings', '/work-orders', '/operations', '/production', '/workstations', '/workstation-groups'],
     roles: ['admin', 'planner'],
   },
   {

@@ -35,7 +35,8 @@ function isActive(pathname: string, href: string): boolean {
       pathname.startsWith('/manufactured-items') || pathname.startsWith('/production') ||
       pathname.startsWith('/dashboards/production') || pathname.startsWith('/items') ||
       pathname.startsWith('/boms') || pathname.startsWith('/routings') ||
-      pathname.startsWith('/work-orders') || pathname.startsWith('/operations');
+      pathname.startsWith('/work-orders') || pathname.startsWith('/operations') ||
+      pathname.startsWith('/workstations') || pathname.startsWith('/workstation-groups');
   }
   if (href === '/stock/items') {
     return pathname.startsWith('/stock') || pathname.startsWith('/dashboards/inventory') ||

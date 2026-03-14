@@ -14,13 +14,13 @@
 | TICKET-010 | Invoices Tab — List & Details | ✅ Done |
 | TICKET-011 | Invoices — Create Invoice | ⬜ Pending |
 | TICKET-012 | Sales Management Tab | ✅ Done |
-| TICKET-013 | Production Planning Shell & Tabs | ⬜ Pending |
+| TICKET-013 | Production Planning Shell & Tabs | ✅ Done |
 | TICKET-014 | Manufacturing Orders — Create Form | ⬜ Pending |
-| TICKET-015 | Manufacturing Orders — Table | ⬜ Pending |
-| TICKET-016 | Workstations Tab | ⬜ Pending |
-| TICKET-017 | Workstation Group Tab | ⬜ Pending |
-| TICKET-018 | BOM Tab — Create & Table | ⬜ Pending |
-| TICKET-019 | Routings Tab — Create & Table | ⬜ Pending |
+| TICKET-015 | Manufacturing Orders — Table | ✅ Done |
+| TICKET-016 | Workstations Tab | ✅ Done |
+| TICKET-017 | Workstation Group Tab | ✅ Done |
+| TICKET-018 | BOM Tab — Create & Table | ✅ Done |
+| TICKET-019 | Routings Tab — Create & Table | ✅ Done |
 | TICKET-020 | Stock Shell & Tabs | ⬜ Pending |
 | TICKET-021 | Stock Items Tab | ⬜ Pending |
 | TICKET-022 | Stock Settings Tab | ⬜ Pending |

@@ -17,32 +17,33 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { listManufacturingOrders } from '../../lib/api';
-import { formatProductionDate } from '../../lib/production';
-import type { ManufacturingOrder } from '../../types/manufacturing-order';
+import { listManufacturedItems } from '../../lib/api';
+import type { Item } from '../../types/item';
 
-export default function ManufacturingOrdersPage(): JSX.Element {
+export default function BomsPage(): JSX.Element {
   const router = useRouter();
-  const [orders, setOrders] = useState<ManufacturingOrder[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
       try {
-        setOrders(await listManufacturingOrders());
+        setItems(await listManufacturedItems());
       } catch {
-        setError('Unable to load manufacturing orders.');
+        setError('Unable to load BOMs.');
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
+  const itemsWithBom = items.filter((i) => i.defaultBomId != null);
+
   if (loading) {
     return (
       <Box sx={{ p: 3 }}>
-        <Typography>Loading manufacturing orders...</Typography>
+        <Typography>Loading BOMs...</Typography>
       </Box>
     );
   }
@@ -58,10 +59,10 @@ export default function ManufacturingOrdersPage(): JSX.Element {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Manufacturing Orders</Typography>
+        <Typography variant="h6">BOM</Typography>
         <Button
           component={Link}
-          href="/manufactured-items"
+          href="/boms/new"
           variant="contained"
           startIcon={<AddIcon />}
         >
@@ -74,44 +75,30 @@ export default function ManufacturingOrdersPage(): JSX.Element {
           <TableHead>
             <TableRow>
               <TableCell>Number</TableCell>
-              <TableCell>Group Name</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Part No</TableCell>
-              <TableCell>Part desc</TableCell>
-              <TableCell align="right">Quantity</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Part Status</TableCell>
-              <TableCell>Due Date</TableCell>
-              <TableCell>Start</TableCell>
-              <TableCell>Finish</TableCell>
+              <TableCell>Part description</TableCell>
+              <TableCell>Group number</TableCell>
+              <TableCell>Group Name</TableCell>
+              <TableCell align="right">Approximate Cost</TableCell>
               <TableCell align="right" />
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id} hover>
-                <TableCell>
-                  <Typography
-                    component="span"
-                    sx={{ cursor: 'pointer', textDecoration: 'underline' }}
-                    onClick={() => router.push(`/manufacturing-orders/${order.id}`)}
-                  >
-                    {order.documentNumber}
-                  </Typography>
-                </TableCell>
-                <TableCell>{order.itemName}</TableCell>
-                <TableCell>{order.itemCode}</TableCell>
-                <TableCell>{order.itemName}</TableCell>
-                <TableCell align="right">{order.quantity}</TableCell>
-                <TableCell>{order.status}</TableCell>
-                <TableCell>{order.releaseState}</TableCell>
-                <TableCell>{formatProductionDate(order.dueDate)}</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell>-</TableCell>
+            {itemsWithBom.map((item) => (
+              <TableRow key={item.id} hover>
+                <TableCell>{item.defaultBomId}</TableCell>
+                <TableCell>{item.defaultBomName ?? '-'}</TableCell>
+                <TableCell>{item.code}</TableCell>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.itemGroup ?? '-'}</TableCell>
+                <TableCell>{item.itemGroup ?? '-'}</TableCell>
+                <TableCell align="right">-</TableCell>
                 <TableCell align="right">
                   <IconButton
                     size="small"
-                    aria-label="Edit manufacturing order"
-                    onClick={() => router.push(`/manufacturing-orders/${order.id}`)}
+                    aria-label="Edit BOM"
+                    onClick={() => router.push(`/boms/${item.defaultBomId}`)}
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
