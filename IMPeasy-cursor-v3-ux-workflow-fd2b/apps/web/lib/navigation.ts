@@ -46,12 +46,12 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     key: 'customer-orders',
     href: '/customer-orders',
-    label: 'Customer Orders',
+    label: 'CRM',
     roles: ['admin', 'office'],
     tabs: [
       {
         href: '/customer-orders',
-        label: 'Board',
+        label: 'Customer Orders',
         roles: ['admin', 'office'],
       },
       {
@@ -60,19 +60,27 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         roles: ['admin', 'office'],
       },
       {
-        href: '/dashboards/customer-orders',
-        label: 'Dashboard',
+        href: '/invoices',
+        label: 'Invoices',
+        roles: ['admin', 'office'],
+      },
+      {
+        href: '/sales-management',
+        label: 'Sales Management',
         roles: ['admin', 'office'],
       },
     ],
     matches: (pathname: string) =>
       matchesRoutePrefix(pathname, [
+        '/crm',
         '/customer-orders',
         '/dashboards/customer-orders',
         '/customers',
         '/quotes',
         '/sales-orders',
         '/sales',
+        '/invoices',
+        '/sales-management',
       ]),
   },
   {
@@ -174,11 +182,6 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         roles: ['admin', 'office'],
       },
       {
-        href: '/invoices',
-        label: 'Invoices',
-        roles: ['admin', 'office'],
-      },
-      {
         href: '/dashboards/purchasing',
         label: 'Dashboard',
         roles: ['admin', 'office'],
@@ -190,7 +193,6 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         '/purchase-orders',
         '/suppliers',
         '/shipments',
-        '/invoices',
       ]),
   },
   {

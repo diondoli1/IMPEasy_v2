@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { CustomerOrdersBoard } from '../../components/customer-orders-board';
+import { CustomerOrdersKanban } from '../../components/customer-orders-kanban';
 
 export default function CustomerOrdersPage(): JSX.Element {
-  return <CustomerOrdersBoard />;
+  return <CustomerOrdersKanban />;
 }

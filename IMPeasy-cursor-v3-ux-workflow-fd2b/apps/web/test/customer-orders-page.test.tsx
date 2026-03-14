@@ -19,7 +19,7 @@ describe('CustomerOrdersPage', () => {
     listSalesOrdersMock.mockReset();
   });
 
-  it('renders the live customer-orders board from quote and sales-order data', async () => {
+  it('renders the customer orders kanban from quote and sales-order data', async () => {
     listQuotesMock.mockResolvedValue([
       {
         id: 11,
@@ -93,14 +93,13 @@ describe('CustomerOrdersPage', () => {
     render(<CustomerOrdersPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Customer orders board' })).toBeInTheDocument();
+      expect(screen.getByText('Customer Orders')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Board Value')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /create/i })).toBeInTheDocument();
     expect(screen.getAllByText('Mekano Werkzeugbau').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Atlas Fluidtechnik').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('approved').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('released').length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('link', { name: 'Workspace' })).toHaveLength(2);
+    expect(screen.getByText('Q-00011')).toBeInTheDocument();
+    expect(screen.getByText('SO-00021')).toBeInTheDocument();
   });
 });

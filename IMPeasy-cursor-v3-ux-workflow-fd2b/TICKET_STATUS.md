@@ -7,13 +7,13 @@
 | TICKET-003 | Dashboard Layout & Navigation | ✅ Done |
 | TICKET-004 | Module Layout with Thumbnail Boxes | ✅ Done |
 | TICKET-005 | CRM Shell & Tabs | ⬜ Pending |
-| TICKET-006 | Customer Orders — Kanban Board | ⬜ Pending |
+| TICKET-006 | Customer Orders — Kanban Board | ✅ Done |
 | TICKET-007 | Customer Order Create Form (Inline) | ⬜ Pending |
 | TICKET-008 | Customer Order Details Page | ⬜ Pending |
-| TICKET-009 | Customers Tab — Table & Create | ⬜ Pending |
-| TICKET-010 | Invoices Tab — List & Details | ⬜ Pending |
+| TICKET-009 | Customers Tab — Table & Create | ✅ Done |
+| TICKET-010 | Invoices Tab — List & Details | ✅ Done |
 | TICKET-011 | Invoices — Create Invoice | ⬜ Pending |
-| TICKET-012 | Sales Management Tab | ⬜ Pending |
+| TICKET-012 | Sales Management Tab | ✅ Done |
 | TICKET-013 | Production Planning Shell & Tabs | ⬜ Pending |
 | TICKET-014 | Manufacturing Orders — Create Form | ⬜ Pending |
 | TICKET-015 | Manufacturing Orders — Table | ⬜ Pending |

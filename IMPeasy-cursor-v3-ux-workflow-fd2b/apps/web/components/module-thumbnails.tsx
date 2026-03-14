@@ -14,7 +14,7 @@ type ModuleThumb = {
 };
 
 const MODULE_THUMBS: ModuleThumb[] = [
-  { label: 'CRM', href: '/customer-orders', roles: ['admin', 'office'] },
+  { label: 'CRM', href: '/crm', roles: ['admin', 'office'] },
   { label: 'Production', href: '/manufacturing-orders', roles: ['admin', 'planner'] },
   { label: 'Stock', href: '/stock/items', roles: ['admin', 'office', 'planner'] },
   { label: 'Procurement', href: '/purchase-orders', roles: ['admin', 'office'] },
@@ -23,11 +23,12 @@ const MODULE_THUMBS: ModuleThumb[] = [
 ];
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === '/customer-orders') {
-    return pathname === '/customer-orders' || pathname.startsWith('/customer-orders/') ||
+  if (href === '/crm') {
+    return pathname === '/crm' || pathname === '/customer-orders' || pathname.startsWith('/customer-orders/') ||
       pathname === '/customers' || pathname.startsWith('/customers/') ||
       pathname.startsWith('/dashboards/customer-orders') || pathname.startsWith('/quotes') ||
-      pathname.startsWith('/sales-orders') || pathname.startsWith('/sales') || pathname.startsWith('/invoices');
+      pathname.startsWith('/sales-orders') || pathname.startsWith('/sales') || pathname.startsWith('/invoices') ||
+      pathname === '/sales-management';
   }
   if (href === '/manufacturing-orders') {
     return pathname === '/manufacturing-orders' || pathname.startsWith('/manufacturing-orders/') ||

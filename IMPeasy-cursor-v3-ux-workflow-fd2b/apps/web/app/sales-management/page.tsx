@@ -1,9 +1,7 @@
 'use client';
 
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -13,14 +11,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import Link from 'next/link';
+import EditIcon from '@mui/icons-material/Edit';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
 
 import { listCustomers } from '../../lib/api';
 import type { Customer } from '../../types/customer';
 
-export default function CustomersPage(): JSX.Element {
+export default function SalesManagementPage(): JSX.Element {
   const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,18 +53,9 @@ export default function CustomersPage(): JSX.Element {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Customers</Typography>
-        <Button
-          component={Link}
-          href="/customers/new"
-          variant="contained"
-          startIcon={<AddIcon />}
-        >
-          +Create
-        </Button>
-      </Box>
-
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        Sales Management
+      </Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -75,7 +63,6 @@ export default function CustomersPage(): JSX.Element {
               <TableCell>Number</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Next contact</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Email</TableCell>
               <TableCell align="right" />
@@ -83,7 +70,12 @@ export default function CustomersPage(): JSX.Element {
           </TableHead>
           <TableBody>
             {customers.map((customer) => (
-              <TableRow key={customer.id} hover>
+              <TableRow
+                key={customer.id}
+                hover
+                sx={{ cursor: 'pointer' }}
+                onClick={() => router.push(`/customers/${customer.id}`)}
+              >
                 <TableCell>{customer.code ?? '-'}</TableCell>
                 <TableCell>
                   <Typography component="span" fontWeight={600}>
@@ -91,10 +83,9 @@ export default function CustomersPage(): JSX.Element {
                   </Typography>
                 </TableCell>
                 <TableCell>{customer.isActive ? 'Active' : 'Inactive'}</TableCell>
-                <TableCell>-</TableCell>
                 <TableCell>{customer.phone ?? '-'}</TableCell>
                 <TableCell>{customer.email ?? '-'}</TableCell>
-                <TableCell align="right">
+                <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                   <IconButton
                     size="small"
                     aria-label="Edit customer"

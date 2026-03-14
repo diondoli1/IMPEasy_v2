@@ -1,15 +1,28 @@
 'use client';
 
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
-import { ListTemplate } from '../../components/ui/page-templates';
-import { Badge, EmptyState } from '../../components/ui/primitives';
-import { formatCurrency, formatDate } from '../../lib/commercial';
 import { listInvoices } from '../../lib/api';
+import { formatCurrency, formatDate } from '../../lib/commercial';
 import type { InvoiceRegisterEntry } from '../../types/invoice';
 
 export default function InvoicesPage(): JSX.Element {
+  const router = useRouter();
   const [invoices, setInvoices] = useState<InvoiceRegisterEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,45 +40,87 @@ export default function InvoicesPage(): JSX.Element {
   }, []);
 
   if (loading) {
-    return <p>Loading invoice register...</p>;
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Loading invoices...</Typography>
+      </Box>
+    );
   }
 
   if (error) {
-    return <p role="alert">{error}</p>;
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error" role="alert">{error}</Typography>
+      </Box>
+    );
   }
 
   return (
-    <ListTemplate
-      eyebrow="Invoicing"
-      title="Invoice Register"
-      description="Operational invoice register linked directly to delivered shipments."
-      tableTitle="Issued invoices"
-      tableDescription="Use the register to check issue, due, and paid dates without entering full accounting scope."
-      table={{
-        columns: [
-          {
-            header: 'Invoice',
-            cell: (invoice) => (
-              <div className="stack stack--tight">
-                <Link href={`/invoices/${invoice.id}`} className="mono">
-                  {invoice.number}
-                </Link>
-                <span className="muted-copy--small">{invoice.customerName}</span>
-              </div>
-            ),
-          },
-          { header: 'Sales Order', width: '120px', cell: (invoice) => invoice.salesOrderNumber },
-          { header: 'Shipment', width: '120px', cell: (invoice) => invoice.shipmentNumber },
-          { header: 'Status', width: '110px', cell: (invoice) => <Badge tone={invoice.status === 'paid' ? 'success' : 'info'}>{invoice.status}</Badge> },
-          { header: 'Total', width: '110px', align: 'right', cell: (invoice) => formatCurrency(invoice.totalAmount) },
-          { header: 'Issue Date', width: '120px', cell: (invoice) => formatDate(invoice.issueDate) },
-          { header: 'Due Date', width: '120px', cell: (invoice) => formatDate(invoice.dueDate) },
-          { header: 'Paid Date', width: '120px', cell: (invoice) => formatDate(invoice.paidAt) },
-        ],
-        rows: invoices,
-        getRowKey: (invoice) => String(invoice.id),
-        emptyState: <EmptyState title="No invoices" description="Invoices appear here after delivered shipments are invoiced." />,
-      }}
-    />
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">Invoices</Typography>
+        <Button
+          component={Link}
+          href="/invoices/new"
+          variant="contained"
+          startIcon={<AddIcon />}
+        >
+          +Create
+        </Button>
+      </Box>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Number</TableCell>
+              <TableCell>Customer Number</TableCell>
+              <TableCell>Customer name</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="right">Total including tax</TableCell>
+              <TableCell align="right">Paid sum</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Due date</TableCell>
+              <TableCell align="right" />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {invoices.map((invoice) => (
+              <TableRow key={invoice.id} hover>
+                <TableCell>{invoice.number}</TableCell>
+                <TableCell>{invoice.customerId}</TableCell>
+                <TableCell>{invoice.customerName}</TableCell>
+                <TableCell>
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    sx={{
+                      color: invoice.status === 'paid' ? 'success.main' : 'text.secondary',
+                    }}
+                  >
+                    {invoice.status === 'paid' ? 'Paid' : 'Unpaid'}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">{formatCurrency(invoice.totalAmount)}</TableCell>
+                <TableCell align="right">
+                  {invoice.status === 'paid' ? formatCurrency(invoice.totalAmount) : '-'}
+                </TableCell>
+                <TableCell>{formatDate(invoice.issueDate)}</TableCell>
+                <TableCell>{formatDate(invoice.dueDate)}</TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    aria-label="Edit invoice"
+                    onClick={() => router.push(`/invoices/${invoice.id}`)}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
