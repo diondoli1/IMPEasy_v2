@@ -59,6 +59,7 @@ const INVOICE_DETAIL_INCLUDE = {
           salesOrderLine: true,
         },
       },
+      salesOrderLine: true,
     },
     orderBy: [{ id: 'asc' }],
   },
@@ -718,22 +719,29 @@ export class ShippingService {
             ),
             createdAt: invoice.createdAt,
             updatedAt: invoice.updatedAt,
-            invoiceLines: invoice.invoiceLines.map((invoiceLine) => ({
-              id: invoiceLine.id,
-              invoiceId: invoiceLine.invoiceId,
-              shipmentLineId: invoiceLine.shipmentLineId,
-              salesOrderLineId: invoiceLine.shipmentLine.salesOrderLineId,
-              itemId: invoiceLine.shipmentLine.salesOrderLine.itemId,
-              itemCode: invoiceLine.shipmentLine.salesOrderLine.itemCode ?? null,
-              itemName:
-                invoiceLine.shipmentLine.salesOrderLine.itemName ??
-                `Item ${invoiceLine.shipmentLine.salesOrderLine.itemId}`,
-              quantity: invoiceLine.quantity,
-              unitPrice: invoiceLine.unitPrice,
-              lineTotal: invoiceLine.lineTotal,
-              createdAt: invoiceLine.createdAt,
-              updatedAt: invoiceLine.updatedAt,
-            })),
+            invoiceLines: invoice.invoiceLines.map((invoiceLine) => {
+              const salesOrderLine =
+                invoiceLine.shipmentLine?.salesOrderLine ?? invoiceLine.salesOrderLine;
+              if (!salesOrderLine) {
+                throw new Error(
+                  `Invoice line ${invoiceLine.id} has neither shipmentLine nor salesOrderLine`,
+                );
+              }
+              return {
+                id: invoiceLine.id,
+                invoiceId: invoiceLine.invoiceId,
+                shipmentLineId: invoiceLine.shipmentLineId,
+                salesOrderLineId: salesOrderLine.id,
+                itemId: salesOrderLine.itemId,
+                itemCode: salesOrderLine.itemCode ?? null,
+                itemName: salesOrderLine.itemName ?? `Item ${salesOrderLine.itemId}`,
+                quantity: invoiceLine.quantity,
+                unitPrice: invoiceLine.unitPrice,
+                lineTotal: invoiceLine.lineTotal,
+                createdAt: invoiceLine.createdAt,
+                updatedAt: invoiceLine.updatedAt,
+              };
+            }),
           }
         : null,
       lines,

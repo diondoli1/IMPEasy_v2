@@ -5,8 +5,8 @@ export class InvoiceRegisterResponseDto {
   customerName!: string;
   salesOrderId!: number;
   salesOrderNumber!: string;
-  shipmentId!: number;
-  shipmentNumber!: string;
+  shipmentId!: number | null;
+  shipmentNumber!: string | null;
   status!: string;
   totalAmount!: number;
   issueDate!: Date;

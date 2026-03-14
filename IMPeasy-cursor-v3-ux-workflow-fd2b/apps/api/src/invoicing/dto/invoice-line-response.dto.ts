@@ -1,8 +1,8 @@
 export class InvoiceLineResponseDto {
   id!: number;
   invoiceId!: number;
-  shipmentLineId!: number;
-  salesOrderLineId!: number;
+  shipmentLineId!: number | null;
+  salesOrderLineId!: number | null;
   itemId!: number;
   itemCode!: string | null;
   itemName!: string;

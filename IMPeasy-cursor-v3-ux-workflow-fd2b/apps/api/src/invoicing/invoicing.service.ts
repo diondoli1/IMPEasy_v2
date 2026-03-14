@@ -265,7 +265,7 @@ export class InvoicingService {
               salesOrderId,
             )
           : '-',
-      shipmentId: invoice.shipmentId ?? 0,
+      shipmentId: invoice.shipmentId ?? null,
       shipmentNumber:
         invoice.shipment?.number ??
         (invoice.shipmentId
@@ -274,7 +274,7 @@ export class InvoicingService {
               'shipments',
               invoice.shipmentId,
             )
-          : '-'),
+          : null),
       status: invoice.status,
       totalAmount: Number(
         invoice.invoiceLines.reduce((sum, line) => sum + line.lineTotal, 0).toFixed(2),
@@ -302,7 +302,7 @@ export class InvoicingService {
           'invoices',
           invoice.id,
         ),
-      shipmentId: invoice.shipmentId ?? 0,
+      shipmentId: invoice.shipmentId ?? null,
       shipmentNumber:
         invoice.shipment?.number ??
         (invoice.shipmentId
@@ -311,7 +311,7 @@ export class InvoicingService {
               'shipments',
               invoice.shipmentId,
             )
-          : '-'),
+          : null),
       salesOrderId,
       salesOrderNumber:
         salesOrderId > 0
@@ -339,8 +339,8 @@ export class InvoicingService {
         return {
           id: line.id,
           invoiceId: line.invoiceId,
-          shipmentLineId: line.shipmentLineId ?? 0,
-          salesOrderLineId: orderLine?.id ?? 0,
+          shipmentLineId: line.shipmentLineId ?? null,
+          salesOrderLineId: orderLine?.id ?? null,
           itemId: orderLine?.itemId ?? 0,
           itemCode: orderLine?.itemCode ?? null,
           itemName: orderLine?.itemName ?? `Item ${orderLine?.itemId ?? 0}`,
