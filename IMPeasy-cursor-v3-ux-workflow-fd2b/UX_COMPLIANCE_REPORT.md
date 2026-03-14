@@ -26,6 +26,12 @@
 - **Issue:** Kiosk sometimes showed "Aw, Snap!" (same hooks/redirect pattern when accessed via certain paths).
 - **Note:** Kiosk links directly to `/kiosk`; no redirect. If errors persist, they may be due to API 500s (operations queue, manufacturing orders) rather than client-side hooks.
 
+### 4. Manufacturing Orders Module (Production Planning)
+- **Issue:** "Unable to load manufacturing orders", "Unable to load data" on create form, "Unable to load the Manufacturing Order workspace" on details.
+- **Root cause:** Database schema mismatches: work_orders (dueDate, releasedAt, completedAt), work_order_histories (eventType, message, table name), work_order_operations (reworkSourceOperationId, etc.), routing_operations (workstationGroupId), material_bookings (bomItemId, consumedAt, updatedAt), workstation_groups/workstations tables missing, stock_lots (sourceType, sourceReference, receivedAt, status), items (defaultPrice null).
+- **Fix:** Migration `20260323000000_fix_work_orders_schema` adds missing columns/tables. Prisma schema updated for work_order_history → work_order_histories. Items/work-orders services handle unitOfMeasure null.
+- **Result:** ✅ Manufacturing Orders list, +Create form (product dropdowns), and order details workspace all load correctly.
+
 ---
 
 ## What Works vs Master Prompt

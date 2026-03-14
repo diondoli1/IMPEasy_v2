@@ -583,7 +583,7 @@ model WorkOrderHistory {
   workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
 
   @@index([workOrderId])
-  @@map("work_order_history")
+  @@map("work_order_histories")
 }
 
 model Supplier {

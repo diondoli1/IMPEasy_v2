@@ -231,7 +231,7 @@ export class ItemsService {
       description: item.description ?? null,
       isActive: item.isActive,
       itemGroup: item.itemGroup ?? null,
-      unitOfMeasure: item.unitOfMeasure,
+      unitOfMeasure: item.unitOfMeasure ?? 'pcs',
       itemType: item.itemType,
       defaultBomId: item.defaultBomId ?? null,
       defaultBomName: item.defaultBom?.name ?? null,

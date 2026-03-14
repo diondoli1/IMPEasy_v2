@@ -16,6 +16,7 @@ Or apply manually:
 5. **items.unitOfMeasure** - Fix nulls: `UPDATE items SET "unitOfMeasure" = 'pcs' WHERE "unitOfMeasure" IS NULL;`
 6. **customers** - Add status/CRM fields: `psql ... -f prisma/migrations/20260319000000_add_customer_status_fields/migration.sql`
 7. **invoices** - Add customerId, issueDate, paidAt, invoice_lines: `psql ... -f prisma/migrations/20260322000000_fix_invoices_schema/migration.sql`
+8. **Manufacturing Orders** - work_orders, work_order_histories, work_order_operations, routing_operations, material_bookings, workstation_groups, workstations, stock_lots (sourceType, sourceReference, receivedAt, status), items (defaultPrice null fix): `psql ... -f prisma/migrations/20260323000000_fix_work_orders_schema/migration.sql`
 
 ## Environment
 

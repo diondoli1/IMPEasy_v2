@@ -1509,7 +1509,7 @@ export class WorkOrdersService {
         componentItemId: bomItem.itemId,
         componentItemCode: bomItem.item.code ?? buildItemCode(bomItem.item.id),
         componentItemName: bomItem.item.name,
-        unitOfMeasure: bomItem.item.unitOfMeasure,
+        unitOfMeasure: bomItem.item.unitOfMeasure ?? 'pcs',
         requiredQuantity: bomItem.quantity * workOrder.quantity,
         bookedQuantity,
         availableQuantity: availableLotsForItem.reduce(
