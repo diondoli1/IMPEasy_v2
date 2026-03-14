@@ -92,7 +92,7 @@
 
 ---
 
-### TICKET-B4: Incoming Invoices — Full Implementation
+### TICKET-B4: Incoming Invoices — Full Implementation ✅ DONE
 **Priority:** P1 (High)  
 **UX Spec:** Table: Number, Invoice ID, Invoice date, Vendor Number, Purchase order, Total, Tax, Paid sum  
 **Current:** Placeholder only; "API support for vendor invoices is pending"  
@@ -143,7 +143,7 @@
 
 ---
 
-### TICKET-B8: Company Settings — Add Tax Rate
+### TICKET-B8: Company Settings — Add Tax Rate ✅ DONE
 **Priority:** P3 (Low)  
 **UX Spec:** Company details = Company Name, Legal Address, Email, Website, Phone, TAX Number, Tax Rate  
 **Current:** No Tax Rate field  

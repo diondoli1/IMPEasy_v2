@@ -11,6 +11,8 @@ import { PurchaseOrdersController } from './purchase-orders.controller';
 import { PurchaseOrdersService } from './purchase-orders.service';
 import { SuppliersController } from './suppliers.controller';
 import { SuppliersService } from './suppliers.service';
+import { VendorInvoicesController } from './vendor-invoices.controller';
+import { VendorInvoicesService } from './vendor-invoices.service';
 
 @Module({
   imports: [PrismaModule, ItemsModule, InventoryModule, SettingsModule],
@@ -19,8 +21,14 @@ import { SuppliersService } from './suppliers.service';
     ItemVendorTermsController,
     PurchaseOrdersController,
     PurchaseOrderLinesController,
+    VendorInvoicesController,
   ],
-  providers: [SuppliersService, PurchaseOrdersService, PurchaseOrderLinesService],
+  providers: [
+    SuppliersService,
+    PurchaseOrdersService,
+    PurchaseOrderLinesService,
+    VendorInvoicesService,
+  ],
   exports: [SuppliersService, PurchaseOrdersService],
 })
 export class PurchasingModule {}

@@ -513,6 +513,15 @@ export async function listItemVendorTerms(itemId: number): Promise<ItemVendorTer
   return parseJsonOrThrow(response) as Promise<ItemVendorTerm[]>;
 }
 
+export async function listVendorInvoices(): Promise<
+  import('../types/vendor-invoice').VendorInvoice[]
+> {
+  const response = await apiFetch(`${API_BASE_URL}/vendor-invoices`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<
+    import('../types/vendor-invoice').VendorInvoice[]
+  >;
+}
+
 export async function listPurchaseOrders(): Promise<PurchaseOrder[]> {
   const response = await apiFetch(`${API_BASE_URL}/purchase-orders`, { cache: 'no-store' });
   return parseJsonOrThrow(response) as Promise<PurchaseOrder[]>;

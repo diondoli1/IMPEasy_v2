@@ -15,6 +15,7 @@ type CompanySettingRecord = {
   email: string | null;
   website: string | null;
   taxNumber: string | null;
+  taxRate: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -64,6 +65,7 @@ class PrismaServiceMock {
         createdAt: now,
         updatedAt: now,
         ...data,
+        taxRate: (data as { taxRate?: number }).taxRate ?? null,
       };
       this.companySettings = [created];
       return created;

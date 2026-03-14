@@ -1,4 +1,4 @@
-﻿import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateCompanySettingDto {
   @IsOptional()
@@ -35,4 +35,8 @@ export class UpdateCompanySettingDto {
   @IsString()
   @MaxLength(100)
   taxNumber?: string;
+
+  @IsOptional()
+  @IsNumber()
+  taxRate?: number;
 }

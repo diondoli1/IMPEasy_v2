@@ -17,6 +17,7 @@ export type CompanySetting = {
   email: string | null;
   website: string | null;
   taxNumber: string | null;
+  taxRate: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -29,6 +30,7 @@ export type CompanySettingInput = {
   email?: string | null;
   website?: string | null;
   taxNumber?: string | null;
+  taxRate?: number | null;
 };
 
 export type NumberingSetting = {

@@ -76,6 +76,7 @@ export class SettingsService {
           payload.taxNumber !== undefined
             ? this.normalizeOptionalString(payload.taxNumber)
             : undefined,
+        taxRate: payload.taxRate !== undefined ? payload.taxRate : undefined,
       },
     });
 
@@ -362,6 +363,7 @@ export class SettingsService {
       email: string | null;
       website: string | null;
       taxNumber: string | null;
+      taxRate: number | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -375,6 +377,7 @@ export class SettingsService {
       email: companySetting.email,
       website: companySetting.website,
       taxNumber: companySetting.taxNumber,
+      taxRate: companySetting.taxRate ?? null,
       createdAt: companySetting.createdAt,
       updatedAt: companySetting.updatedAt,
     };

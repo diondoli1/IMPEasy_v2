@@ -579,18 +579,19 @@ model WorkOrderHistory {
 }
 
 model Supplier {
-  id             Int             @id @default(autoincrement())
-  code           String?         @unique
-  name           String
-  email          String?
-  phone          String?
-  paymentTerm    String?
-  isActive       Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  itemVendorTerms ItemVendorTerm[]
-  purchaseOrders PurchaseOrder[]
-  preferredItems Item[]
+  id                Int              @id @default(autoincrement())
+  code              String?          @unique
+  name              String
+  email             String?
+  phone             String?
+  paymentTerm       String?
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  itemVendorTerms   ItemVendorTerm[]
+  purchaseOrders    PurchaseOrder[]
+  preferredItems    Item[]
+  vendorInvoices    VendorInvoice[]
 
   @@map("suppliers")
 }
@@ -611,6 +612,7 @@ model PurchaseOrder {
   updatedAt          DateTime            @updatedAt
   supplier           Supplier            @relation(fields: [supplierId], references: [id])
   purchaseOrderLines PurchaseOrderLine[]
+  vendorInvoices     VendorInvoice[]
 
   @@index([supplierId])
   @@map("purchase_orders")
@@ -632,6 +634,27 @@ model PurchaseOrderLine {
   @@index([purchaseOrderId])
   @@index([itemId])
   @@map("purchase_order_lines")
+}
+
+model VendorInvoice {
+  id               Int       @id @default(autoincrement())
+  supplierId       Int
+  purchaseOrderId  Int?
+  number           String?   @unique
+  vendorInvoiceId  String?
+  invoiceDate      DateTime  @default(now())
+  totalAmount      Float     @default(0)
+  taxAmount        Float     @default(0)
+  paidAmount       Float     @default(0)
+  status           String    @default("unpaid")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  supplier         Supplier  @relation(fields: [supplierId], references: [id])
+  purchaseOrder    PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  @@index([supplierId])
+  @@index([purchaseOrderId])
+  @@map("vendor_invoices")
 }
 
 model Inspection {
@@ -786,6 +809,7 @@ model CompanySetting {
   email       String?
   website     String?
   taxNumber   String?
+  taxRate     Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

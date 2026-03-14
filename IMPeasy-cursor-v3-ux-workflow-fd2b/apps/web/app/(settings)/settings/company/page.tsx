@@ -24,6 +24,7 @@ export default function CompanySettingsPage(): JSX.Element {
     email: null,
     website: null,
     taxNumber: null,
+    taxRate: null,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -42,6 +43,7 @@ export default function CompanySettingsPage(): JSX.Element {
           email: s.email,
           website: s.website,
           taxNumber: s.taxNumber,
+          taxRate: s.taxRate ?? null,
         });
       } catch {
         setError('Unable to load company settings.');
@@ -69,6 +71,7 @@ export default function CompanySettingsPage(): JSX.Element {
         email: draft.email,
         website: draft.website,
         taxNumber: draft.taxNumber,
+        taxRate: draft.taxRate,
       });
       setDraft({
         companyName: updated.companyName,
@@ -78,6 +81,7 @@ export default function CompanySettingsPage(): JSX.Element {
         email: updated.email,
         website: updated.website,
         taxNumber: updated.taxNumber,
+        taxRate: updated.taxRate ?? null,
       });
       setSaved('Company settings saved.');
     } catch {
@@ -154,6 +158,19 @@ export default function CompanySettingsPage(): JSX.Element {
             label="TAX Number"
             value={draft.taxNumber ?? ''}
             onChange={(e) => setDraft((p) => ({ ...p, taxNumber: toNullableString(e.target.value) }))}
+            fullWidth
+          />
+          <TextField
+            label="Tax Rate (%)"
+            type="number"
+            inputProps={{ min: 0, max: 100, step: 0.01 }}
+            value={draft.taxRate ?? ''}
+            onChange={(e) =>
+              setDraft((p) => ({
+                ...p,
+                taxRate: e.target.value === '' ? null : Number(e.target.value),
+              }))
+            }
             fullWidth
           />
         </Box>
