@@ -832,6 +832,27 @@ model NumberingSetting {
   @@map("numbering_settings")
 }
 
+model ProductGroup {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("product_groups")
+}
+
+model UnitOfMeasure {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
+  baseUnit        String?  // e.g. 'g' for "1 kg = 1000 g"
+  conversionRate  Float    @default(1) // 1 unit = conversionRate baseUnit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("unit_of_measures")
+}
+
 model SettingsListEntry {
   id           Int      @id @default(autoincrement())
   listType     String

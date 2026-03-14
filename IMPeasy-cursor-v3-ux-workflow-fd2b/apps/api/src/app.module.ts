@@ -14,6 +14,7 @@ import { RoutingsModule } from './routings/routings.module';
 import { SalesOrdersModule } from './sales-orders/sales-orders.module';
 import { SettingsModule } from './settings/settings.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { StockSettingsModule } from './stock-settings/stock-settings.module';
 import { WorkOrdersModule } from './work-orders/work-orders.module';
 import { WorkstationsModule } from './workstations/workstations.module';
 
@@ -32,6 +33,7 @@ import { WorkstationsModule } from './workstations/workstations.module';
     SalesOrdersModule,
     SettingsModule,
     ShippingModule,
+    StockSettingsModule,
     WorkOrdersModule,
     WorkstationsModule,
     QuotesModule,

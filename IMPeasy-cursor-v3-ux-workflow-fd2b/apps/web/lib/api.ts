@@ -130,6 +130,12 @@ import type {
   SettingsListEntryUpdateInput,
   SettingsListType,
 } from '../types/settings';
+import type {
+  ProductGroup,
+  ProductGroupInput,
+  UnitOfMeasure,
+  UnitOfMeasureInput,
+} from '../types/stock-settings';
 import { getAuthToken } from './auth-storage';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -1408,6 +1414,35 @@ export async function updateDocumentTemplate(
     body: JSON.stringify(input),
   });
   return parseJsonOrThrow(response) as Promise<DocumentTemplateSetting>;
+}
+
+// Stock Settings (product groups, units of measurement)
+export async function listProductGroups(): Promise<ProductGroup[]> {
+  const response = await apiFetch(`${API_BASE_URL}/stock-settings/product-groups`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<ProductGroup[]>;
+}
+
+export async function createProductGroup(input: ProductGroupInput): Promise<ProductGroup> {
+  const response = await apiFetch(`${API_BASE_URL}/stock-settings/product-groups`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<ProductGroup>;
+}
+
+export async function listUnitOfMeasures(): Promise<UnitOfMeasure[]> {
+  const response = await apiFetch(`${API_BASE_URL}/stock-settings/unit-of-measures`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<UnitOfMeasure[]>;
+}
+
+export async function createUnitOfMeasure(input: UnitOfMeasureInput): Promise<UnitOfMeasure> {
+  const response = await apiFetch(`${API_BASE_URL}/stock-settings/unit-of-measures`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<UnitOfMeasure>;
 }
 
 export async function getCustomerOrdersDashboard(): Promise<ModuleDashboardResponse> {

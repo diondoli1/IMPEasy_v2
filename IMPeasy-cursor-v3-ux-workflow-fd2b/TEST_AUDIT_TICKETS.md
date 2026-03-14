@@ -155,7 +155,7 @@
 
 ---
 
-### TICKET-B9: Stock Settings — Create Product Group & Unit
+### TICKET-B9: Stock Settings — Create Product Group & Unit ✅ DONE
 **Priority:** P2 (Medium)  
 **UX Spec:** Product Groups: Create product group button. Units: Create button → Name, Unit conversion (1 blank = Rate blank)  
 **Current:** "Product groups are derived from items. Create product group requires API support."  
