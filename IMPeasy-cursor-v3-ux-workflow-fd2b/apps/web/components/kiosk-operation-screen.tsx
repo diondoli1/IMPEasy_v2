@@ -176,12 +176,12 @@ export function KioskOperationScreen({
         </div>
       </div>
 
-      {dialogOpen ? (
-        <div className="dialog-backdrop">
-          <DialogFrame
-            title="Complete Job"
-            description="Enter good and scrap quantities."
-            footer={
+      <DialogFrame
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          title="Complete Job"
+          description="Enter good and scrap quantities."
+          footer={
               <>
                 <Button onClick={() => setDialogOpen(false)} disabled={pendingAction === 'complete'}>
                   Cancel
@@ -221,8 +221,6 @@ export function KioskOperationScreen({
               </Field>
             </FormGrid>
           </DialogFrame>
-        </div>
-      ) : null}
     </PageShell>
   );
 }

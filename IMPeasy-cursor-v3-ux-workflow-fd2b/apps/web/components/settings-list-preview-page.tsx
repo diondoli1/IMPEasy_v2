@@ -321,12 +321,12 @@ export function SettingsListPage({
         }
       />
 
-      {isDialogOpen ? (
-        <div className="dialog-backdrop">
-          <DialogFrame
-            title={editingEntry ? `Edit ${title.toLowerCase()} entry` : `Add ${title.toLowerCase()} entry`}
-            description="Update code, label, status, and optional numeric value."
-            footer={
+      <DialogFrame
+          open={isDialogOpen}
+          onClose={closeDialog}
+          title={editingEntry ? `Edit ${title.toLowerCase()} entry` : `Add ${title.toLowerCase()} entry`}
+          description="Update code, label, status, and optional numeric value."
+          footer={
               <>
                 <Button tone="secondary" onClick={closeDialog} disabled={isSaving}>
                   Cancel
@@ -417,8 +417,6 @@ export function SettingsListPage({
               </FormGrid>
             </div>
           </DialogFrame>
-        </div>
-      ) : null}
     </>
   );
 }
