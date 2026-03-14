@@ -599,6 +599,50 @@ describe('PurchaseOrdersController (e2e)', () => {
     await app.close();
   });
 
+  it('full procurement flow: PO create with lines → receive → stock/lot → inventory', async () => {
+    const poResponse = await request(app.getHttpServer()).post('/purchase-orders').send({
+      supplierId: 1,
+      orderDate: '2026-03-11',
+      expectedDate: '2026-03-18',
+      notes: 'Procurement flow test',
+    });
+    expect(poResponse.status).toBe(201);
+
+    const lineResponse = await request(app.getHttpServer())
+      .post(`/purchase-orders/${poResponse.body.id}/lines`)
+      .send({
+        itemId: 1001,
+        quantity: 10,
+        unitPrice: 10,
+      });
+    expect(lineResponse.status).toBe(201);
+    expect(lineResponse.body.remainingQuantity).toBe(10);
+
+    const receiveResponse = await request(app.getHttpServer())
+      .post(`/purchase-orders/${poResponse.body.id}/lines/${lineResponse.body.id}/receive`)
+      .send({
+        quantity: 10,
+        lotNumber: 'PROC-FLOW-001',
+      });
+    expect(receiveResponse.status).toBe(201);
+    expect(receiveResponse.body.receivedQuantity).toBe(10);
+    expect(receiveResponse.body.remainingQuantity).toBe(0);
+
+    const poDetail = await request(app.getHttpServer()).get(`/purchase-orders/${poResponse.body.id}`);
+    expect(poDetail.status).toBe(200);
+    expect(poDetail.body.status).toBe('received');
+    expect(poDetail.body.receivedQuantity).toBe(10);
+
+    const stockItems = await request(app.getHttpServer()).get('/stock/items');
+    expect(stockItems.status).toBe(200);
+    expect(stockItems.body[0].onHandQuantity).toBe(10);
+
+    const stockLots = await request(app.getHttpServer()).get('/stock/lots');
+    expect(stockLots.status).toBe(200);
+    expect(stockLots.body[0].lotNumber).toBe('PROC-FLOW-001');
+    expect(stockLots.body[0].quantityOnHand).toBe(10);
+  });
+
   it('creates a purchase order with the MVP-040 header fields', async () => {
     const response = await request(app.getHttpServer()).post('/purchase-orders').send({
       supplierId: 1,

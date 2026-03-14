@@ -225,7 +225,8 @@
 **Tasks:**
 - E2E test for PO create with lines, receive, stock update
 
-**Acceptance:** Procurement flow passes
+**Acceptance:** Procurement flow passes  
+**Status:** ✅ DONE — Added `full procurement flow` e2e test in `purchase-orders.e2e-spec.ts` covering: PO create → add line → receive into lot → verify PO status → stock items → stock lots
 
 ---
 
