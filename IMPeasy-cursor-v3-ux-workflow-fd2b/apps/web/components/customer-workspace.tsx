@@ -34,6 +34,7 @@ import {
 
 type CustomerWorkspaceProps = {
   customerId?: number;
+  returnTo?: string;
 };
 
 type CustomerTab = 'general' | 'contacts' | 'addresses' | 'defaults' | 'notes' | 'documents';
@@ -91,7 +92,7 @@ function mapCustomerToInput(customer: Customer): CustomerInput {
   };
 }
 
-export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.Element {
+export function CustomerWorkspace({ customerId, returnTo }: CustomerWorkspaceProps): JSX.Element {
   const router = useRouter();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [form, setForm] = useState<CustomerInput>(() => createBlankCustomerInput());
@@ -156,7 +157,11 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
         setForm(mapCustomerToInput(updated));
       } else {
         const created = await createCustomer(payload);
-        router.replace(`/customers/${created.id}`);
+        if (returnTo) {
+          router.replace(returnTo);
+        } else {
+          router.replace(`/customers/${created.id}`);
+        }
         return;
       }
 
@@ -182,7 +187,7 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
       title={customerId ? `${customer?.code ?? ''} ${customer?.name ?? ''}`.trim() : 'New customer'}
       description="Operational customer card with contacts, addresses, defaults, notes, and linked commercial documents."
       leadingActions={
-        <MuiButton component={Link} href="/customers" variant="outlined" startIcon={<ArrowBackIcon />}>
+        <MuiButton component={Link} href={returnTo ?? '/customers'} variant="outlined" startIcon={<ArrowBackIcon />}>
           Back
         </MuiButton>
       }

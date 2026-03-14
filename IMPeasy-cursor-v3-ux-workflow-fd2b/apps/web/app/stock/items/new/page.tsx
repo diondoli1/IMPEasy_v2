@@ -13,7 +13,7 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -29,6 +29,8 @@ const FALLBACK_UOM = ['pcs', 'kg', 'm', 'L', 'h', 'box', 'pallet'];
 
 export default function NewStockItemPage(): JSX.Element {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('returnTo') ?? undefined;
   const [partNo, setPartNo] = useState('');
   const [partDesc, setPartDesc] = useState('');
   const [productGroup, setProductGroup] = useState('');
@@ -82,7 +84,11 @@ export default function NewStockItemPage(): JSX.Element {
         itemType: isProcured ? 'procured' : 'produced',
         defaultPrice: Number(sellingPrice) || 0,
       });
-      router.replace(`/stock/items/${item.id}`);
+      if (returnTo) {
+        router.replace(returnTo);
+      } else {
+        router.replace(`/stock/items/${item.id}`);
+      }
     } catch {
       setError('Unable to create item.');
     } finally {
@@ -157,7 +163,7 @@ export default function NewStockItemPage(): JSX.Element {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Button
           component={Link}
-          href="/stock/items"
+          href={returnTo ?? '/stock/items'}
           variant="outlined"
           startIcon={<ArrowBackIcon />}
         >
