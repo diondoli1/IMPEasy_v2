@@ -146,7 +146,7 @@ function createStore(): InvoiceStore {
     shipments: [
       {
         id: 801,
-        number: 'SHP-00801',
+        number: 'S00801',
         salesOrderId: 1,
         status: 'shipped',
         shipDate: now,
@@ -159,7 +159,7 @@ function createStore(): InvoiceStore {
       },
       {
         id: 803,
-        number: 'SHP-00803',
+        number: 'S00803',
         salesOrderId: 1,
         status: 'delivered',
         shipDate: now,
@@ -172,7 +172,7 @@ function createStore(): InvoiceStore {
       },
       {
         id: 804,
-        number: 'SHP-00804',
+        number: 'S00804',
         salesOrderId: 2,
         status: 'delivered',
         shipDate: now,
@@ -227,7 +227,7 @@ function createStore(): InvoiceStore {
     invoices: [
       {
         id: 701,
-        number: 'INV-00701',
+        number: 'I00701',
         shipmentId: 804,
         customerId: 22,
         status: 'issued',
@@ -402,6 +402,10 @@ class PrismaServiceMock {
   };
 
   invoice = {
+    findFirst: async ({ where }: { where: { shipmentId: number } }): Promise<any | null> => {
+      const invoice = this.store.invoices.find((entry) => entry.shipmentId === where.shipmentId) ?? null;
+      return invoice ? this.invoiceWithRelations(invoice) : null;
+    },
     findMany: async (): Promise<any[]> => {
       return this.store.invoices
         .slice()
@@ -524,11 +528,11 @@ describe('ShipmentInvoicesController (e2e)', () => {
     expect(createResponse.status).toBe(201);
     expect(createResponse.body).toMatchObject({
       id: 702,
-      number: 'INV-00702',
+      number: 'I00702',
       shipmentId: 803,
-      shipmentNumber: 'SHP-00803',
+      shipmentNumber: 'S00803',
       salesOrderId: 1,
-      salesOrderNumber: 'SO-00001',
+      salesOrderNumber: 'CO00001',
       customerId: 21,
       customerName: 'Aster Fabrication',
       status: 'issued',
@@ -549,7 +553,7 @@ describe('ShipmentInvoicesController (e2e)', () => {
     expect(registerResponse.body).toHaveLength(2);
     expect(registerResponse.body[0]).toMatchObject({
       id: 702,
-      number: 'INV-00702',
+      number: 'I00702',
       shipmentId: 803,
       salesOrderId: 1,
       customerName: 'Aster Fabrication',
@@ -573,7 +577,7 @@ describe('ShipmentInvoicesController (e2e)', () => {
     expect(existingInvoiceResponse.status).toBe(200);
     expect(existingInvoiceResponse.body).toMatchObject({
       id: 701,
-      number: 'INV-00701',
+      number: 'I00701',
       shipmentId: 804,
       customerId: 22,
       status: 'issued',

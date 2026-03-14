@@ -526,7 +526,7 @@ describe('ShipmentsController (e2e)', () => {
     });
     expect(createResponse.status).toBe(201);
     expect(createResponse.body).toMatchObject({
-      number: 'SHP-00801',
+      number: 'S00801',
       salesOrderId: 1,
       status: 'draft',
       customerId: 21,
@@ -576,7 +576,7 @@ describe('ShipmentsController (e2e)', () => {
     expect(detailResponse.status).toBe(200);
     expect(detailResponse.body).toMatchObject({
       id: shipmentId,
-      number: 'SHP-00801',
+      number: 'S00801',
       shipToName: 'Aster Fabrication',
     });
     expect(detailResponse.body.shipToAddress).toEqual([

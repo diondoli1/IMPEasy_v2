@@ -625,7 +625,7 @@ describe('PurchaseOrdersController (e2e)', () => {
       openQuantity: 0,
       receivedQuantity: 0,
     });
-    expect(response.body.number).toBe('PO-00001');
+    expect(response.body.number).toBe('PO00001');
   });
 
   it('receives a purchase-order line into a lot and exposes it through stock views', async () => {
@@ -677,7 +677,7 @@ describe('PurchaseOrdersController (e2e)', () => {
     expect(detailResponse.status).toBe(200);
     expect(detailResponse.body).toMatchObject({
       id: purchaseOrderResponse.body.id,
-      number: 'PO-00001',
+      number: 'PO00001',
       status: 'received',
       openQuantity: 0,
       receivedQuantity: 5,
@@ -708,7 +708,7 @@ describe('PurchaseOrdersController (e2e)', () => {
     expect(stockLotsResponse.body[0]).toMatchObject({
       itemId: 1001,
       lotNumber: 'AL-2026-001',
-      sourceDocument: 'PO-00001',
+      sourceDocument: 'PO00001',
       quantityOnHand: 5,
       availableQuantity: 5,
       status: 'available',
@@ -722,7 +722,7 @@ describe('PurchaseOrdersController (e2e)', () => {
       lotNumber: 'AL-2026-001',
       movementType: 'purchase_receipt',
       quantity: 5,
-      reference: 'PO-00001',
+      reference: 'PO00001',
       notes: 'Dock receipt 1',
     });
   });
