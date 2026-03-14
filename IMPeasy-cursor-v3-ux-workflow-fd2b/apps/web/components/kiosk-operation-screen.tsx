@@ -123,11 +123,9 @@ export function KioskOperationScreen({
               >
                 {pendingAction === 'start'
                   ? operation.status === 'paused'
-                    ? 'Resuming...'
+                    ? 'Starting...'
                     : 'Starting...'
-                  : operation.status === 'paused'
-                    ? 'Resume'
-                    : 'Start'}
+                  : 'Start Job'}
               </Button>
             ) : null}
             {operation.status === 'running' ? (
@@ -138,7 +136,15 @@ export function KioskOperationScreen({
                     void handleAction('pause');
                   }}
                 >
-                  {pendingAction === 'pause' ? 'Pausing...' : 'Pause'}
+                  {pendingAction === 'pause' ? 'Setting up...' : 'Set up'}
+                </Button>
+                <Button
+                  disabled={pendingAction !== null}
+                  onClick={() => {
+                    void handleAction('pause');
+                  }}
+                >
+                  {pendingAction === 'pause' ? 'Stopping...' : 'Stop'}
                 </Button>
                 <Button
                   tone="primary"
@@ -148,7 +154,7 @@ export function KioskOperationScreen({
                     setError(null);
                   }}
                 >
-                  Finish
+                  Complete Job
                 </Button>
               </>
             ) : null}
@@ -173,8 +179,8 @@ export function KioskOperationScreen({
       {dialogOpen ? (
         <div className="dialog-backdrop">
           <DialogFrame
-            title="Finish operation"
-            description="Report the good and scrap quantities once. The next operation becomes ready after completion."
+            title="Complete Job"
+            description="Enter good and scrap quantities."
             footer={
               <>
                 <Button onClick={() => setDialogOpen(false)} disabled={pendingAction === 'complete'}>

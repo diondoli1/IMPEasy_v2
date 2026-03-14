@@ -34,9 +34,9 @@
 | TICKET-030 | Company Details | ✅ Done |
 | TICKET-031 | Numbering Formats | ✅ Done |
 | TICKET-032 | User Roles | ✅ Done |
-| TICKET-033 | Kiosk — Admin View | ⬜ Pending |
-| TICKET-034 | Kiosk — Operator View (Workstation Select) | ⬜ Pending |
-| TICKET-035 | Kiosk — Operator Job Execution | ⬜ Pending |
+| TICKET-033 | Kiosk — Admin View | ✅ Done |
+| TICKET-034 | Kiosk — Operator View (Workstation Select) | ✅ Done |
+| TICKET-035 | Kiosk — Operator Job Execution | ✅ Done |
 | TICKET-036 | API Alignment — Customer Orders & Quotes | ⬜ Pending |
 | TICKET-037 | API Alignment — Workstations & Workstation Groups | ⬜ Pending |
 | TICKET-038 | API Alignment — Numbering | ⬜ Pending |
