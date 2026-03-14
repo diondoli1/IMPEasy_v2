@@ -41,6 +41,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('../lib/api', () => ({
   createCustomer: vi.fn(),
+  createItem: vi.fn(),
   createQuote: vi.fn(),
   createShipment: vi.fn(),
   deleteQuote: vi.fn(),

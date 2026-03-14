@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   createCustomer,
+  createItem,
   createShipment,
   createShipmentInvoice,
   convertQuote,
@@ -283,6 +284,13 @@ export function CustomerOrderWorkspace({
   const [addCustomerPhone, setAddCustomerPhone] = useState('');
   const [addCustomerError, setAddCustomerError] = useState<string | null>(null);
   const [addCustomerSaving, setAddCustomerSaving] = useState(false);
+  const [showAddProductDialog, setShowAddProductDialog] = useState(false);
+  const [addProductLineIndex, setAddProductLineIndex] = useState<number | null>(null);
+  const [addProductName, setAddProductName] = useState('');
+  const [addProductUnit, setAddProductUnit] = useState('pcs');
+  const [addProductPrice, setAddProductPrice] = useState(0);
+  const [addProductError, setAddProductError] = useState<string | null>(null);
+  const [addProductSaving, setAddProductSaving] = useState(false);
 
   async function loadSalesOrderShippingWorkspace(salesOrderId: number): Promise<void> {
     const [availabilityData, shipmentData] = await Promise.all([
@@ -686,6 +694,51 @@ export function CustomerOrderWorkspace({
     }
   }
 
+  async function handleAddProductSave(): Promise<void> {
+    const name = addProductName.trim();
+    if (!name) {
+      setAddProductError('Name is required.');
+      return;
+    }
+    setAddProductSaving(true);
+    setAddProductError(null);
+    try {
+      const created = await createItem({
+        name,
+        unitOfMeasure: addProductUnit || 'pcs',
+        defaultPrice: addProductPrice,
+        itemType: 'produced',
+      });
+      setItems((prev) => [...prev, created]);
+      if (addProductLineIndex !== null) {
+        const item = created;
+        setLineRows((prev) =>
+          prev.map((row, i) =>
+            i === addProductLineIndex
+              ? {
+                  ...row,
+                  itemId: item.id,
+                  itemCode: item.code ?? `ITEM-${String(item.id).padStart(4, '0')}`,
+                  itemName: item.name,
+                  description: item.description ?? item.name,
+                  unitPrice: item.defaultPrice,
+                }
+              : row,
+          ),
+        );
+      }
+      setShowAddProductDialog(false);
+      setAddProductLineIndex(null);
+      setAddProductName('');
+      setAddProductUnit('pcs');
+      setAddProductPrice(0);
+    } catch {
+      setAddProductError('Unable to create product.');
+    } finally {
+      setAddProductSaving(false);
+    }
+  }
+
   return (
     <>
     <PageShell
@@ -1047,32 +1100,42 @@ export function CustomerOrderWorkspace({
                           <div className="stack stack--tight">
                             <select
                               className="control control--dense"
-                              value={line.itemId}
+                              value={showAddProductDialog && addProductLineIndex === index ? '__add_new__' : line.itemId}
                               onChange={(event) => {
-                                const item = items.find(
-                                  (candidate) => candidate.id === Number(event.target.value),
-                                );
-                                setLineRows((current) =>
-                                  current.map((candidate, candidateIndex) =>
-                                    candidateIndex === index
-                                      ? {
-                                          ...candidate,
-                                          itemId: item?.id ?? 0,
-                                          itemCode: item
-                                            ? `ITEM-${String(item.id).padStart(4, '0')}`
-                                            : '',
-                                          itemName: item?.name ?? '',
-                                          description: item?.description ?? item?.name ?? '',
-                                        }
-                                      : candidate,
-                                  ),
-                                );
+                                const value = event.target.value;
+                                if (value === '__add_new__') {
+                                  setAddProductLineIndex(index);
+                                  setShowAddProductDialog(true);
+                                  setAddProductName('');
+                                  setAddProductUnit('pcs');
+                                  setAddProductPrice(0);
+                                  setAddProductError(null);
+                                } else {
+                                  const item = items.find(
+                                    (candidate) => candidate.id === Number(value),
+                                  );
+                                  setLineRows((current) =>
+                                    current.map((candidate, candidateIndex) =>
+                                      candidateIndex === index
+                                        ? {
+                                            ...candidate,
+                                            itemId: item?.id ?? 0,
+                                            itemCode: item?.code ?? (item ? `ITEM-${String(item.id).padStart(4, '0')}` : ''),
+                                            itemName: item?.name ?? '',
+                                            description: item?.description ?? item?.name ?? '',
+                                            unitPrice: item?.defaultPrice ?? candidate.unitPrice,
+                                          }
+                                        : candidate,
+                                    ),
+                                  );
+                                }
                               }}
                             >
+                              <option value="__add_new__">Add new product</option>
                               <option value={0}>Select item</option>
                               {items.map((item) => (
                                 <option key={item.id} value={item.id}>
-                                  {`ITEM-${String(item.id).padStart(4, '0')}`} {item.name}
+                                  {item.code ?? `ITEM-${String(item.id).padStart(4, '0')}`} {item.name}
                                 </option>
                               ))}
                             </select>
@@ -1443,6 +1506,53 @@ export function CustomerOrderWorkspace({
         </Field>
       </FormGrid>
       {addCustomerError ? <p role="alert">{addCustomerError}</p> : null}
+    </DialogFrame>
+    <DialogFrame
+      title="Create Product"
+      description="Add a new product. Back returns to the order form."
+      open={showAddProductDialog}
+      onClose={() => {
+        setShowAddProductDialog(false);
+        setAddProductLineIndex(null);
+        setAddProductError(null);
+      }}
+      footer={
+        <>
+          <Button onClick={() => setShowAddProductDialog(false)}>Back</Button>
+          <Button tone="primary" onClick={() => void handleAddProductSave()} disabled={addProductSaving}>
+            {addProductSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </>
+      }
+    >
+      <FormGrid columns={2}>
+        <Field label="Name">
+          <input
+            className="control"
+            value={addProductName}
+            onChange={(e) => setAddProductName(e.target.value)}
+            placeholder="Product name"
+          />
+        </Field>
+        <Field label="Unit of measure">
+          <input
+            className="control"
+            value={addProductUnit}
+            onChange={(e) => setAddProductUnit(e.target.value)}
+          />
+        </Field>
+        <Field label="Default price">
+          <input
+            className="control"
+            type="number"
+            min={0}
+            step="0.01"
+            value={addProductPrice}
+            onChange={(e) => setAddProductPrice(Number(e.target.value) || 0)}
+          />
+        </Field>
+      </FormGrid>
+      {addProductError ? <p role="alert">{addProductError}</p> : null}
     </DialogFrame>
     </>
   );

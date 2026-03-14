@@ -42,7 +42,7 @@
 | TICKET-038 | API Alignment — Numbering | ⬜ Pending |
 | TICKET-039 | API Alignment — Username vs Email | ✅ Done |
 | TICKET-040 | Remove Legacy Primitives | ✅ Done |
-| TICKET-041 | Inline Form Behavior — Universal | ⬜ Pending |
+| TICKET-041 | Inline Form Behavior — Universal | ✅ Done |
 | TICKET-042 | Save → Details Conversion — Universal | ✅ Done |
 | TICKET-043 | Operator Role Restriction | ✅ Done |
 | TICKET-044 | End-to-End & Visual QA | ✅ Done |
