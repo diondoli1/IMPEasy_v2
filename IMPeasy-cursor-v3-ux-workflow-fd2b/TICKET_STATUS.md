@@ -15,7 +15,7 @@
 | TICKET-011 | Invoices — Create Invoice | ✅ Done |
 | TICKET-012 | Sales Management Tab | ✅ Done |
 | TICKET-013 | Production Planning Shell & Tabs | ✅ Done |
-| TICKET-014 | Manufacturing Orders — Create Form | ⬜ Pending |
+| TICKET-014 | Manufacturing Orders — Create Form | ✅ Done |
 | TICKET-015 | Manufacturing Orders — Table | ✅ Done |
 | TICKET-016 | Workstations Tab | ✅ Done |
 | TICKET-017 | Workstation Group Tab | ✅ Done |

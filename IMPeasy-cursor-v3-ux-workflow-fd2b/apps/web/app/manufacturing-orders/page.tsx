@@ -61,7 +61,7 @@ export default function ManufacturingOrdersPage(): JSX.Element {
         <Typography variant="h6">Manufacturing Orders</Typography>
         <Button
           component={Link}
-          href="/manufactured-items"
+          href="/manufacturing-orders/new"
           variant="contained"
           startIcon={<AddIcon />}
         >

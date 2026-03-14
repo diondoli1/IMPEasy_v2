@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { PageShell } from '../../../components/ui/page-templates';
-import { Badge, ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../components/ui/primitives';
+import { Badge, Button, ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../components/ui/primitives';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
 import { getInvoice, payInvoice } from '../../../lib/api';
 import type { Invoice } from '../../../types/invoice';
