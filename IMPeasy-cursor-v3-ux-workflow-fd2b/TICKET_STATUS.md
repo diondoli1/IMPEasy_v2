@@ -12,7 +12,7 @@
 | TICKET-008 | Customer Order Details Page | ✅ Done |
 | TICKET-009 | Customers Tab — Table & Create | ✅ Done |
 | TICKET-010 | Invoices Tab — List & Details | ✅ Done |
-| TICKET-011 | Invoices — Create Invoice | ⬜ Pending |
+| TICKET-011 | Invoices — Create Invoice | ✅ Done |
 | TICKET-012 | Sales Management Tab | ✅ Done |
 | TICKET-013 | Production Planning Shell & Tabs | ✅ Done |
 | TICKET-014 | Manufacturing Orders — Create Form | ⬜ Pending |

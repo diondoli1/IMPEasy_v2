@@ -88,7 +88,11 @@ import type {
   StockLotDetail,
   StockMovement,
 } from '../types/inventory';
-import type { Invoice, InvoiceRegisterEntry } from '../types/invoice';
+import type {
+  CreateInvoiceInput,
+  Invoice,
+  InvoiceRegisterEntry,
+} from '../types/invoice';
 import type {
   ItemVendorTerm,
   ItemVendorTermInput,
@@ -798,9 +802,25 @@ export async function getInvoice(id: number): Promise<Invoice> {
   return parseJsonOrThrow(response) as Promise<Invoice>;
 }
 
+export async function createInvoice(input: CreateInvoiceInput): Promise<Invoice> {
+  const response = await apiFetch(`${API_BASE_URL}/invoices`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<Invoice>;
+}
+
 export async function createShipmentInvoice(shipmentId: number): Promise<Invoice> {
   const response = await apiFetch(`${API_BASE_URL}/shipments/${shipmentId}/invoice`, {
     method: 'POST',
+  });
+  return parseJsonOrThrow(response) as Promise<Invoice>;
+}
+
+export async function payInvoice(id: number): Promise<Invoice> {
+  const response = await apiFetch(`${API_BASE_URL}/invoices/${id}/pay`, {
+    method: 'PATCH',
   });
   return parseJsonOrThrow(response) as Promise<Invoice>;
 }

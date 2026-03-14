@@ -248,6 +248,7 @@ model SalesOrder {
   salesOrderLines         SalesOrderLine[]
   salesOrderAudits        SalesOrderAudit[]
   shipments               Shipment[]
+  invoices                Invoice[]
 
   @@index([customerId])
   @@map("sales_orders")
@@ -275,6 +276,7 @@ model SalesOrderLine {
   item                 Item           @relation(fields: [itemId], references: [id])
   workOrder            WorkOrder?
   shipmentLines        ShipmentLine[]
+  invoiceLines         InvoiceLine[]
 
   @@index([salesOrderId])
   @@index([itemId])
@@ -617,20 +619,20 @@ model Inspection {
 }
 
 model Shipment {
-  id            Int            @id @default(autoincrement())
-  salesOrderId  Int
-  number        String?        @unique
-  status        String         @default("draft")
-  shipDate      DateTime?
-  carrierMethod String?
+  id             Int            @id @default(autoincrement())
+  salesOrderId   Int
+  number         String?        @unique
+  status         String         @default("draft")
+  shipDate       DateTime?
+  carrierMethod  String?
   trackingNumber String?
-  deliveredAt   DateTime?
-  notes         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  salesOrder    SalesOrder     @relation(fields: [salesOrderId], references: [id])
-  shipmentLines ShipmentLine[]
-  invoice       Invoice?
+  deliveredAt    DateTime?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  salesOrder     SalesOrder     @relation(fields: [salesOrderId], references: [id])
+  shipmentLines  ShipmentLine[]
+  invoice        Invoice?
 
   @@index([salesOrderId])
   @@map("shipments")
@@ -654,38 +656,51 @@ model ShipmentLine {
 }
 
 model Invoice {
-  id           Int           @id @default(autoincrement())
-  shipmentId   Int           @unique
-  customerId   Int
-  number       String?       @unique
-  status       String        @default("issued")
-  issueDate    DateTime      @default(now())
-  dueDate      DateTime?
-  paidAt       DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  shipment     Shipment      @relation(fields: [shipmentId], references: [id])
-  customer     Customer      @relation(fields: [customerId], references: [id])
-  invoiceLines InvoiceLine[]
+  id               Int           @id @default(autoincrement())
+  shipmentId       Int?          @unique
+  salesOrderId     Int?
+  customerId       Int
+  number           String?       @unique
+  invoiceType      String        @default("invoice")
+  status           String        @default("unpaid")
+  issueDate        DateTime      @default(now())
+  dueDate          DateTime?
+  paidAt           DateTime?
+  billingStreet    String?
+  billingCity      String?
+  billingPostcode  String?
+  billingStateRegion String?
+  billingCountry   String?
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  shipment         Shipment?     @relation(fields: [shipmentId], references: [id])
+  salesOrder       SalesOrder?   @relation(fields: [salesOrderId], references: [id])
+  customer         Customer      @relation(fields: [customerId], references: [id])
+  invoiceLines     InvoiceLine[]
 
   @@index([customerId])
+  @@index([salesOrderId])
   @@map("invoices")
 }
 
 model InvoiceLine {
-  id             Int          @id @default(autoincrement())
-  invoiceId      Int
-  shipmentLineId Int
-  quantity       Int
-  unitPrice      Float
-  lineTotal      Float
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  invoice        Invoice      @relation(fields: [invoiceId], references: [id])
-  shipmentLine   ShipmentLine @relation(fields: [shipmentLineId], references: [id])
+  id               Int            @id @default(autoincrement())
+  invoiceId        Int
+  shipmentLineId   Int?
+  salesOrderLineId Int?
+  quantity         Int
+  unitPrice        Float
+  lineTotal        Float
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  invoice          Invoice        @relation(fields: [invoiceId], references: [id])
+  shipmentLine     ShipmentLine?  @relation(fields: [shipmentLineId], references: [id])
+  salesOrderLine   SalesOrderLine? @relation(fields: [salesOrderLineId], references: [id])
 
   @@index([invoiceId])
   @@index([shipmentLineId])
+  @@index([salesOrderLineId])
   @@map("invoice_lines")
 }
 

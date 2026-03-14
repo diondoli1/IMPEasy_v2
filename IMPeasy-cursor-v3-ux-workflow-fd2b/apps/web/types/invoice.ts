@@ -47,3 +47,25 @@ export type InvoiceRegisterEntry = {
   dueDate: string | null;
   paidAt: string | null;
 };
+
+export type CreateInvoiceLineInput = {
+  salesOrderLineId: number;
+  quantity: number;
+  unitPrice: number;
+};
+
+export type CreateInvoiceInput = {
+  salesOrderId: number;
+  customerId: number;
+  invoiceType?: 'quotation' | 'invoice' | 'proforma_invoice';
+  status?: 'unpaid' | 'paid' | 'dummy';
+  issueDate?: string;
+  dueDate?: string;
+  billingStreet?: string;
+  billingCity?: string;
+  billingPostcode?: string;
+  billingStateRegion?: string;
+  billingCountry?: string;
+  notes?: string;
+  lines: CreateInvoiceLineInput[];
+};

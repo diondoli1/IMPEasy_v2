@@ -5,11 +5,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SalesOrdersService } from '../sales-orders/sales-orders.service';
 import { NumberingService, type NumberingSnapshot } from '../settings/numbering.service';
 import { ShippingService } from '../shipping/shipping.service';
+import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { InvoiceRegisterResponseDto } from './dto/invoice-register-response.dto';
 import { InvoiceResponseDto } from './dto/invoice-response.dto';
 
 const INVOICE_INCLUDE = {
   shipment: true,
+  salesOrder: true,
   customer: {
     select: {
       id: true,
@@ -23,6 +25,7 @@ const INVOICE_INCLUDE = {
           salesOrderLine: true,
         },
       },
+      salesOrderLine: true,
     },
     orderBy: { id: 'asc' as const },
   },
@@ -177,9 +180,9 @@ export class InvoicingService {
       throw new NotFoundException(`Invoice for shipment ${shipmentId} not found`);
     }
 
-    if (invoice.status !== 'issued') {
+    if (invoice.status !== 'issued' && invoice.status !== 'unpaid') {
       throw new BadRequestException(
-        `Only issued invoices can be marked paid. Current status: ${invoice.status}`,
+        `Only issued/unpaid invoices can be marked paid. Current status: ${invoice.status}`,
       );
     }
 
@@ -195,10 +198,38 @@ export class InvoicingService {
     return this.mapInvoice(updated, await this.numberingService.getSnapshot());
   }
 
+  async markPaid(id: number): Promise<InvoiceResponseDto> {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: INVOICE_INCLUDE,
+    });
+
+    if (!invoice) {
+      throw new NotFoundException(`Invoice ${id} not found`);
+    }
+
+    if (invoice.status !== 'issued' && invoice.status !== 'unpaid') {
+      throw new BadRequestException(
+        `Only issued/unpaid invoices can be marked paid. Current status: ${invoice.status}`,
+      );
+    }
+
+    const updated = await this.prisma.invoice.update({
+      where: { id },
+      data: {
+        status: 'paid',
+        paidAt: new Date(),
+      },
+      include: INVOICE_INCLUDE,
+    });
+
+    return this.mapInvoice(updated, await this.numberingService.getSnapshot());
+  }
+
   private async findInvoiceRecordByShipmentId(
     shipmentId: number,
   ): Promise<InvoiceWithRelations | null> {
-    return this.prisma.invoice.findUnique({
+    return this.prisma.invoice.findFirst({
       where: { shipmentId },
       include: INVOICE_INCLUDE,
     });
@@ -212,6 +243,8 @@ export class InvoicingService {
     invoice: InvoiceWithRelations,
     numberingSnapshot: NumberingSnapshot,
   ): InvoiceRegisterResponseDto {
+    const salesOrderId =
+      invoice.shipment?.salesOrderId ?? invoice.salesOrderId ?? 0;
     return {
       id: invoice.id,
       number:
@@ -223,20 +256,25 @@ export class InvoicingService {
         ),
       customerId: invoice.customerId,
       customerName: invoice.customer.name,
-      salesOrderId: invoice.shipment.salesOrderId,
-      salesOrderNumber: this.numberingService.formatFromSnapshot(
-        numberingSnapshot,
-        'sales_orders',
-        invoice.shipment.salesOrderId,
-      ),
-      shipmentId: invoice.shipmentId,
+      salesOrderId,
+      salesOrderNumber:
+        salesOrderId > 0
+          ? this.numberingService.formatFromSnapshot(
+              numberingSnapshot,
+              'sales_orders',
+              salesOrderId,
+            )
+          : '-',
+      shipmentId: invoice.shipmentId ?? 0,
       shipmentNumber:
-        invoice.shipment.number ??
-        this.numberingService.formatFromSnapshot(
-          numberingSnapshot,
-          'shipments',
-          invoice.shipmentId,
-        ),
+        invoice.shipment?.number ??
+        (invoice.shipmentId
+          ? this.numberingService.formatFromSnapshot(
+              numberingSnapshot,
+              'shipments',
+              invoice.shipmentId,
+            )
+          : '-'),
       status: invoice.status,
       totalAmount: Number(
         invoice.invoiceLines.reduce((sum, line) => sum + line.lineTotal, 0).toFixed(2),
@@ -251,6 +289,10 @@ export class InvoicingService {
     invoice: InvoiceWithRelations,
     numberingSnapshot: NumberingSnapshot,
   ): InvoiceResponseDto {
+    const salesOrderId =
+      invoice.shipment?.salesOrderId ?? invoice.salesOrderId ?? 0;
+    const sol = (line: (typeof invoice.invoiceLines)[0]) =>
+      line.shipmentLine?.salesOrderLine ?? line.salesOrderLine;
     return {
       id: invoice.id,
       number:
@@ -260,20 +302,25 @@ export class InvoicingService {
           'invoices',
           invoice.id,
         ),
-      shipmentId: invoice.shipmentId,
+      shipmentId: invoice.shipmentId ?? 0,
       shipmentNumber:
-        invoice.shipment.number ??
-        this.numberingService.formatFromSnapshot(
-          numberingSnapshot,
-          'shipments',
-          invoice.shipmentId,
-        ),
-      salesOrderId: invoice.shipment.salesOrderId,
-      salesOrderNumber: this.numberingService.formatFromSnapshot(
-        numberingSnapshot,
-        'sales_orders',
-        invoice.shipment.salesOrderId,
-      ),
+        invoice.shipment?.number ??
+        (invoice.shipmentId
+          ? this.numberingService.formatFromSnapshot(
+              numberingSnapshot,
+              'shipments',
+              invoice.shipmentId,
+            )
+          : '-'),
+      salesOrderId,
+      salesOrderNumber:
+        salesOrderId > 0
+          ? this.numberingService.formatFromSnapshot(
+              numberingSnapshot,
+              'sales_orders',
+              salesOrderId,
+            )
+          : '-',
       customerId: invoice.customerId,
       customerName: invoice.customer.name,
       status: invoice.status,
@@ -287,20 +334,102 @@ export class InvoicingService {
       ),
       createdAt: invoice.createdAt,
       updatedAt: invoice.updatedAt,
-      invoiceLines: invoice.invoiceLines.map((line) => ({
-        id: line.id,
-        invoiceId: line.invoiceId,
-        shipmentLineId: line.shipmentLineId,
-        salesOrderLineId: line.shipmentLine.salesOrderLineId,
-        itemId: line.shipmentLine.salesOrderLine.itemId,
-        itemCode: line.shipmentLine.salesOrderLine.itemCode ?? null,
-        itemName: line.shipmentLine.salesOrderLine.itemName ?? `Item ${line.shipmentLine.salesOrderLine.itemId}`,
-        quantity: line.quantity,
-        unitPrice: line.unitPrice,
-        lineTotal: line.lineTotal,
-        createdAt: line.createdAt,
-        updatedAt: line.updatedAt,
-      })),
+      invoiceLines: invoice.invoiceLines.map((line) => {
+        const orderLine = sol(line);
+        return {
+          id: line.id,
+          invoiceId: line.invoiceId,
+          shipmentLineId: line.shipmentLineId ?? 0,
+          salesOrderLineId: orderLine?.id ?? 0,
+          itemId: orderLine?.itemId ?? 0,
+          itemCode: orderLine?.itemCode ?? null,
+          itemName: orderLine?.itemName ?? `Item ${orderLine?.itemId ?? 0}`,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+          lineTotal: line.lineTotal,
+          createdAt: line.createdAt,
+          updatedAt: line.updatedAt,
+        };
+      }),
     };
+  }
+
+  async createFromSalesOrder(payload: CreateInvoiceDto): Promise<InvoiceResponseDto> {
+    const numberingSnapshot = await this.numberingService.getSnapshot();
+    const salesOrder = await this.salesOrdersService.findOne(payload.salesOrderId);
+
+    if (salesOrder.customerId !== payload.customerId) {
+      throw new BadRequestException(
+        `Customer ${payload.customerId} does not match sales order customer ${salesOrder.customerId}`,
+      );
+    }
+
+    const salesOrderLinesById = new Map(
+      salesOrder.salesOrderLines.map((line) => [line.id, line]),
+    );
+
+    for (const line of payload.lines) {
+      const sol = salesOrderLinesById.get(line.salesOrderLineId);
+      if (!sol) {
+        throw new BadRequestException(
+          `Sales order line ${line.salesOrderLineId} not found`,
+        );
+      }
+      if (line.quantity <= 0) {
+        throw new BadRequestException(
+          `Quantity must be positive for line ${line.salesOrderLineId}`,
+        );
+      }
+    }
+
+    const issueDate = payload.issueDate
+      ? new Date(payload.issueDate)
+      : new Date();
+    const dueDate = payload.dueDate ? new Date(payload.dueDate) : null;
+
+    const created = await this.prisma.invoice.create({
+      data: {
+        salesOrderId: payload.salesOrderId,
+        customerId: payload.customerId,
+        invoiceType: payload.invoiceType ?? 'invoice',
+        status: payload.status ?? 'unpaid',
+        issueDate,
+        dueDate,
+        billingStreet: payload.billingStreet,
+        billingCity: payload.billingCity,
+        billingPostcode: payload.billingPostcode,
+        billingStateRegion: payload.billingStateRegion,
+        billingCountry: payload.billingCountry,
+        notes: payload.notes,
+        invoiceLines: {
+          create: payload.lines.map((line) => {
+            const lineTotal = this.calculateLineTotal(line.unitPrice, line.quantity);
+            return {
+              salesOrderLineId: line.salesOrderLineId,
+              quantity: line.quantity,
+              unitPrice: line.unitPrice,
+              lineTotal,
+            };
+          }),
+        },
+      },
+      include: INVOICE_INCLUDE,
+    });
+
+    const numbered = await this.prisma.invoice.update({
+      where: { id: created.id },
+      data: {
+        number:
+          created.number ??
+          this.numberingService.formatFromSnapshot(
+            numberingSnapshot,
+            'invoices',
+            created.id,
+          ),
+      },
+      include: INVOICE_INCLUDE,
+    });
+
+    return this.mapInvoice(numbered, numberingSnapshot);
   }
 }

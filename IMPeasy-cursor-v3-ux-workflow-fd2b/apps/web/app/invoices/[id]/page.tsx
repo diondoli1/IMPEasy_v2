@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { PageShell } from '../../../components/ui/page-templates';
-import { Badge, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../components/ui/primitives';
+import { Badge, ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../components/ui/primitives';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
-import { getInvoice } from '../../../lib/api';
+import { getInvoice, payInvoice } from '../../../lib/api';
 import type { Invoice } from '../../../types/invoice';
 
 export default function InvoiceDetailPage(): JSX.Element {
@@ -16,8 +16,11 @@ export default function InvoiceDetailPage(): JSX.Element {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     void (async () => {
       try {
         setInvoice(await getInvoice(id));
@@ -28,6 +31,19 @@ export default function InvoiceDetailPage(): JSX.Element {
       }
     })();
   }, [id]);
+
+  async function handleMarkPaid(): Promise<void> {
+    if (!invoice || invoice.status === 'paid') return;
+    setPaying(true);
+    try {
+      const updated = await payInvoice(invoice.id);
+      setInvoice(updated);
+    } catch {
+      setError('Unable to mark invoice as paid.');
+    } finally {
+      setPaying(false);
+    }
+  }
 
   if (loading) {
     return <p>Loading invoice...</p>;
@@ -45,16 +61,19 @@ export default function InvoiceDetailPage(): JSX.Element {
       actions={
         <>
           <Badge tone={invoice.status === 'paid' ? 'success' : 'info'}>{invoice.status}</Badge>
-          <Link className="button button--secondary" href="/invoices">
-            Back to invoices
-          </Link>
+          <ButtonLink href="/invoices">Back</ButtonLink>
+          {(invoice.status === 'unpaid' || invoice.status === 'issued') && (
+            <Button tone="primary" onClick={() => void handleMarkPaid()} disabled={paying}>
+              {paying ? 'Marking...' : 'Mark paid'}
+            </Button>
+          )}
         </>
       }
     >
       <StatGrid>
         <StatCard label="Customer" value={invoice.customerName} />
         <StatCard label="Sales Order" value={invoice.salesOrderNumber} />
-        <StatCard label="Shipment" value={invoice.shipmentNumber} />
+        <StatCard label="Shipment" value={invoice.shipmentNumber || '-'} />
         <StatCard label="Total" value={formatCurrency(invoice.totalAmount)} />
       </StatGrid>
 
