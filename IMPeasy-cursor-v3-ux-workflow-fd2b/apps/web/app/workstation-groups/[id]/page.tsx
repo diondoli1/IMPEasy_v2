@@ -6,18 +6,35 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
-import { createWorkstationGroup } from '../../../lib/api';
+import { getWorkstationGroup, updateWorkstationGroup } from '../../../lib/api';
 
-export default function NewWorkstationGroupPage(): JSX.Element {
-  const router = useRouter();
+export default function WorkstationGroupDetailPage(): JSX.Element {
+  const params = useParams<{ id: string }>();
+  const id = Number(params.id);
   const [name, setName] = useState('');
   const [instanceCount, setInstanceCount] = useState(1);
   const [hourlyRate, setHourlyRate] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const g = await getWorkstationGroup(id);
+        setName(g.name);
+        setInstanceCount(g.instanceCount);
+        setHourlyRate(g.hourlyRate);
+      } catch {
+        setError('Workstation group not found.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id]);
 
   async function handleSave(): Promise<void> {
     if (!name.trim()) {
@@ -27,23 +44,43 @@ export default function NewWorkstationGroupPage(): JSX.Element {
     setSaving(true);
     setError(null);
     try {
-      const created = await createWorkstationGroup({
+      await updateWorkstationGroup(id, {
         name: name.trim(),
         instanceCount,
         hourlyRate,
       });
-      router.replace(`/workstation-groups/${created.id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unable to create workstation group.');
+      setError(e instanceof Error ? e.message : 'Unable to save.');
     } finally {
       setSaving(false);
     }
   }
 
+  if (loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  if (error && !name) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error" role="alert">
+          {error}
+        </Typography>
+        <Button component={Link} href="/workstation-groups" startIcon={<ArrowBackIcon />}>
+          Back
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Create Workstation Group
+        Workstation Group
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button

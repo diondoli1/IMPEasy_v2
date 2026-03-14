@@ -352,6 +352,36 @@ model Routing {
   @@map("routings")
 }
 
+model WorkstationGroup {
+  id                 Int                 @id @default(autoincrement())
+  code               String?              @unique
+  name               String
+  type               String?
+  instanceCount      Int                  @default(1)
+  hourlyRate         Float                @default(0)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  workstations       Workstation[]
+  routingOperations  RoutingOperation[]
+
+  @@map("workstation_groups")
+}
+
+model Workstation {
+  id                 Int               @id @default(autoincrement())
+  workstationGroupId Int
+  code               String?           @unique
+  name               String
+  type               String?
+  hourlyRate         Float             @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  workstationGroup   WorkstationGroup   @relation(fields: [workstationGroupId], references: [id])
+
+  @@index([workstationGroupId])
+  @@map("workstations")
+}
+
 model RoutingOperation {
   id                  Int                  @id @default(autoincrement())
   routingId           Int
@@ -359,6 +389,7 @@ model RoutingOperation {
   name                String
   description         String?
   workstation         String?
+  workstationGroupId  Int?
   setupTimeMinutes    Int                  @default(0)
   runTimeMinutes      Int                  @default(0)
   queueNotes          String?
@@ -366,9 +397,11 @@ model RoutingOperation {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   routing             Routing              @relation(fields: [routingId], references: [id])
+  workstationGroup    WorkstationGroup?    @relation(fields: [workstationGroupId], references: [id])
   workOrderOperations WorkOrderOperation[]
 
   @@index([routingId])
+  @@index([workstationGroupId])
   @@map("routing_operations")
 }
 

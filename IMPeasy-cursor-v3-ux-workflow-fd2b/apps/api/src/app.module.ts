@@ -15,6 +15,7 @@ import { SalesOrdersModule } from './sales-orders/sales-orders.module';
 import { SettingsModule } from './settings/settings.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { WorkOrdersModule } from './work-orders/work-orders.module';
+import { WorkstationsModule } from './workstations/workstations.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { WorkOrdersModule } from './work-orders/work-orders.module';
     SettingsModule,
     ShippingModule,
     WorkOrdersModule,
+    WorkstationsModule,
     QuotesModule,
   ],
 })

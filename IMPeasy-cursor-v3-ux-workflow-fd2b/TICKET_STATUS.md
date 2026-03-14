@@ -38,8 +38,8 @@
 | TICKET-034 | Kiosk — Operator View (Workstation Select) | ✅ Done |
 | TICKET-035 | Kiosk — Operator Job Execution | ✅ Done |
 | TICKET-036 | API Alignment — Customer Orders & Quotes | ✅ Done |
-| TICKET-037 | API Alignment — Workstations & Workstation Groups | ⬜ Pending |
-| TICKET-038 | API Alignment — Numbering | ⬜ Pending |
+| TICKET-037 | API Alignment — Workstations & Workstation Groups | ✅ Done |
+| TICKET-038 | API Alignment — Numbering | ✅ Done |
 | TICKET-039 | API Alignment — Username vs Email | ✅ Done |
 | TICKET-040 | Remove Legacy Primitives | ✅ Done |
 | TICKET-041 | Inline Form Behavior — Universal | ✅ Done |

@@ -1,4 +1,4 @@
-﻿export const NUMBERING_DOCUMENT_TYPES = [
+export const NUMBERING_DOCUMENT_TYPES = [
   'customers',
   'quotes',
   'sales_orders',
@@ -19,14 +19,14 @@ export const DEFAULT_NUMBERING_SETTINGS: Record<
     padding: number;
   }
 > = {
-  customers: { prefix: 'CUS', separator: '-', padding: 4 },
-  quotes: { prefix: 'Q', separator: '-', padding: 5 },
-  sales_orders: { prefix: 'SO', separator: '-', padding: 5 },
-  manufacturing_orders: { prefix: 'MO', separator: '-', padding: 4 },
-  purchase_orders: { prefix: 'PO', separator: '-', padding: 5 },
-  shipments: { prefix: 'SHP', separator: '-', padding: 5 },
-  invoices: { prefix: 'INV', separator: '-', padding: 5 },
-  lots: { prefix: 'FG', separator: '-', padding: 4 },
+  customers: { prefix: 'CU', separator: '', padding: 5 },
+  quotes: { prefix: 'Q', separator: '', padding: 5 },
+  sales_orders: { prefix: 'CO', separator: '', padding: 5 },
+  manufacturing_orders: { prefix: 'MO', separator: '', padding: 5 },
+  purchase_orders: { prefix: 'PO', separator: '', padding: 5 },
+  shipments: { prefix: 'S', separator: '', padding: 5 },
+  invoices: { prefix: 'I', separator: '', padding: 5 },
+  lots: { prefix: 'FG', separator: '', padding: 4 },
 };
 
 export const SETTINGS_LIST_TYPES = [

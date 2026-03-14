@@ -110,6 +110,12 @@ import type {
   PurchaseOrderLineInput,
   PurchaseOrderLineReceiptInput,
 } from '../types/purchase-order-line';
+import type {
+  Workstation,
+  WorkstationGroup,
+  WorkstationGroupInput,
+  WorkstationInput,
+} from '../types/workstation';
 import type { ModuleDashboardResponse } from '../types/dashboard';
 import type {
   CompanySetting,
@@ -415,6 +421,70 @@ export async function updateSupplier(id: number, input: Partial<SupplierInput>):
   });
 
   return parseJsonOrThrow(response) as Promise<Supplier>;
+}
+
+export async function listWorkstationGroups(): Promise<WorkstationGroup[]> {
+  const response = await apiFetch(`${API_BASE_URL}/workstation-groups`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<WorkstationGroup[]>;
+}
+
+export async function getWorkstationGroup(id: number): Promise<WorkstationGroup> {
+  const response = await apiFetch(`${API_BASE_URL}/workstation-groups/${id}`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<WorkstationGroup>;
+}
+
+export async function createWorkstationGroup(
+  input: WorkstationGroupInput,
+): Promise<WorkstationGroup> {
+  const response = await apiFetch(`${API_BASE_URL}/workstation-groups`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<WorkstationGroup>;
+}
+
+export async function updateWorkstationGroup(
+  id: number,
+  input: Partial<WorkstationGroupInput>,
+): Promise<WorkstationGroup> {
+  const response = await apiFetch(`${API_BASE_URL}/workstation-groups/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<WorkstationGroup>;
+}
+
+export async function listWorkstations(): Promise<Workstation[]> {
+  const response = await apiFetch(`${API_BASE_URL}/workstations`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<Workstation[]>;
+}
+
+export async function getWorkstation(id: number): Promise<Workstation> {
+  const response = await apiFetch(`${API_BASE_URL}/workstations/${id}`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<Workstation>;
+}
+
+export async function createWorkstation(input: WorkstationInput): Promise<Workstation> {
+  const response = await apiFetch(`${API_BASE_URL}/workstations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<Workstation>;
+}
+
+export async function updateWorkstation(
+  id: number,
+  input: Partial<WorkstationInput>,
+): Promise<Workstation> {
+  const response = await apiFetch(`${API_BASE_URL}/workstations/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(response) as Promise<Workstation>;
 }
 
 export async function listSupplierItemTerms(supplierId: number): Promise<ItemVendorTerm[]> {

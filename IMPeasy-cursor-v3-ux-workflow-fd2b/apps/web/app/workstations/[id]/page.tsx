@@ -10,14 +10,19 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { createWorkstation, listWorkstationGroups } from '../../../lib/api';
+import {
+  getWorkstation,
+  listWorkstationGroups,
+  updateWorkstation,
+} from '../../../lib/api';
 import type { WorkstationGroup } from '../../../types/workstation';
 
-export default function NewWorkstationPage(): JSX.Element {
-  const router = useRouter();
+export default function WorkstationDetailPage(): JSX.Element {
+  const params = useParams<{ id: string }>();
+  const id = Number(params.id);
   const [groups, setGroups] = useState<WorkstationGroup[]>([]);
   const [groupId, setGroupId] = useState<number | ''>('');
   const [name, setName] = useState('');
@@ -30,14 +35,22 @@ export default function NewWorkstationPage(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        setGroups(await listWorkstationGroups());
+        const [ws, gs] = await Promise.all([
+          getWorkstation(id),
+          listWorkstationGroups(),
+        ]);
+        setGroups(gs);
+        setGroupId(ws.workstationGroupId);
+        setName(ws.name);
+        setType(ws.type ?? '');
+        setHourlyRate(ws.hourlyRate);
       } catch {
-        setError('Unable to load workstation groups.');
+        setError('Workstation not found.');
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [id]);
 
   async function handleSave(): Promise<void> {
     if (!groupId || !name.trim()) {
@@ -47,15 +60,14 @@ export default function NewWorkstationPage(): JSX.Element {
     setSaving(true);
     setError(null);
     try {
-      const created = await createWorkstation({
+      await updateWorkstation(id, {
         workstationGroupId: groupId,
         name: name.trim(),
         type: type.trim() || undefined,
         hourlyRate,
       });
-      router.replace(`/workstations/${created.id}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unable to create workstation.');
+      setError(e instanceof Error ? e.message : 'Unable to save.');
     } finally {
       setSaving(false);
     }
@@ -69,10 +81,23 @@ export default function NewWorkstationPage(): JSX.Element {
     );
   }
 
+  if (error && !name) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error" role="alert">
+          {error}
+        </Typography>
+        <Button component={Link} href="/workstations" startIcon={<ArrowBackIcon />}>
+          Back
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Create Workstation
+        Workstation
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
@@ -100,9 +125,6 @@ export default function NewWorkstationPage(): JSX.Element {
             label="Workstation Group"
             onChange={(e) => setGroupId(e.target.value as number | '')}
           >
-            <MenuItem value="">
-              <em>Select group</em>
-            </MenuItem>
             {groups.map((g) => (
               <MenuItem key={g.id} value={g.id}>
                 {g.name}
