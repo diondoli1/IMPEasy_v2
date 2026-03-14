@@ -304,6 +304,10 @@ export function canAccessPath(pathname: string, roles: string[]): boolean {
     return true;
   }
 
+  if (normalizedRoles.includes('operator') && !normalizedRoles.some((r) => ['admin', 'office', 'planner'].includes(r))) {
+    return pathname === '/kiosk' || pathname.startsWith('/kiosk/');
+  }
+
   const explicitRoles = resolveExplicitPathRoles(pathname);
   if (explicitRoles) {
     return explicitRoles.some((role) => normalizedRoles.includes(role));

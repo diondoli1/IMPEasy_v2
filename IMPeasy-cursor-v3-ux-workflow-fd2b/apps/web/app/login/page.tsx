@@ -102,6 +102,7 @@ export default function LoginPage(): JSX.Element {
           fullWidth
           required
           error={Boolean(error)}
+          placeholder="Use your email address"
         />
 
         <TextField
