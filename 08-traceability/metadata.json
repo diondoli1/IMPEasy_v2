@@ -1,0 +1,233 @@
+{
+  "categoryId": 1,
+  "categoryName": "How-To videos",
+  "itemIndex": 7,
+  "title": "Traceability",
+  "videoId": "ESspse1_iIA",
+  "pageUrl": "https://www.mrpeasy.com/demo-videos/traceability/",
+  "youtubeUrl": "https://www.youtube.com/watch?v=ESspse1_iIA",
+  "outputKey": "how-to-videos/08-traceability",
+  "status": "ok",
+  "durationSeconds": 439.366667,
+  "videoPath": "videos/how-to-videos/ESspse1_iIA.mp4",
+  "frameDirectory": "screens/how-to-videos/08-traceability",
+  "frameCount": 36,
+  "frames": [
+    {
+      "fileName": "frame_0001.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0001.jpg",
+      "timestampSeconds": 0,
+      "timestampLabel": "00:00:00"
+    },
+    {
+      "fileName": "frame_0002.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0002.jpg",
+      "timestampSeconds": 3.96667,
+      "timestampLabel": "00:00:03"
+    },
+    {
+      "fileName": "frame_0003.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0003.jpg",
+      "timestampSeconds": 8.33333,
+      "timestampLabel": "00:00:08"
+    },
+    {
+      "fileName": "frame_0004.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0004.jpg",
+      "timestampSeconds": 113.833,
+      "timestampLabel": "00:01:53"
+    },
+    {
+      "fileName": "frame_0005.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0005.jpg",
+      "timestampSeconds": 115.2,
+      "timestampLabel": "00:01:55"
+    },
+    {
+      "fileName": "frame_0006.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0006.jpg",
+      "timestampSeconds": 118.867,
+      "timestampLabel": "00:01:58"
+    },
+    {
+      "fileName": "frame_0007.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0007.jpg",
+      "timestampSeconds": 146.033,
+      "timestampLabel": "00:02:26"
+    },
+    {
+      "fileName": "frame_0008.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0008.jpg",
+      "timestampSeconds": 164.633,
+      "timestampLabel": "00:02:44"
+    },
+    {
+      "fileName": "frame_0009.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0009.jpg",
+      "timestampSeconds": 179.633,
+      "timestampLabel": "00:02:59"
+    },
+    {
+      "fileName": "frame_0010.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0010.jpg",
+      "timestampSeconds": 187.867,
+      "timestampLabel": "00:03:07"
+    },
+    {
+      "fileName": "frame_0011.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0011.jpg",
+      "timestampSeconds": 190.133,
+      "timestampLabel": "00:03:10"
+    },
+    {
+      "fileName": "frame_0012.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0012.jpg",
+      "timestampSeconds": 191.633,
+      "timestampLabel": "00:03:11"
+    },
+    {
+      "fileName": "frame_0013.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0013.jpg",
+      "timestampSeconds": 192.9,
+      "timestampLabel": "00:03:12"
+    },
+    {
+      "fileName": "frame_0014.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0014.jpg",
+      "timestampSeconds": 209.733,
+      "timestampLabel": "00:03:29"
+    },
+    {
+      "fileName": "frame_0015.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0015.jpg",
+      "timestampSeconds": 216.3,
+      "timestampLabel": "00:03:36"
+    },
+    {
+      "fileName": "frame_0016.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0016.jpg",
+      "timestampSeconds": 218.1,
+      "timestampLabel": "00:03:38"
+    },
+    {
+      "fileName": "frame_0017.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0017.jpg",
+      "timestampSeconds": 250.233,
+      "timestampLabel": "00:04:10"
+    },
+    {
+      "fileName": "frame_0018.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0018.jpg",
+      "timestampSeconds": 259.6,
+      "timestampLabel": "00:04:19"
+    },
+    {
+      "fileName": "frame_0019.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0019.jpg",
+      "timestampSeconds": 274.9,
+      "timestampLabel": "00:04:34"
+    },
+    {
+      "fileName": "frame_0020.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0020.jpg",
+      "timestampSeconds": 278.033,
+      "timestampLabel": "00:04:38"
+    },
+    {
+      "fileName": "frame_0021.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0021.jpg",
+      "timestampSeconds": 291.033,
+      "timestampLabel": "00:04:51"
+    },
+    {
+      "fileName": "frame_0022.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0022.jpg",
+      "timestampSeconds": 296.6,
+      "timestampLabel": "00:04:56"
+    },
+    {
+      "fileName": "frame_0023.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0023.jpg",
+      "timestampSeconds": 301.433,
+      "timestampLabel": "00:05:01"
+    },
+    {
+      "fileName": "frame_0024.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0024.jpg",
+      "timestampSeconds": 303.333,
+      "timestampLabel": "00:05:03"
+    },
+    {
+      "fileName": "frame_0025.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0025.jpg",
+      "timestampSeconds": 315.933,
+      "timestampLabel": "00:05:15"
+    },
+    {
+      "fileName": "frame_0026.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0026.jpg",
+      "timestampSeconds": 321.233,
+      "timestampLabel": "00:05:21"
+    },
+    {
+      "fileName": "frame_0027.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0027.jpg",
+      "timestampSeconds": 336.533,
+      "timestampLabel": "00:05:36"
+    },
+    {
+      "fileName": "frame_0028.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0028.jpg",
+      "timestampSeconds": 339.567,
+      "timestampLabel": "00:05:39"
+    },
+    {
+      "fileName": "frame_0029.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0029.jpg",
+      "timestampSeconds": 344.2,
+      "timestampLabel": "00:05:44"
+    },
+    {
+      "fileName": "frame_0030.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0030.jpg",
+      "timestampSeconds": 360.567,
+      "timestampLabel": "00:06:00"
+    },
+    {
+      "fileName": "frame_0031.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0031.jpg",
+      "timestampSeconds": 361.6,
+      "timestampLabel": "00:06:01"
+    },
+    {
+      "fileName": "frame_0032.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0032.jpg",
+      "timestampSeconds": 362.567,
+      "timestampLabel": "00:06:02"
+    },
+    {
+      "fileName": "frame_0033.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0033.jpg",
+      "timestampSeconds": 382,
+      "timestampLabel": "00:06:22"
+    },
+    {
+      "fileName": "frame_0034.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0034.jpg",
+      "timestampSeconds": 399.2,
+      "timestampLabel": "00:06:39"
+    },
+    {
+      "fileName": "frame_0035.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0035.jpg",
+      "timestampSeconds": 401.467,
+      "timestampLabel": "00:06:41"
+    },
+    {
+      "fileName": "frame_0036.jpg",
+      "filePath": "screens/how-to-videos/08-traceability/frame_0036.jpg",
+      "timestampSeconds": 418.433,
+      "timestampLabel": "00:06:58"
+    }
+  ]
+}
