@@ -167,7 +167,7 @@
 
 ---
 
-### TICKET-B10: Roles — Admin & Operator Only
+### TICKET-B10: Roles — Admin & Operator Only ✅ DONE
 **Priority:** P2 (Medium)  
 **UX Spec:** User roles: Admin or Operator only  
 **Current:** 4 roles: admin, office, planner, operator  

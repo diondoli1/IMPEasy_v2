@@ -1,4 +1,4 @@
-﻿import {
+import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
@@ -71,8 +71,13 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    // Map office/planner to admin for backward compatibility (UX spec: Admin & Operator only)
+    const effectiveRoles = userRoleNames.includes('office') || userRoleNames.includes('planner')
+      ? [...userRoleNames, 'admin']
+      : userRoleNames;
+
     const hasRequiredRole = requiredRoles.some((requiredRole) =>
-      userRoleNames.includes(requiredRole),
+      effectiveRoles.includes(requiredRole),
     );
 
     if (!hasRequiredRole) {

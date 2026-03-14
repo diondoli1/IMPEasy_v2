@@ -348,7 +348,9 @@ export function buildDraftQuote(customer: Customer | null): Required<QuoteInput>
 
 export function buildSalespersonOptions(users: AuthUser[]): Array<{ label: string; email: string }> {
   return users
-    .filter((user) => user.roles.includes('admin') || user.roles.includes('office'))
+    .filter((user) =>
+      user.roles.some((r) => ['admin', 'office', 'planner'].includes(r)),
+    )
     .map((user) => ({
       label: user.name,
       email: user.email,

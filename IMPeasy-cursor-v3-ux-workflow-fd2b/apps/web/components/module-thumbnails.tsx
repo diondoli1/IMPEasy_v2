@@ -5,19 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
-import { normalizeRoles } from '../lib/navigation';
+import { normalizeRoles, type RoleName } from '../lib/navigation';
 
 type ModuleThumb = {
   label: string;
   href: string;
-  roles: string[];
+  roles: RoleName[];
 };
 
 const MODULE_THUMBS: ModuleThumb[] = [
-  { label: 'CRM', href: '/crm', roles: ['admin', 'office'] },
-  { label: 'Production', href: '/manufacturing-orders', roles: ['admin', 'planner'] },
-  { label: 'Stock', href: '/stock/items', roles: ['admin', 'office', 'planner'] },
-  { label: 'Procurement', href: '/purchase-orders', roles: ['admin', 'office'] },
+  { label: 'CRM', href: '/crm', roles: ['admin'] },
+  { label: 'Production', href: '/manufacturing-orders', roles: ['admin'] },
+  { label: 'Stock', href: '/stock/items', roles: ['admin'] },
+  { label: 'Procurement', href: '/purchase-orders', roles: ['admin'] },
   { label: 'Settings', href: '/settings/company', roles: ['admin'] },
   { label: 'Kiosk', href: '/kiosk', roles: ['admin', 'operator'] },
 ];
@@ -63,7 +63,7 @@ export function ModuleThumbnails({ roles }: ModuleThumbnailsProps): JSX.Element 
   const pathname = usePathname();
   const normalizedRoles = normalizeRoles(roles);
   const visibleThumbs = MODULE_THUMBS.filter((t) =>
-    t.roles.some((r) => normalizedRoles.includes(r as 'admin' | 'office' | 'planner' | 'operator')),
+    t.roles.some((r: RoleName) => normalizedRoles.includes(r)),
   );
 
   return (

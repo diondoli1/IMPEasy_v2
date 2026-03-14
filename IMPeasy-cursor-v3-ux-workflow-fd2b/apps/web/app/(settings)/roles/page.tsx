@@ -39,7 +39,9 @@ export default function UserRolesPage(): JSX.Element {
         const initial: Record<number, string> = {};
         for (const u of loadedUsers) {
           const primary = u.roles.find((r) => UX_ROLES.includes(r as typeof UX_ROLES[number]));
-          initial[u.id] = primary ?? 'operator';
+          const mapped =
+            primary ?? (u.roles.some((r) => ['office', 'planner'].includes(r)) ? 'admin' : 'operator');
+          initial[u.id] = mapped;
         }
         setRoleByUserId(initial);
       } catch {

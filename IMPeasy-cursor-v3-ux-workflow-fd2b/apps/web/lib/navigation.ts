@@ -1,4 +1,5 @@
-export const FIXED_ROLE_ORDER = ['admin', 'office', 'planner', 'operator'] as const;
+/** UX spec: Admin and Operator only. office/planner mapped to admin for backward compatibility. */
+export const FIXED_ROLE_ORDER = ['admin', 'operator'] as const;
 
 export type RoleName = (typeof FIXED_ROLE_ORDER)[number];
 
@@ -25,16 +26,12 @@ export type NavigationGroup = {
 };
 
 export const FIXED_ROLE_DESCRIPTIONS: Record<RoleName, string> = {
-  admin: 'Maintains users, settings, numbering, and module dashboards.',
-  office: 'Owns commercial, purchasing, shipping, invoicing, and stock visibility.',
-  planner: 'Owns manufactured items, routings, manufacturing orders, and assignments.',
+  admin: 'Full access: CRM, Production, Stock, Procurement, Settings.',
   operator: 'Works only from the fixed kiosk queue and execution screen.',
 };
 
 export const LANDING_PATH_BY_ROLE: Record<RoleName, string> = {
   admin: '/dashboard',
-  office: '/dashboard',
-  planner: '/dashboard',
   operator: '/kiosk',
 };
 
@@ -47,27 +44,27 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     key: 'customer-orders',
     href: '/customer-orders',
     label: 'CRM',
-    roles: ['admin', 'office'],
+    roles: ['admin'],
     tabs: [
       {
         href: '/customer-orders',
         label: 'Customer Orders',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
       {
         href: '/customers',
         label: 'Customers',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
       {
         href: '/invoices',
         label: 'Invoices',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
       {
         href: '/sales-management',
         label: 'Sales Management',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
     ],
     matches: (pathname: string) =>
@@ -87,32 +84,32 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     key: 'production',
     href: '/manufacturing-orders',
     label: 'Production Planning',
-    roles: ['admin', 'planner', 'operator'],
+    roles: ['admin', 'operator'],
     tabs: [
       {
         href: '/manufacturing-orders',
         label: 'Manufacturing Orders',
-        roles: ['admin', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/workstations',
         label: 'Workstations',
-        roles: ['admin', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/workstation-groups',
         label: 'Workstation Group',
-        roles: ['admin', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/boms',
         label: 'BOM',
-        roles: ['admin', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/routings',
         label: 'Routings',
-        roles: ['admin', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/kiosk',
@@ -141,27 +138,27 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     key: 'inventory',
     href: '/stock/items',
     label: 'Stock',
-    roles: ['admin', 'office', 'planner'],
+    roles: ['admin'],
     tabs: [
       {
         href: '/stock/items',
         label: 'Items',
-        roles: ['admin', 'office', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/stock/settings',
         label: 'Stock settings',
-        roles: ['admin', 'office', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/stock/shipments',
         label: 'Shipments',
-        roles: ['admin', 'office', 'planner'],
+        roles: ['admin'],
       },
       {
         href: '/stock/inventory',
         label: 'Inventory',
-        roles: ['admin', 'office', 'planner'],
+        roles: ['admin'],
       },
     ],
     matches: (pathname: string) =>
@@ -178,22 +175,22 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     key: 'purchasing',
     href: '/purchase-orders',
     label: 'Procurement',
-    roles: ['admin', 'office'],
+    roles: ['admin'],
     tabs: [
       {
         href: '/purchase-orders',
         label: 'Purchase Orders',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
       {
         href: '/suppliers',
         label: 'Vendors',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
       {
         href: '/procurement/invoices',
         label: 'Invoices',
-        roles: ['admin', 'office'],
+        roles: ['admin'],
       },
     ],
     matches: (pathname: string) =>
@@ -237,11 +234,11 @@ const EXPLICIT_PATH_ACCESS_RULES: Array<{
 }> = [
   {
     prefixes: ['/items', '/boms', '/routings', '/work-orders', '/operations', '/production', '/workstations', '/workstation-groups'],
-    roles: ['admin', 'planner'],
+    roles: ['admin'],
   },
   {
     prefixes: ['/inventory'],
-    roles: ['admin', 'office', 'planner'],
+    roles: ['admin'],
   },
 ];
 
@@ -253,11 +250,16 @@ function resolveExplicitPathRoles(pathname: string): RoleName[] | null {
   return matchedRule ? matchedRule.roles : null;
 }
 
+/** Maps office/planner to admin for backward compatibility. */
 export function normalizeRoles(roles: string[]): RoleName[] {
-  const normalizedRoles = roles
-    .map((role) => role.trim().toLowerCase())
-    .filter((role): role is RoleName => FIXED_ROLE_ORDER.includes(role as RoleName));
-
+  const mapped = roles.map((role) => {
+    const r = role.trim().toLowerCase();
+    if (r === 'office' || r === 'planner') return 'admin';
+    return r;
+  });
+  const normalizedRoles = mapped.filter((role): role is RoleName =>
+    FIXED_ROLE_ORDER.includes(role as RoleName),
+  );
   return Array.from(new Set(normalizedRoles)).sort((left, right) => {
     return FIXED_ROLE_ORDER.indexOf(left) - FIXED_ROLE_ORDER.indexOf(right);
   });
@@ -304,7 +306,7 @@ export function canAccessPath(pathname: string, roles: string[]): boolean {
     return true;
   }
 
-  if (normalizedRoles.includes('operator') && !normalizedRoles.some((r) => ['admin', 'office', 'planner'].includes(r))) {
+  if (normalizedRoles.includes('operator') && !normalizedRoles.includes('admin')) {
     return pathname === '/kiosk' || pathname.startsWith('/kiosk/');
   }
 
@@ -316,7 +318,7 @@ export function canAccessPath(pathname: string, roles: string[]): boolean {
   const matchedGroup = getActiveNavigationGroup(pathname);
   if (!matchedGroup) {
     if (pathname === '/dashboard') {
-      return normalizedRoles.some((r) => ['admin', 'office', 'planner'].includes(r));
+      return normalizedRoles.includes('admin');
     }
     return pathname === '/' || pathname === '/login';
   }

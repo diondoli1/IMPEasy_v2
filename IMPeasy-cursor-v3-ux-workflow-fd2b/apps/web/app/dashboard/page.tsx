@@ -9,19 +9,19 @@ import Link from 'next/link';
 import React from 'react';
 
 import { useAuth } from '../../lib/auth-context';
-import { normalizeRoles } from '../../lib/navigation';
+import { normalizeRoles, type RoleName } from '../../lib/navigation';
 
 type DashboardBox = {
   label: string;
   href: string;
-  roles: string[];
+  roles: RoleName[];
 };
 
 const DASHBOARD_BOXES: DashboardBox[] = [
-  { label: 'CRM', href: '/crm', roles: ['admin', 'office'] },
-  { label: 'Production Planning', href: '/manufacturing-orders', roles: ['admin', 'planner'] },
-  { label: 'Stock', href: '/stock/items', roles: ['admin', 'office', 'planner'] },
-  { label: 'Procurement', href: '/purchase-orders', roles: ['admin', 'office'] },
+  { label: 'CRM', href: '/crm', roles: ['admin'] },
+  { label: 'Production Planning', href: '/manufacturing-orders', roles: ['admin'] },
+  { label: 'Stock', href: '/stock/items', roles: ['admin'] },
+  { label: 'Procurement', href: '/purchase-orders', roles: ['admin'] },
   { label: 'Settings', href: '/settings/company', roles: ['admin'] },
   { label: 'Kiosk', href: '/kiosk', roles: ['admin', 'operator'] },
 ];
@@ -31,7 +31,7 @@ export default function DashboardPage(): JSX.Element {
   if (!currentUser) return <Box />;
   const normalizedRoles = normalizeRoles(currentUser.roles);
   const visibleBoxes = DASHBOARD_BOXES.filter((box) =>
-    box.roles.some((role) => normalizedRoles.includes(role as 'admin' | 'office' | 'planner' | 'operator')),
+    box.roles.some((role: RoleName) => normalizedRoles.includes(role)),
   );
 
   return (

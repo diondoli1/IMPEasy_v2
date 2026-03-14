@@ -81,10 +81,10 @@ describe('AppShell', () => {
     });
 
     expect(screen.getByText('planner@impeasy.local')).toBeInTheDocument();
-    expect(screen.getByText('planner')).toBeInTheDocument();
+    expect(screen.getByText('admin')).toBeInTheDocument(); // planner maps to admin
     expect(screen.getAllByText('Production Planning').length).toBeGreaterThan(0);
     expect(screen.getByText('Manufacturing Orders')).toBeInTheDocument();
-    expect(screen.queryByText('Settings')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /Settings/i }).length).toBeGreaterThan(0); // planner maps to admin
 
     fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
 
