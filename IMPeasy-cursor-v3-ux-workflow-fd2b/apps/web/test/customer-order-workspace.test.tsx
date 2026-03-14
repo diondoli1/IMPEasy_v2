@@ -4,10 +4,12 @@ import { vi } from 'vitest';
 
 import { CustomerOrderWorkspace } from '../components/customer-order-workspace';
 import {
+  createCustomer,
   createQuote,
   createShipment,
   createShipmentInvoice,
   convertQuote,
+  deleteQuote,
   deliverShipment,
   getCurrentUser,
   getQuote,
@@ -38,8 +40,10 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('../lib/api', () => ({
+  createCustomer: vi.fn(),
   createQuote: vi.fn(),
   createShipment: vi.fn(),
+  deleteQuote: vi.fn(),
   createShipmentInvoice: vi.fn(),
   convertQuote: vi.fn(),
   deliverShipment: vi.fn(),
@@ -90,7 +94,9 @@ const updateSalesOrderStatusMock = vi.mocked(updateSalesOrderStatus);
 describe('CustomerOrderWorkspace', () => {
   beforeEach(() => {
     routerMock.push.mockReset();
+    vi.mocked(createCustomer).mockReset();
     createQuoteMock.mockReset();
+    vi.mocked(deleteQuote).mockReset();
     createShipmentMock.mockReset();
     createShipmentInvoiceMock.mockReset();
     convertQuoteMock.mockReset();
@@ -266,7 +272,7 @@ describe('CustomerOrderWorkspace', () => {
     render(<CustomerOrderWorkspace workspaceId="new" />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'New quote' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Create a new customer order' })).toBeInTheDocument();
     });
 
     expect(

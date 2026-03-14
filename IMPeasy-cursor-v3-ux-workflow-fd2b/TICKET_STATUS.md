@@ -8,8 +8,8 @@
 | TICKET-004 | Module Layout with Thumbnail Boxes | ✅ Done |
 | TICKET-005 | CRM Shell & Tabs | ✅ Done |
 | TICKET-006 | Customer Orders — Kanban Board | ✅ Done |
-| TICKET-007 | Customer Order Create Form (Inline) | ⬜ Pending |
-| TICKET-008 | Customer Order Details Page | ⬜ Pending |
+| TICKET-007 | Customer Order Create Form (Inline) | ✅ Done |
+| TICKET-008 | Customer Order Details Page | ✅ Done |
 | TICKET-009 | Customers Tab — Table & Create | ✅ Done |
 | TICKET-010 | Invoices Tab — List & Details | ✅ Done |
 | TICKET-011 | Invoices — Create Invoice | ⬜ Pending |

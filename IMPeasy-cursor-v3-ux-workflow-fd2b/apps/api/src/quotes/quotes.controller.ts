@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 
 import { Roles } from '../auth/decorators/roles.decorator';
 import { QuoteConversionResponseDto } from './dto/quote-conversion-response.dto';
@@ -50,5 +50,10 @@ export class QuotesController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<QuoteConversionResponseDto> {
     return this.quotesService.convertToSalesOrder(id);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.quotesService.delete(id);
   }
 }

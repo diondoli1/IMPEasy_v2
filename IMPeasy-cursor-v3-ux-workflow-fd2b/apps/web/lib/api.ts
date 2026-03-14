@@ -372,6 +372,17 @@ export async function updateQuote(id: number, input: QuoteInput): Promise<Quote>
   return parseJsonOrThrow(response) as Promise<Quote>;
 }
 
+export async function deleteQuote(id: number): Promise<void> {
+  const response = await apiFetch(`${API_BASE_URL}/quotes/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const payload = await response.text();
+    throw new Error(payload || `Request failed with ${response.status}`);
+  }
+}
+
 export async function listSuppliers(): Promise<Supplier[]> {
   const response = await apiFetch(`${API_BASE_URL}/suppliers`, { cache: 'no-store' });
   return parseJsonOrThrow(response) as Promise<Supplier[]>;

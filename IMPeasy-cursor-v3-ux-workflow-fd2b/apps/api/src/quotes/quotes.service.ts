@@ -423,6 +423,23 @@ export class QuotesService {
     return this.toQuoteDetailResponse(updated, numberingSnapshot);
   }
 
+  async delete(id: number): Promise<void> {
+    const quote = await this.prisma.quote.findUnique({
+      where: { id },
+    });
+
+    if (!quote) {
+      throw new NotFoundException(`Quote ${id} not found`);
+    }
+
+    if (quote.status !== 'draft') {
+      throw new BadRequestException(`Only draft quotes can be deleted`);
+    }
+
+    await this.prisma.quoteLine.deleteMany({ where: { quoteId: id } });
+    await this.prisma.quote.delete({ where: { id } });
+  }
+
   async updateStatus(id: number, payload: UpdateQuoteStatusDto): Promise<QuoteDetailResponseDto> {
     const quote = await this.prisma.quote.findUnique({
       where: { id },

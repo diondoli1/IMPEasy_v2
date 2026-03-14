@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import {
+  createCustomer,
   createShipment,
   createShipmentInvoice,
   convertQuote,
   deliverShipment,
   createQuote,
+  deleteQuote,
   getCurrentUser,
   getQuote,
   getSalesOrder,
@@ -33,6 +35,7 @@ import {
   buildDraftQuote,
   buildSalespersonOptions,
   calculateCommercialDocument,
+  createBlankCustomerInput,
   createEditableLine,
   formatCurrency,
   formatDate,
@@ -58,6 +61,8 @@ import type {
 } from '../types/sales-order';
 import type { SettingsListEntry } from '../types/settings';
 import type { Shipment, ShippingAvailabilityLine } from '../types/shipment';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 import { SalesOrderProductionHandoff } from './sales-order-production-handoff';
 import { ShipmentCreationPanel } from './shipment-creation-panel';
 import { PageShell } from './ui/page-templates';
@@ -66,6 +71,7 @@ import {
   Button,
   ButtonLink,
   DataTable,
+  DialogFrame,
   EmptyState,
   Field,
   FormGrid,
@@ -271,6 +277,12 @@ export function CustomerOrderWorkspace({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [showAddCustomerDialog, setShowAddCustomerDialog] = useState(false);
+  const [addCustomerName, setAddCustomerName] = useState('');
+  const [addCustomerEmail, setAddCustomerEmail] = useState('');
+  const [addCustomerPhone, setAddCustomerPhone] = useState('');
+  const [addCustomerError, setAddCustomerError] = useState<string | null>(null);
+  const [addCustomerSaving, setAddCustomerSaving] = useState(false);
 
   async function loadSalesOrderShippingWorkspace(salesOrderId: number): Promise<void> {
     const [availabilityData, shipmentData] = await Promise.all([
@@ -388,7 +400,11 @@ export function CustomerOrderWorkspace({
   const currentKind = parsedWorkspace.kind === 'new' ? 'quote' : parsedWorkspace.kind;
   const currentStatus = quote?.status ?? salesOrder?.status ?? 'draft';
   const currentDocumentNumber =
-    quote?.documentNumber ?? salesOrder?.documentNumber ?? 'New quote';
+    quote?.documentNumber ?? salesOrder?.documentNumber ?? '';
+  const pageTitle =
+    parsedWorkspace.kind === 'new'
+      ? 'Create a new customer order'
+      : `Customer Order ${currentDocumentNumber}`;
   const customer = customers.find((candidate) => candidate.id === form.customerId) ?? null;
   const salespersonOptions = useMemo(() => {
     const options = buildSalespersonOptions(salespeople);
@@ -547,6 +563,10 @@ export function CustomerOrderWorkspace({
   }
 
   async function handleSave(): Promise<void> {
+    if (currentKind === 'quote' && !quote && form.customerId <= 0) {
+      setError('Please select or add a customer.');
+      return;
+    }
     setSaving(true);
     setError(null);
     setSaveMessage(null);
@@ -626,23 +646,69 @@ export function CustomerOrderWorkspace({
     return <p role="alert">{error}</p>;
   }
 
+  async function handleDeleteQuote(): Promise<void> {
+    if (!quote || quote.status !== 'draft') return;
+    if (!globalThis.confirm?.('Delete this customer order?')) return;
+    try {
+      await deleteQuote(quote.id);
+      router.push('/customer-orders');
+    } catch {
+      setError('Unable to delete the customer order.');
+    }
+  }
+
+  async function handleAddCustomerSave(): Promise<void> {
+    const name = addCustomerName.trim();
+    if (!name) {
+      setAddCustomerError('Name is required.');
+      return;
+    }
+    setAddCustomerSaving(true);
+    setAddCustomerError(null);
+    try {
+      const payload = {
+        ...createBlankCustomerInput(),
+        name,
+        email: addCustomerEmail.trim() || undefined,
+        phone: addCustomerPhone.trim() || undefined,
+      };
+      const created = await createCustomer(payload);
+      setCustomers((prev) => [...prev, created]);
+      applyCustomerSnapshots(created.id);
+      setShowAddCustomerDialog(false);
+      setAddCustomerName('');
+      setAddCustomerEmail('');
+      setAddCustomerPhone('');
+    } catch {
+      setAddCustomerError('Unable to create customer.');
+    } finally {
+      setAddCustomerSaving(false);
+    }
+  }
+
   return (
+    <>
     <PageShell
       eyebrow="Customer Orders"
-      title={currentDocumentNumber}
+      title={pageTitle}
       description="Unified commercial workspace across quote and sales-order data with dense inline lines, downstream tabs, and strong action controls."
       actions={
         <>
           <Badge tone={currentKind === 'quote' ? 'info' : 'success'}>
             {currentKind === 'quote' ? getQuoteActionLabel(currentStatus) : currentStatus}
           </Badge>
-          <ButtonLink href="/customer-orders">Back to board</ButtonLink>
+          <ButtonLink href="/customer-orders">Back</ButtonLink>
           {customer ? <ButtonLink href={`/customers/${customer.id}`}>Open customer</ButtonLink> : null}
           <Button tone="primary" onClick={() => void handleSave()}>
             {saving ? 'Saving...' : 'Save'}
           </Button>
           {quote && quote.status === 'draft' ? (
-            <Button onClick={() => void handleQuoteStatus('sent')}>Send Quote</Button>
+            <>
+              <Button tone="danger" onClick={() => void handleDeleteQuote()}>
+                Delete
+              </Button>
+              <Button onClick={() => void handleQuoteStatus('sent')}>Send Quote</Button>
+            </>
           ) : null}
           {quote && quote.status === 'sent' ? (
             <>
@@ -743,9 +809,18 @@ export function CustomerOrderWorkspace({
                 <Field label="Customer">
                   <select
                     className="control"
-                    value={form.customerId}
-                    onChange={(event) => applyCustomerSnapshots(Number(event.target.value))}
+                    value={showAddCustomerDialog ? '__add_new__' : form.customerId}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (value === '__add_new__') {
+                        setShowAddCustomerDialog(true);
+                      } else {
+                        setShowAddCustomerDialog(false);
+                        applyCustomerSnapshots(Number(value));
+                      }
+                    }}
                   >
+                    <option value="__add_new__">Add new customer</option>
                     <option value={0}>Select customer</option>
                     {customers.map((customerOption) => (
                       <option key={customerOption.id} value={customerOption.id}>
@@ -1138,16 +1213,17 @@ export function CustomerOrderWorkspace({
                           {formatCurrency(line.totalAmount)}
                         </td>
                         <td>
-                          <Button
-                            tone="danger"
+                          <IconButton
+                            size="small"
+                            aria-label="Delete line"
                             onClick={() =>
                               setLineRows((current) =>
                                 current.filter((_, lineIndex) => lineIndex !== index),
                               )
                             }
                           >
-                            Remove
-                          </Button>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
                         </td>
                         </tr>
                       );
@@ -1324,5 +1400,50 @@ export function CustomerOrderWorkspace({
         ) : null}
       </Panel>
     </PageShell>
+    <DialogFrame
+      title="Create Customer Company"
+      description="Add a new customer. Back returns to Create a new customer order."
+      open={showAddCustomerDialog}
+      onClose={() => {
+        setShowAddCustomerDialog(false);
+        setAddCustomerError(null);
+      }}
+      footer={
+        <>
+          <Button onClick={() => setShowAddCustomerDialog(false)}>Back</Button>
+          <Button tone="primary" onClick={() => void handleAddCustomerSave()} disabled={addCustomerSaving}>
+            {addCustomerSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </>
+      }
+    >
+      <FormGrid columns={2}>
+        <Field label="Name">
+          <input
+            className="control"
+            value={addCustomerName}
+            onChange={(e) => setAddCustomerName(e.target.value)}
+            placeholder="Company name"
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            className="control"
+            type="email"
+            value={addCustomerEmail}
+            onChange={(e) => setAddCustomerEmail(e.target.value)}
+          />
+        </Field>
+        <Field label="Phone">
+          <input
+            className="control"
+            value={addCustomerPhone}
+            onChange={(e) => setAddCustomerPhone(e.target.value)}
+          />
+        </Field>
+      </FormGrid>
+      {addCustomerError ? <p role="alert">{addCustomerError}</p> : null}
+    </DialogFrame>
+    </>
   );
 }
