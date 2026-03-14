@@ -1,6 +1,33 @@
 # Database Setup for IMPeasy
 
-If the API returns 500 errors due to missing tables or schema mismatches, run these SQL commands against your PostgreSQL database:
+## Recommended: Apply All Migrations
+
+If starting fresh or the database schema is out of date, run:
+
+```bash
+npx prisma migrate deploy
+```
+
+If the database already has tables but migrations were not tracked (e.g. baseline), apply missing migrations manually.
+
+## Procurement Tables (Vendors, Purchase Orders, Incoming Invoices)
+
+If Procurement → Vendors shows "Unable to load vendors" or Procurement → Invoices shows "Unable to load incoming invoices", ensure these tables exist:
+
+```bash
+# Add paymentTerm to suppliers (if column missing)
+PGPASSWORD=postgres psql -h localhost -U postgres -d impeasy -f prisma/migrations/20260317000000_add_supplier_payment_term/migration.sql
+
+# Create vendor_invoices table (incoming invoices)
+PGPASSWORD=postgres psql -h localhost -U postgres -d impeasy -f prisma/migrations/20260318000001_add_vendor_invoices/migration.sql
+```
+
+- **suppliers** - Vendors table (from `20260310002600_add_suppliers`)
+- **vendor_invoices** - Required for Procurement → Invoices (incoming)
+
+## Other Schema Fixes
+
+If the API returns 500 errors due to missing tables or schema mismatches:
 
 ```bash
 PGPASSWORD=postgres psql -h localhost -U postgres -d impeasy -f prisma/migrations/20260311223000_mvp_050_settings_permissions_dashboards/migration.sql
