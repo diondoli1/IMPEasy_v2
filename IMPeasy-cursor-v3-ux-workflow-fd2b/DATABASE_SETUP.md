@@ -15,6 +15,7 @@ Or apply manually:
 4. **work_orders.salesOrderLineId** - Make nullable: `ALTER TABLE work_orders ALTER COLUMN "salesOrderLineId" DROP NOT NULL;`
 5. **items.unitOfMeasure** - Fix nulls: `UPDATE items SET "unitOfMeasure" = 'pcs' WHERE "unitOfMeasure" IS NULL;`
 6. **customers** - Add status/CRM fields: `psql ... -f prisma/migrations/20260319000000_add_customer_status_fields/migration.sql`
+7. **invoices** - Add customerId, issueDate, paidAt, invoice_lines: `psql ... -f prisma/migrations/20260322000000_fix_invoices_schema/migration.sql`
 
 ## Environment
 
