@@ -15,9 +15,13 @@ export class CustomerResponseDto {
   id!: number;
   code!: string | null;
   name!: string;
+  status!: string | null;
+  regNo!: string | null;
   email!: string | null;
   phone!: string | null;
   vatNumber!: string | null;
+  contactStarted!: Date | null;
+  nextContact!: Date | null;
   website!: string | null;
   billingAddress!: CustomerAddressDto;
   shippingAddress!: CustomerAddressDto;

@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { listCustomers } from '../../lib/api';
+import { formatDate, getCustomerStatusLabel } from '../../lib/commercial';
 import type { Customer } from '../../types/customer';
 
 export default function CustomersPage(): JSX.Element {
@@ -90,8 +91,8 @@ export default function CustomersPage(): JSX.Element {
                     {customer.name}
                   </Typography>
                 </TableCell>
-                <TableCell>{customer.isActive ? 'Active' : 'Inactive'}</TableCell>
-                <TableCell>-</TableCell>
+                <TableCell>{getCustomerStatusLabel(customer.status)}</TableCell>
+                <TableCell>{formatDate(customer.nextContact)}</TableCell>
                 <TableCell>{customer.phone ?? '-'}</TableCell>
                 <TableCell>{customer.email ?? '-'}</TableCell>
                 <TableCell align="right">

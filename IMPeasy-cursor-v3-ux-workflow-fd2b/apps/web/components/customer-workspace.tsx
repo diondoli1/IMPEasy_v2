@@ -7,8 +7,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createCustomer, getCustomer, updateCustomer } from '../lib/api';
 import {
   createBlankCustomerInput,
+  CUSTOMER_STATUS_OPTIONS,
   formatCurrency,
   formatDate,
+  getCustomerStatusLabel,
   workspaceIdForDocument,
 } from '../lib/commercial';
 import type { Customer, CustomerInput } from '../types/customer';
@@ -46,9 +48,13 @@ function mapCustomerToInput(customer: Customer): CustomerInput {
   return {
     code: customer.code ?? '',
     name: customer.name,
+    status: customer.status ?? 'no_contact',
+    regNo: customer.regNo ?? '',
     email: customer.email ?? '',
     phone: customer.phone ?? '',
     vatNumber: customer.vatNumber ?? '',
+    contactStarted: customer.contactStarted ? customer.contactStarted.slice(0, 10) : '',
+    nextContact: customer.nextContact ? customer.nextContact.slice(0, 10) : '',
     website: customer.website ?? '',
     billingAddress: {
       street: customer.billingAddress.street ?? '',
@@ -115,7 +121,7 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
       return <Badge tone="warning">New customer</Badge>;
     }
 
-    return <Badge tone={customer?.isActive ? 'success' : 'neutral'}>{customer?.isActive ? 'Active' : 'Inactive'}</Badge>;
+    return <Badge tone={customer?.isActive ? 'success' : 'neutral'}>{getCustomerStatusLabel(customer?.status)}</Badge>;
   }, [customer, customerId]);
 
   async function handleSave(): Promise<void> {
@@ -126,6 +132,11 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
     try {
       const payload: CustomerInput = {
         ...form,
+        status: form.status || undefined,
+        regNo: form.regNo?.trim() || undefined,
+        contactStarted: form.contactStarted?.trim() || undefined,
+        nextContact: form.nextContact?.trim() || undefined,
+        isActive: ['interested', 'permanent_buyer'].includes(form.status ?? ''),
         contacts:
           form.contacts?.map((contact) => ({
             ...contact,
@@ -209,25 +220,40 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
                 onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}
               />
             </Field>
-            <Field label="Company Name">
+            <Field label="Name">
               <input
                 className="control"
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
               />
             </Field>
-            <Field label="VAT / Tax Number">
+            <Field label="Status">
+              <select
+                className="control"
+                value={form.status ?? 'no_contact'}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, status: event.target.value }))
+                }
+              >
+                {CUSTOMER_STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Reg. no.">
+              <input
+                className="control"
+                value={form.regNo ?? ''}
+                onChange={(event) => setForm((current) => ({ ...current, regNo: event.target.value }))}
+              />
+            </Field>
+            <Field label="TAX Number">
               <input
                 className="control"
                 value={form.vatNumber ?? ''}
                 onChange={(event) => setForm((current) => ({ ...current, vatNumber: event.target.value }))}
-              />
-            </Field>
-            <Field label="Website">
-              <input
-                className="control"
-                value={form.website ?? ''}
-                onChange={(event) => setForm((current) => ({ ...current, website: event.target.value }))}
               />
             </Field>
             <Field label="Phone">
@@ -244,17 +270,55 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
               />
             </Field>
-            <Field label="Active">
-              <select
+            <Field label="Contact Started">
+              <input
                 className="control"
-                value={form.isActive ? 'active' : 'inactive'}
+                type="date"
+                value={form.contactStarted ?? ''}
+                onChange={(event) => setForm((current) => ({ ...current, contactStarted: event.target.value }))}
+              />
+            </Field>
+            <Field label="Next Contact">
+              <input
+                className="control"
+                type="date"
+                value={form.nextContact ?? ''}
+                onChange={(event) => setForm((current) => ({ ...current, nextContact: event.target.value }))}
+              />
+            </Field>
+            <Field label="Tax Rate (%)">
+              <input
+                className="control"
+                type="number"
+                min={0}
+                step={0.01}
+                value={form.defaultTaxRate ?? 0}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, isActive: event.target.value === 'active' }))
+                  setForm((current) => ({
+                    ...current,
+                    defaultTaxRate: Number(event.target.value) || 0,
+                  }))
                 }
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+              />
+            </Field>
+            <Field label="Payment Period">
+              <input
+                className="control"
+                value={form.defaultPaymentTerm ?? ''}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, defaultPaymentTerm: event.target.value }))
+                }
+              />
+            </Field>
+            <Field label="Currency">
+              <input className="control" value="EUR" disabled />
+            </Field>
+            <Field label="Website">
+              <input
+                className="control"
+                value={form.website ?? ''}
+                onChange={(event) => setForm((current) => ({ ...current, website: event.target.value }))}
+              />
             </Field>
           </FormGrid>
         ) : null}

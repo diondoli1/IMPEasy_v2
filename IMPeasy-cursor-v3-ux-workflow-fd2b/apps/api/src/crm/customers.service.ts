@@ -64,6 +64,8 @@ export class CustomersService {
       data: {
         code: normalizeOptionalString(payload.code),
         name: payload.name.trim(),
+        status: normalizeOptionalString(payload.status),
+        regNo: normalizeOptionalString(payload.regNo),
         email: normalizeOptionalString(payload.email),
         phone: normalizeOptionalString(payload.phone),
         vatNumber: normalizeOptionalString(payload.vatNumber),
@@ -84,6 +86,8 @@ export class CustomersService {
         defaultDocumentDiscountPercent: payload.defaultDocumentDiscountPercent ?? 0,
         defaultTaxRate: payload.defaultTaxRate ?? 0,
         internalNotes: normalizeOptionalString(payload.internalNotes),
+        contactStarted: payload.contactStarted ? new Date(payload.contactStarted) : undefined,
+        nextContact: payload.nextContact ? new Date(payload.nextContact) : undefined,
         isActive: payload.isActive ?? true,
         contacts:
           payload.contacts && payload.contacts.length > 0
@@ -131,6 +135,10 @@ export class CustomersService {
               ? normalizeOptionalString(payload.code)
               : undefined,
           name: payload.name?.trim(),
+          status:
+            payload.status !== undefined ? normalizeOptionalString(payload.status) : undefined,
+          regNo:
+            payload.regNo !== undefined ? normalizeOptionalString(payload.regNo) : undefined,
           email:
             payload.email !== undefined ? normalizeOptionalString(payload.email) : undefined,
           phone:
@@ -202,6 +210,14 @@ export class CustomersService {
           internalNotes:
             payload.internalNotes !== undefined
               ? normalizeOptionalString(payload.internalNotes)
+              : undefined,
+          contactStarted:
+            payload.contactStarted !== undefined
+              ? (payload.contactStarted ? new Date(payload.contactStarted) : null)
+              : undefined,
+          nextContact:
+            payload.nextContact !== undefined
+              ? (payload.nextContact ? new Date(payload.nextContact) : null)
               : undefined,
           isActive: payload.isActive,
         },
@@ -295,9 +311,13 @@ export class CustomersService {
         customer.code ??
         this.numberingService.formatFromSnapshot(numberingSnapshot, 'customers', customer.id),
       name: customer.name,
+      status: customer.status ?? null,
+      regNo: customer.regNo ?? null,
       email: customer.email ?? null,
       phone: customer.phone ?? null,
       vatNumber: customer.vatNumber ?? null,
+      contactStarted: customer.contactStarted ?? null,
+      nextContact: customer.nextContact ?? null,
       website: customer.website ?? null,
       billingAddress: this.toAddress(customer, 'billing'),
       shippingAddress: this.toAddress(customer, 'shipping'),

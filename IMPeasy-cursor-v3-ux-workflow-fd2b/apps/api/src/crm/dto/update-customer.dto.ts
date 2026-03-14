@@ -29,6 +29,17 @@ export class UpdateCustomerDto {
   name?: string;
 
   @IsOptional()
+  @IsString()
+  @Matches(/^(no_contact|no_interest|interested|permanent_buyer)$/, {
+    message: 'status must be one of: no_contact, no_interest, interested, permanent_buyer',
+  })
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  regNo?: string;
+
+  @IsOptional()
   @IsEmail()
   email?: string;
 
@@ -81,6 +92,14 @@ export class UpdateCustomerDto {
   @IsOptional()
   @IsString()
   internalNotes?: string;
+
+  @IsOptional()
+  @IsString()
+  contactStarted?: string;
+
+  @IsOptional()
+  @IsString()
+  nextContact?: string;
 
   @IsOptional()
   @Type(() => Boolean)

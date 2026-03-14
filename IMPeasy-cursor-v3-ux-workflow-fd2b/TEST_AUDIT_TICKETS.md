@@ -130,7 +130,7 @@
 
 ---
 
-### TICKET-B7: Customers — Status & Form Fields
+### TICKET-B7: Customers — Status & Form Fields ✅ DONE
 **Priority:** P2 (Medium)  
 **UX Spec:** Status = No contact, No Interest, Interested, Permanent Buyer. Form: Reg. no., TAX Number, Contact Started, Next Contact, Tax Rate, Payment Period, Currency (locked EUR). Table: Next contact column.  
 **Current:** Status = Active/Inactive; different form structure; Next contact shows "-"  

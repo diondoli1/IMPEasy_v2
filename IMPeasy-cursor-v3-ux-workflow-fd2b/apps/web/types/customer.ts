@@ -22,9 +22,13 @@ export type Customer = {
   id: number;
   code: string | null;
   name: string;
+  status: string | null;
+  regNo: string | null;
   email: string | null;
   phone: string | null;
   vatNumber: string | null;
+  contactStarted: string | null;
+  nextContact: string | null;
   website: string | null;
   billingAddress: CustomerAddress;
   shippingAddress: CustomerAddress;
@@ -55,7 +59,11 @@ export type Customer = {
 export type CustomerInput = {
   code?: string;
   name: string;
+  status?: string;
+  regNo?: string;
   email?: string;
+  contactStarted?: string;
+  nextContact?: string;
   phone?: string;
   vatNumber?: string;
   website?: string;

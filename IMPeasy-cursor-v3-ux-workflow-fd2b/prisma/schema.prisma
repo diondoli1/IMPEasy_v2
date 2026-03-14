@@ -51,10 +51,14 @@ model Customer {
   id                             Int          @id @default(autoincrement())
   code                           String?      @unique
   name                           String
+  status                         String?      // no_contact, no_interest, interested, permanent_buyer
+  regNo                          String?
   email                          String?
   phone                          String?
   vatNumber                      String?
   website                        String?
+  contactStarted                 DateTime?
+  nextContact                    DateTime?
   billingStreet                  String?
   billingCity                    String?
   billingPostcode                String?

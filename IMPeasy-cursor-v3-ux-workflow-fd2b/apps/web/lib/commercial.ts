@@ -87,14 +87,25 @@ export function createEmptyAddress(): CustomerAddress {
   };
 }
 
+export const CUSTOMER_STATUS_OPTIONS = [
+  { value: 'no_contact', label: 'No contact' },
+  { value: 'no_interest', label: 'No Interest' },
+  { value: 'interested', label: 'Interested' },
+  { value: 'permanent_buyer', label: 'Permanent Buyer' },
+] as const;
+
 export function createBlankCustomerInput(): Required<CustomerInput> {
   return {
     code: '',
     name: '',
+    status: 'no_contact',
+    regNo: '',
     email: '',
     phone: '',
     vatNumber: '',
     website: '',
+    contactStarted: '',
+    nextContact: '',
     billingAddress: createEmptyAddress(),
     shippingAddress: createEmptyAddress(),
     defaultPaymentTerm: PAYMENT_TERM_OPTIONS[1],
@@ -106,6 +117,12 @@ export function createBlankCustomerInput(): Required<CustomerInput> {
     isActive: true,
     contacts: [],
   };
+}
+
+export function getCustomerStatusLabel(status: string | null | undefined): string {
+  if (!status) return 'No contact';
+  const opt = CUSTOMER_STATUS_OPTIONS.find((o) => o.value === status);
+  return opt?.label ?? status;
 }
 
 export function createEditableLine(items: Item[], line?: QuoteLine | SalesOrderLine): CommercialEditableLine {

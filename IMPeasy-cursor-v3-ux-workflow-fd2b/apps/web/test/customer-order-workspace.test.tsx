@@ -128,9 +128,13 @@ describe('CustomerOrderWorkspace', () => {
         id: 1,
         code: 'CUS-0001',
         name: 'Mekano Werkzeugbau',
+        status: 'interested',
+        regNo: null,
         email: 'ops@mekano.test',
         phone: '+49 30 123 000',
         vatNumber: 'DE123456789',
+        contactStarted: null,
+        nextContact: null,
         website: 'mekano.test',
         billingAddress: {
           street: 'Billing 1',
