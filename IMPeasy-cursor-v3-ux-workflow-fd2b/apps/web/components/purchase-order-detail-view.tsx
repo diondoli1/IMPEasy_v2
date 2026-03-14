@@ -4,6 +4,9 @@ import Link from 'next/link';
 import React from 'react';
 import { useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { formatCurrency, formatDate } from '../lib/commercial';
 import type { Item } from '../types/item';
 import type { StockLot } from '../types/inventory';
@@ -40,6 +43,11 @@ export function PurchaseOrderDetailView({
   return (
     <div className="page-stack">
       <div className="page-shell__header">
+        <div className="page-shell__leading">
+          <MuiButton component={Link} href="/purchase-orders" variant="outlined" startIcon={<ArrowBackIcon />}>
+            Back
+          </MuiButton>
+        </div>
         <div className="page-shell__title-block">
           <div className="page-shell__eyebrow">Purchasing</div>
           <h1 className="page-shell__title">{purchaseOrder.number}</h1>
@@ -50,9 +58,6 @@ export function PurchaseOrderDetailView({
         </div>
         <div className="page-shell__actions">
           <Badge tone="info">{purchaseOrder.status}</Badge>
-          <Link className="button button--secondary" href="/purchase-orders">
-            Back to list
-          </Link>
         </div>
       </div>
 

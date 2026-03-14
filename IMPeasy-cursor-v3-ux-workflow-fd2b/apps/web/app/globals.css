@@ -280,8 +280,15 @@ button {
   justify-content: space-between;
 }
 
+.page-shell__leading {
+  align-items: flex-start;
+  display: flex;
+  flex-shrink: 0;
+}
+
 .page-shell__title-block {
   display: grid;
+  flex: 1;
   gap: 8px;
   min-width: 0;
 }

@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
+
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
 
 import { PageShell } from '../../../components/ui/page-templates';
 import {
@@ -126,6 +130,11 @@ export default function RoutingDetailPage(): JSX.Element {
       eyebrow="Engineering"
       title={routing.name}
       description="Routing header, operation rows, workstation notes, and timing fields in one operational workspace."
+      leadingActions={
+        <MuiButton component={Link} href="/routings" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone="info">{routing.status}</Badge>

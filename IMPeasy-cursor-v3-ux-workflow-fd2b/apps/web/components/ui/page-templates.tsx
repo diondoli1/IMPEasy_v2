@@ -8,6 +8,7 @@ export type PageShellProps = {
   eyebrow: string;
   title: string;
   description: string;
+  leadingActions?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
 };
@@ -46,12 +47,14 @@ export function PageShell({
   eyebrow,
   title,
   description,
+  leadingActions,
   actions,
   children,
 }: PageShellProps): JSX.Element {
   return (
     <div className="page-shell">
       <header className="page-shell__header">
+        {leadingActions ? <div className="page-shell__leading">{leadingActions}</div> : null}
         <div className="page-shell__title-block">
           <div className="page-shell__eyebrow">{eyebrow}</div>
           <h1 className="page-shell__title">{title}</h1>

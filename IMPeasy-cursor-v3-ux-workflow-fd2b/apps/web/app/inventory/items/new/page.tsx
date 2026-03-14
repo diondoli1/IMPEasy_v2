@@ -4,6 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+
 import { InventoryItemForm } from '../../../../components/inventory-item-form';
 import { createInventoryItem, listItems } from '../../../../lib/api';
 import type { Item } from '../../../../types/item';
@@ -44,10 +49,12 @@ export default function NewInventoryItemPage(): JSX.Element {
 
   return (
     <section>
-      <h1>Track Inventory Item</h1>
-      <p>
-        <Link href="/inventory/items">Back to inventory items</Link>
-      </p>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Button component={Link} href="/inventory/items" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </Button>
+        <Typography variant="h6">Track Inventory Item</Typography>
+      </Box>
       <InventoryItemForm
         items={items.map((item) => ({ id: item.id, name: item.name }))}
         submitLabel="Create inventory item"

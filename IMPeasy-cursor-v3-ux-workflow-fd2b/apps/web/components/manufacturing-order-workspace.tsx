@@ -1,6 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
+
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
 
 import {
   createOrUpdateMaterialBooking,
@@ -194,6 +198,11 @@ export function ManufacturingOrderWorkspace({
       eyebrow="Production"
       title={order.documentNumber}
       description="Main production control workspace for planning, booking, release, assignments, output, and execution history."
+      leadingActions={
+        <MuiButton component={Link} href="/manufacturing-orders" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone={manufacturingOrderStatusTone(order.status)}>
@@ -202,7 +211,6 @@ export function ManufacturingOrderWorkspace({
           <Badge tone={releaseStateTone(order.releaseState)}>
             {normalizeProductionStatus(order.releaseState)}
           </Badge>
-          <ButtonLink href="/manufacturing-orders">Back to list</ButtonLink>
           <ButtonLink href={`/customer-orders/sales-order-${order.salesOrderId}`}>
             Source sales order
           </ButtonLink>

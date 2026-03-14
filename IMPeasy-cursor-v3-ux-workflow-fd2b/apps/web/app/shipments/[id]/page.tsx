@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { PageShell } from '../../../components/ui/page-templates';
 import { Badge, Button, DataTable, EmptyState, Notice, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../components/ui/primitives';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
@@ -76,6 +79,11 @@ export default function ShipmentDetailPage(): JSX.Element {
       eyebrow="Shipping"
       title={shipment.number}
       description="Operational shipment workspace for header updates, lot picking, shipping, delivery, and invoice linkage."
+      leadingActions={
+        <MuiButton component={Link} href="/stock/shipments" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone="info">{shipment.status}</Badge>

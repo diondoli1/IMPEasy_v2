@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
+
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
 
 import { PageShell } from '../../../components/ui/page-templates';
 import {
@@ -129,6 +133,11 @@ export default function BomDetailPage(): JSX.Element {
       eyebrow="Engineering"
       title={bom.name}
       description="BOM header, component rows, and rough-cost feedback in one planner-facing workspace."
+      leadingActions={
+        <MuiButton component={Link} href="/boms" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone="info">{bom.status}</Badge>

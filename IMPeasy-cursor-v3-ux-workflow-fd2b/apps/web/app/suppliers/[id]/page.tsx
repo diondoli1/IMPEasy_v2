@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { SupplierForm } from '../../../components/supplier-form';
 import { createSupplierItemTerm, getSupplier, listItems, updateSupplier } from '../../../lib/api';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
@@ -64,6 +67,11 @@ export default function SupplierDetailPage(): JSX.Element {
   return (
     <section>
       <div className="page-shell__header">
+        <div className="page-shell__leading">
+          <MuiButton component={Link} href="/suppliers" variant="outlined" startIcon={<ArrowBackIcon />}>
+            Back
+          </MuiButton>
+        </div>
         <div className="page-shell__title-block">
           <div className="page-shell__eyebrow">Vendors</div>
           <h1 className="page-shell__title">{supplier.name}</h1>
@@ -75,9 +83,6 @@ export default function SupplierDetailPage(): JSX.Element {
           <Badge tone={supplier.isActive ? 'success' : 'warning'}>
             {supplier.isActive ? 'Active' : 'Inactive'}
           </Badge>
-          <Link className="button button--secondary" href="/suppliers">
-            Back to suppliers
-          </Link>
         </div>
       </div>
 

@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { PageShell } from '../../../components/ui/page-templates';
 import { Badge, Button, ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../../components/ui/primitives';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
@@ -58,10 +61,14 @@ export default function InvoiceDetailPage(): JSX.Element {
       eyebrow="Invoicing"
       title={invoice.number}
       description="Operational invoice detail linked to its source shipment and sales order."
+      leadingActions={
+        <MuiButton component={Link} href="/invoices" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone={invoice.status === 'paid' ? 'success' : 'info'}>{invoice.status}</Badge>
-          <ButtonLink href="/invoices">Back</ButtonLink>
           {(invoice.status === 'unpaid' || invoice.status === 'issued') && (
             <Button tone="primary" onClick={() => void handleMarkPaid()} disabled={paying}>
               {paying ? 'Marking...' : 'Mark paid'}

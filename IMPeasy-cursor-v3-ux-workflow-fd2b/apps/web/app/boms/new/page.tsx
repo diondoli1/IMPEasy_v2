@@ -1,5 +1,6 @@
 'use client';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -53,10 +54,10 @@ export default function NewBomPage(): JSX.Element {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Create BOM</Typography>
-        <Button component={Link} href="/boms" variant="outlined">
+        <Button component={Link} href="/boms" variant="outlined" startIcon={<ArrowBackIcon />}>
           Back
         </Button>
+        <Typography variant="h6">Create BOM</Typography>
       </Box>
       <Paper sx={{ p: 3, maxWidth: 560 }}>
         <BomForm

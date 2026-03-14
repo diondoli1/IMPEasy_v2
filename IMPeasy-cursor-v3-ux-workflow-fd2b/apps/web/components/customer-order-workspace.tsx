@@ -62,8 +62,10 @@ import type {
 } from '../types/sales-order';
 import type { SettingsListEntry } from '../types/settings';
 import type { Shipment, ShippingAvailabilityLine } from '../types/shipment';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import MuiButton from '@mui/material/Button';
 import { SalesOrderProductionHandoff } from './sales-order-production-handoff';
 import { ShipmentCreationPanel } from './shipment-creation-panel';
 import { PageShell } from './ui/page-templates';
@@ -743,12 +745,16 @@ export function CustomerOrderWorkspace({
       eyebrow="Customer Orders"
       title={pageTitle}
       description="Unified commercial workspace across quote and sales-order data with dense inline lines, downstream tabs, and strong action controls."
+      leadingActions={
+        <MuiButton component={Link} href="/customer-orders" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone={currentKind === 'quote' ? 'info' : 'success'}>
             {getStatusDisplayLabel(currentStatus, currentKind ?? 'quote')}
           </Badge>
-          <ButtonLink href="/customer-orders">Back</ButtonLink>
           {customer ? <ButtonLink href={`/customers/${customer.id}`}>Open customer</ButtonLink> : null}
           <Button tone="primary" onClick={() => void handleSave()}>
             {saving ? 'Saving...' : 'Save'}

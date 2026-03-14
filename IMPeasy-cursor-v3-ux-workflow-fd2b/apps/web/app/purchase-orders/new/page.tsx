@@ -171,20 +171,18 @@ export default function NewPurchaseOrderPage(): JSX.Element {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Button
+          component={Link}
+          href="/purchase-orders"
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+        >
+          Back
+        </Button>
         <Typography variant="h6">Create Purchase Order</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            component={Link}
-            href="/purchase-orders"
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-          >
-            Back
-          </Button>
-          <Button variant="contained" onClick={() => void handleSave()} disabled={saving}>
-            {saving ? 'Saving...' : 'Save'}
-          </Button>
-        </Box>
+        <Button variant="contained" onClick={() => void handleSave()} disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </Button>
       </Box>
 
       {error && saving && (

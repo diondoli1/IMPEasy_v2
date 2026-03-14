@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { ManufacturedItemForm } from '../../../components/manufactured-item-form';
 import { PageShell } from '../../../components/ui/page-templates';
 import {
@@ -112,11 +115,15 @@ export default function ManufacturedItemDetailPage(): JSX.Element {
       eyebrow="Engineering"
       title={item.name}
       description="Tabbed manufacturing item workspace with engineering defaults, stock planning hints, purchasing context, and direct links into BOM and routing detail."
+      leadingActions={
+        <MuiButton component={Link} href="/manufactured-items" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone={itemTypeTone(item.itemType)}>{normalizeProductionStatus(item.itemType)}</Badge>
           <Badge tone={booleanTone(item.isActive)}>{item.isActive ? 'active' : 'inactive'}</Badge>
-          <ButtonLink href="/manufactured-items">Back to list</ButtonLink>
           <ButtonLink href={`/boms/new?itemId=${item.id}`}>New BOM</ButtonLink>
           <ButtonLink href={`/routings/new?itemId=${item.id}`}>New routing</ButtonLink>
         </>

@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { createCustomer, getCustomer, updateCustomer } from '../lib/api';
 import {
   createBlankCustomerInput,
@@ -178,10 +181,14 @@ export function CustomerWorkspace({ customerId }: CustomerWorkspaceProps): JSX.E
       eyebrow="Customers"
       title={customerId ? `${customer?.code ?? ''} ${customer?.name ?? ''}`.trim() : 'New customer'}
       description="Operational customer card with contacts, addresses, defaults, notes, and linked commercial documents."
+      leadingActions={
+        <MuiButton component={Link} href="/customers" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           {headerBadge}
-          <ButtonLink href="/customers">Back to customers</ButtonLink>
           <ButtonLink href="/customer-orders">Customer orders</ButtonLink>
           <Button tone="primary" onClick={() => void handleSave()}>
             {saving ? 'Saving...' : 'Save customer'}

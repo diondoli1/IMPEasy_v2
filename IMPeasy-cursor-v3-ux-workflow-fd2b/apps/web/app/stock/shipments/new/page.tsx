@@ -102,7 +102,7 @@ export default function CreateShipmentPage(): JSX.Element {
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <Button component={Link} href="/stock/shipments" startIcon={<ArrowBackIcon />}>
+        <Button component={Link} href="/stock/shipments" variant="outlined" startIcon={<ArrowBackIcon />}>
           Back
         </Button>
         <Button variant="contained" onClick={handleSave} disabled={saving}>

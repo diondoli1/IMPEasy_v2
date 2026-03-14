@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MuiButton from '@mui/material/Button';
+
 import { PageShell } from '../../../../components/ui/page-templates';
 import { Badge, DataTable, EmptyState, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../../components/ui/primitives';
 import { formatDate } from '../../../../lib/commercial';
@@ -45,12 +48,14 @@ export default function StockItemDetailPage(): JSX.Element {
       eyebrow="Inventory"
       title={item.itemName}
       description="Summary, lot position, movement history, and linked documents for the selected stock item."
+      leadingActions={
+        <MuiButton component={Link} href="/stock/items" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </MuiButton>
+      }
       actions={
         <>
           <Badge tone="info">{item.unitOfMeasure}</Badge>
-          <Link className="button button--secondary" href="/stock/items">
-            Back to stock items
-          </Link>
         </>
       }
     >

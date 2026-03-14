@@ -1,11 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Button from '@mui/material/Button';
+
 import { ManufacturedItemForm } from '../../../components/manufactured-item-form';
 import { PageShell } from '../../../components/ui/page-templates';
-import { ButtonLink, Notice, Panel } from '../../../components/ui/primitives';
+import { Notice, Panel } from '../../../components/ui/primitives';
 import { createManufacturedItem, listSuppliers } from '../../../lib/api';
 import type { Supplier } from '../../../types/supplier';
 
@@ -40,7 +44,11 @@ export default function NewManufacturedItemPage(): JSX.Element {
       eyebrow="Engineering"
       title="New manufactured item"
       description="Create the manufacturing-facing item master first, then attach BOMs, routings, and downstream production defaults from the detail workspace."
-      actions={<ButtonLink href="/manufactured-items">Back to items</ButtonLink>}
+      leadingActions={
+        <Button component={Link} href="/manufactured-items" variant="outlined" startIcon={<ArrowBackIcon />}>
+          Back
+        </Button>
+      }
     >
       <div className="split-grid">
         <Panel
