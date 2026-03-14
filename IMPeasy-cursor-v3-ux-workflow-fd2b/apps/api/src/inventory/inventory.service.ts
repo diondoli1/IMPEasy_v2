@@ -266,24 +266,27 @@ export class InventoryService {
         id: true,
         code: true,
         name: true,
+        itemGroup: true,
         unitOfMeasure: true,
         reorderPoint: true,
+        defaultPrice: true,
       },
     });
 
     const summaryByItem = await this.buildStockSummaryMap(items.map((item) => item.id));
 
-    return items
-      .map((item) => this.toStockItemResponse(item, summaryByItem.get(item.id)))
-      .filter((item) => {
-        return (
-          item.onHandQuantity > 0 ||
-          item.bookedQuantity > 0 ||
-          item.expectedQuantity > 0 ||
-          item.wipQuantity > 0 ||
-          item.reorderPoint > 0
-        );
-      });
+    const productGroups = await this.prisma.productGroup.findMany({
+      select: { code: true, name: true },
+    });
+    const groupNameToCode = new Map(productGroups.map((g) => [g.name, g.code]));
+
+    return items.map((item) =>
+      this.toStockItemResponse(
+        item,
+        summaryByItem.get(item.id),
+        item.itemGroup ? groupNameToCode.get(item.itemGroup) ?? null : null,
+      ),
+    );
   }
 
   async findStockItem(itemId: number): Promise<StockItemDetailResponseDto> {
@@ -810,10 +813,13 @@ export class InventoryService {
       id: number;
       code: string | null;
       name: string;
+      itemGroup: string | null;
       unitOfMeasure: string | null;
       reorderPoint: number;
+      defaultPrice: number;
     },
     summary?: StockItemSummary,
+    productGroupCode?: string | null,
   ): StockItemResponseDto {
     const onHandQuantity = summary?.onHandQuantity ?? 0;
     const bookedQuantity = summary?.bookedQuantity ?? 0;
@@ -822,6 +828,8 @@ export class InventoryService {
       itemId: item.id,
       itemCode: item.code,
       itemName: item.name,
+      itemGroup: item.itemGroup ?? null,
+      productGroupCode: productGroupCode ?? null,
       unitOfMeasure: item.unitOfMeasure ?? 'pcs',
       onHandQuantity,
       availableQuantity: Math.max(0, onHandQuantity - bookedQuantity),
@@ -829,6 +837,7 @@ export class InventoryService {
       expectedQuantity: summary?.expectedQuantity ?? 0,
       wipQuantity: summary?.wipQuantity ?? 0,
       reorderPoint: item.reorderPoint,
+      defaultPrice: item.defaultPrice ?? 0,
     };
   }
 

@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
+import { formatCurrency } from '../../../lib/commercial';
 import { listStockItems } from '../../../lib/api';
 import type { StockItem } from '../../../types/inventory';
 
@@ -89,13 +90,13 @@ export default function StockItemsPage(): JSX.Element {
               <TableRow key={item.itemId} hover>
                 <TableCell>{item.itemCode ?? '-'}</TableCell>
                 <TableCell>{item.itemName}</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell>-</TableCell>
+                <TableCell>{item.productGroupCode ?? '-'}</TableCell>
+                <TableCell>{item.itemGroup ?? '-'}</TableCell>
                 <TableCell align="right">{item.onHandQuantity}</TableCell>
                 <TableCell align="right">{item.availableQuantity}</TableCell>
                 <TableCell align="right">{item.bookedQuantity}</TableCell>
                 <TableCell>{item.unitOfMeasure}</TableCell>
-                <TableCell align="right">-</TableCell>
+                <TableCell align="right">{formatCurrency(item.defaultPrice)}</TableCell>
                 <TableCell align="right">
                   <IconButton
                     size="small"

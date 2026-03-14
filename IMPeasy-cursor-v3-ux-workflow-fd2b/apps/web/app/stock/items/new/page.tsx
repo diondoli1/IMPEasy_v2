@@ -3,8 +3,8 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
 import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -14,11 +14,18 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { createItem } from '../../../../lib/api';
+import {
+  createItem,
+  createProductGroup,
+  listProductGroups,
+  listUnitOfMeasures,
+} from '../../../../lib/api';
+import type { ProductGroup } from '../../../../types/stock-settings';
+import type { UnitOfMeasure } from '../../../../types/stock-settings';
 
-const UOM_OPTIONS = ['pcs', 'kg', 'm', 'L', 'h', 'box', 'pallet'];
+const FALLBACK_UOM = ['pcs', 'kg', 'm', 'L', 'h', 'box', 'pallet'];
 
 export default function NewStockItemPage(): JSX.Element {
   const router = useRouter();
@@ -28,8 +35,34 @@ export default function NewStockItemPage(): JSX.Element {
   const [unitOfMeasure, setUnitOfMeasure] = useState('pcs');
   const [isProcured, setIsProcured] = useState(true);
   const [sellingPrice, setSellingPrice] = useState('');
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
+  const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([]);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [groupSaving, setGroupSaving] = useState(false);
+  const [groupError, setGroupError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const [groups, units] = await Promise.all([
+          listProductGroups(),
+          listUnitOfMeasures(),
+        ]);
+        setProductGroups(groups);
+        setUnitOfMeasures(units);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const uomOptions = unitOfMeasures.length > 0
+    ? unitOfMeasures.map((u) => u.name)
+    : FALLBACK_UOM;
 
   const handleSave = async (): Promise<void> => {
     if (!partDesc.trim()) {
@@ -49,13 +82,75 @@ export default function NewStockItemPage(): JSX.Element {
         itemType: isProcured ? 'procured' : 'produced',
         defaultPrice: Number(sellingPrice) || 0,
       });
-      router.replace(`/items/${item.id}`);
+      router.replace(`/stock/items/${item.id}`);
     } catch {
       setError('Unable to create item.');
     } finally {
       setSaving(false);
     }
   };
+
+  const handleCreateGroup = async (): Promise<void> => {
+    if (!newGroupName.trim()) {
+      setGroupError('Name is required.');
+      return;
+    }
+    setGroupSaving(true);
+    setGroupError(null);
+    try {
+      const created = await createProductGroup({ name: newGroupName.trim() });
+      setProductGroups((prev) => [...prev, created]);
+      setProductGroup(created.name);
+      setNewGroupName('');
+      setShowCreateGroup(false);
+    } catch {
+      setGroupError('Unable to create product group.');
+    } finally {
+      setGroupSaving(false);
+    }
+  };
+
+  if (showCreateGroup) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Create product group
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => {
+              setShowCreateGroup(false);
+              setNewGroupName('');
+              setGroupError(null);
+            }}
+          >
+            Back
+          </Button>
+        </Box>
+        {groupError && (
+          <Typography color="error" sx={{ mb: 2 }} role="alert">{groupError}</Typography>
+        )}
+        <Paper sx={{ p: 2, maxWidth: 520 }}>
+          <TextField
+            fullWidth
+            label="Name"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            onClick={() => void handleCreateGroup()}
+            disabled={groupSaving || !newGroupName.trim()}
+          >
+            {groupSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -93,11 +188,33 @@ export default function NewStockItemPage(): JSX.Element {
             onChange={(e) => setPartDesc(e.target.value)}
             required
           />
-          <TextField
-            label="Product group"
-            value={productGroup}
-            onChange={(e) => setProductGroup(e.target.value)}
-          />
+          <FormControl>
+            <InputLabel>Product group</InputLabel>
+            <Select
+              value={productGroup}
+              label="Product group"
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === '__create__') {
+                  setShowCreateGroup(true);
+                } else {
+                  setProductGroup(v);
+                }
+              }}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value="__create__">
+                <em>Add new group</em>
+              </MenuItem>
+              {productGroups.map((g) => (
+                <MenuItem key={g.id} value={g.name}>
+                  {g.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <FormControl>
             <InputLabel>Unit of measurement</InputLabel>
             <Select
@@ -105,7 +222,7 @@ export default function NewStockItemPage(): JSX.Element {
               label="Unit of measurement"
               onChange={(e) => setUnitOfMeasure(e.target.value)}
             >
-              {UOM_OPTIONS.map((uom) => (
+              {uomOptions.map((uom) => (
                 <MenuItem key={uom} value={uom}>{uom}</MenuItem>
               ))}
             </Select>
