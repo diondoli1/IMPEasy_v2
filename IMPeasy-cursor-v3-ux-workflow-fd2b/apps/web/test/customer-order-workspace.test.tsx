@@ -266,7 +266,7 @@ describe('CustomerOrderWorkspace', () => {
     render(<CustomerOrderWorkspace workspaceId="new" />);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'New quote' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'New customer order' })).toBeInTheDocument();
     });
 
     expect(

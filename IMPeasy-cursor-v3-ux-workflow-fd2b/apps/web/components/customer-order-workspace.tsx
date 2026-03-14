@@ -70,9 +70,6 @@ import {
   Field,
   FormGrid,
   Notice,
-  Panel,
-  StatCard,
-  StatGrid,
   Toolbar,
   ToolbarGroup,
 } from './ui/primitives';
@@ -626,20 +623,21 @@ export function CustomerOrderWorkspace({
     return <p role="alert">{error}</p>;
   }
 
+  const pageTitle =
+    parsedWorkspace.kind === 'new'
+      ? 'New customer order'
+      : `Customer order ${currentDocumentNumber} details`;
+
   return (
     <PageShell
       eyebrow="Customer Orders"
-      title={currentDocumentNumber}
-      description="Unified commercial workspace across quote and sales-order data with dense inline lines, downstream tabs, and strong action controls."
+      title={pageTitle}
+      description=""
+      titleClassName="page-shell__title--detail"
       actions={
         <>
-          <Badge tone={currentKind === 'quote' ? 'info' : 'success'}>
-            {currentKind === 'quote' ? getQuoteActionLabel(currentStatus) : currentStatus}
-          </Badge>
-          <ButtonLink href="/customer-orders">Back to board</ButtonLink>
-          {customer ? <ButtonLink href={`/customers/${customer.id}`}>Open customer</ButtonLink> : null}
-          <Button tone="primary" onClick={() => void handleSave()}>
-            {saving ? 'Saving...' : 'Save'}
+          <Button tone="utility" onClick={() => window.print()}>
+            PDF
           </Button>
           {quote && quote.status === 'draft' ? (
             <Button onClick={() => void handleQuoteStatus('sent')}>Send Quote</Button>
@@ -667,269 +665,210 @@ export function CustomerOrderWorkspace({
           ) : null}
           {salesOrder ? (
             <Button onClick={() => setActiveTab('shipments')}>Open shipments</Button>
-          ) : (
-            <Button disabled>Create Shipment</Button>
-          )}
+          ) : null}
         </>
       }
     >
-      <StatGrid>
-        <StatCard label="Subtotal" value={formatCurrency(documentTotals.subtotalAmount)} />
-        <StatCard label="Tax" value={formatCurrency(documentTotals.taxAmount)} />
-        <StatCard label="Total" value={formatCurrency(documentTotals.totalAmount)} />
-        <StatCard label="Lines" value={documentTotals.lines.length} />
-      </StatGrid>
-      <Panel title="Workspace" description="The customer-order workspace keeps commercial header data, lines, and downstream placeholders in one tabbed surface.">
-        <Toolbar>
-          <ToolbarGroup>
-            {WORKSPACE_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                className={`workspace-tab${activeTab === tab.value ? ' workspace-tab--active' : ''}`}
-                onClick={() => setActiveTab(tab.value)}
+      <div className="detail-actions-row">
+        <ButtonLink href="/customer-orders" tone="secondary">
+          Back
+        </ButtonLink>
+        {saveMessage ? (
+          <span className="button button--saved">Saved</span>
+        ) : (
+          <Button tone="primary" onClick={() => void handleSave()}>
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+        )}
+        <Button tone="utility">Delete</Button>
+        <Button tone="utility">Reports</Button>
+        <Button tone="utility">Copy</Button>
+      </div>
+      {saveMessage ? <Notice title="Saved">{saveMessage}</Notice> : null}
+      {error ? <p role="alert">{error}</p> : null}
+      <Toolbar>
+        <ToolbarGroup>
+          {WORKSPACE_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              className={`workspace-tab${activeTab === tab.value ? ' workspace-tab--active' : ''}`}
+              onClick={() => setActiveTab(tab.value)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </ToolbarGroup>
+      </Toolbar>
+      {activeTab === 'header' ? (
+        <div className="detail-form-two-col">
+          <div className="form-grid">
+            <Field label="Number" required>
+              <input className="control" value={currentDocumentNumber} disabled />
+            </Field>
+            <Field label="Customer" required>
+              <select
+                className="control"
+                value={form.customerId}
+                onChange={(event) => applyCustomerSnapshots(Number(event.target.value))}
               >
-                {tab.label}
-              </button>
-            ))}
-          </ToolbarGroup>
-          <ToolbarGroup>
-            <span className="muted-copy">
-              Quotes and sales orders stay separate business objects while sharing this user-facing workspace.
-            </span>
-          </ToolbarGroup>
-        </Toolbar>
-        {saveMessage ? <Notice title="Saved">{saveMessage}</Notice> : null}
-        {error ? <p role="alert">{error}</p> : null}
-        {activeTab === 'header' ? (
-          <div className="split-grid">
-            <Panel title="Document header" description="Snapshot fields come from the selected customer card and stay editable per document.">
-              <FormGrid columns={2}>
-                <Field label="Document Number">
-                  <input className="control" value={currentDocumentNumber} disabled />
-                </Field>
-                <Field label="Document Type">
-                  <input className="control" value={currentKind === 'quote' ? 'Quote' : 'Sales Order'} disabled />
-                </Field>
-                <Field label="Status">
-                  <input className="control" value={currentStatus} disabled />
-                </Field>
-                <Field label={currentKind === 'quote' ? 'Quote Date' : 'Order Date'}>
-                  <input
-                    className="control"
-                    type="date"
-                    value={form.primaryDate}
-                    onChange={(event) => setForm((current) => ({ ...current, primaryDate: event.target.value }))}
-                  />
-                </Field>
-                {currentKind === 'quote' ? (
-                  <Field label="Validity Date">
-                    <input
-                      className="control"
-                      type="date"
-                      value={form.validityDate}
-                      onChange={(event) => setForm((current) => ({ ...current, validityDate: event.target.value }))}
-                    />
-                  </Field>
-                ) : null}
-                <Field label="Promised Delivery Date">
-                  <input
-                    className="control"
-                    type="date"
-                    value={form.promisedDate}
-                    onChange={(event) => setForm((current) => ({ ...current, promisedDate: event.target.value }))}
-                  />
-                </Field>
-                <Field label="Customer">
-                  <select
-                    className="control"
-                    value={form.customerId}
-                    onChange={(event) => applyCustomerSnapshots(Number(event.target.value))}
-                  >
-                    <option value={0}>Select customer</option>
-                    {customers.map((customerOption) => (
-                      <option key={customerOption.id} value={customerOption.id}>
-                        {customerOption.code ? `${customerOption.code} ` : ''}
-                        {customerOption.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Selected Contact">
-                  <input
-                    className="control"
-                    value={form.contactName}
-                    onChange={(event) => setForm((current) => ({ ...current, contactName: event.target.value }))}
-                  />
-                </Field>
-                <Field label="Contact Email">
-                  <input
-                    className="control"
-                    value={form.contactEmail}
-                    onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))}
-                  />
-                </Field>
-                <Field label="Contact Phone">
-                  <input
-                    className="control"
-                    value={form.contactPhone}
-                    onChange={(event) => setForm((current) => ({ ...current, contactPhone: event.target.value }))}
-                  />
-                </Field>
-                <Field label="Customer Reference">
-                  <input
-                    className="control"
-                    value={form.customerReference}
-                    onChange={(event) => setForm((current) => ({ ...current, customerReference: event.target.value }))}
-                  />
-                </Field>
-                <Field label="Salesperson">
-                  <select
-                    className="control"
-                    value={form.salespersonEmail}
-                    onChange={(event) => {
-                      const selectedSalesperson =
-                        salespersonOptions.find((option) => option.email === event.target.value) ??
-                        null;
-                      setForm((current) => ({
-                        ...current,
-                        salespersonEmail: selectedSalesperson?.email ?? '',
-                        salespersonName: selectedSalesperson?.label ?? '',
-                      }));
-                    }}
-                  >
-                    <option value="">Select salesperson</option>
-                    {salespersonOptions.map((option) => (
-                      <option key={option.email} value={option.email}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Payment Term">
-                  <select
-                    className="control"
-                    value={form.paymentTerm}
-                    onChange={(event) => setForm((current) => ({ ...current, paymentTerm: event.target.value }))}
-                  >
-                    <option value="">Select payment term</option>
-                    {availablePaymentTerms.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Shipping Term">
-                  <select
-                    className="control"
-                    value={form.shippingTerm}
-                    onChange={(event) => setForm((current) => ({ ...current, shippingTerm: event.target.value }))}
-                  >
-                    <option value="">Select shipping term</option>
-                    {availableShippingTerms.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Shipping Method">
-                  <select
-                    className="control"
-                    value={form.shippingMethod}
-                    onChange={(event) => setForm((current) => ({ ...current, shippingMethod: event.target.value }))}
-                  >
-                    <option value="">Select shipping method</option>
-                    {availableShippingMethods.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Tax Mode">
-                  <select
-                    className="control"
-                    value={form.taxMode}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        taxMode: event.target.value as WorkspaceFormState['taxMode'],
-                      }))
-                    }
-                  >
-                    {TAX_MODE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Document Discount %">
-                  <input
-                    className="control"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={form.documentDiscountPercent}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        documentDiscountPercent: Number(event.target.value),
-                      }))
-                    }
-                  />
-                </Field>
-              </FormGrid>
-            </Panel>
-            <div className="page-stack">
-              {(['billingAddress', 'shippingAddress'] as const).map((addressKey) => (
-                <Panel
-                  key={addressKey}
-                  title={addressKey === 'billingAddress' ? 'Billing address' : 'Shipping address'}
-                  description="Snapshot values copied from the customer card, but editable per document."
-                >
-                  <FormGrid>
-                    {(['street', 'city', 'postcode', 'stateRegion', 'country'] as const).map((field) => (
-                      <Field
-                        key={field}
-                        label={
-                          field === 'stateRegion'
-                            ? 'State / Region'
-                            : field.charAt(0).toUpperCase() + field.slice(1)
-                        }
-                      >
-                        <input
-                          className="control"
-                          value={form[addressKey][field] ?? ''}
-                          onChange={(event) =>
-                            setForm((current) => ({
-                              ...current,
-                              [addressKey]: {
-                                ...current[addressKey],
-                                [field]: event.target.value,
-                              },
-                            }))
-                          }
-                        />
-                      </Field>
-                    ))}
-                  </FormGrid>
-                </Panel>
-              ))}
-            </div>
+                <option value={0}>Select customer</option>
+                {customers.map((customerOption) => (
+                  <option key={customerOption.id} value={customerOption.id}>
+                    {customerOption.code ? `${customerOption.code} ` : ''}
+                    {customerOption.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Pricelist">
+              <input className="control" value={form.taxMode === 'exclusive' ? 'Tax exclusive' : 'Tax inclusive'} disabled />
+            </Field>
+            <Field label="Status" required>
+              <input className="control" value={currentStatus} disabled />
+            </Field>
+            <Field label={currentKind === 'quote' ? 'Quote date' : 'Order date'}>
+              <input
+                className="control"
+                type="date"
+                value={form.primaryDate}
+                onChange={(event) => setForm((current) => ({ ...current, primaryDate: event.target.value }))}
+              />
+            </Field>
+            <Field label="Delivery date">
+              <input
+                className="control"
+                type="date"
+                value={form.promisedDate}
+                onChange={(event) => setForm((current) => ({ ...current, promisedDate: event.target.value }))}
+              />
+            </Field>
+            <Field label="Files">
+              <input className="control" value="" placeholder="Attach files" disabled />
+            </Field>
           </div>
-        ) : null}
+          <div className="form-grid">
+            <Field label="Created">
+              <input
+                className="control"
+                value={salesOrder ? formatDate(salesOrder.createdAt) : quote ? formatDate(quote.createdAt) : '-'}
+                disabled
+              />
+            </Field>
+            <Field label="Created by">
+              <input className="control" value={form.salespersonName || form.salespersonEmail || '-'} disabled />
+            </Field>
+            <Field label="Salesperson">
+              <select
+                className="control"
+                value={form.salespersonEmail}
+                onChange={(event) => {
+                  const selectedSalesperson =
+                    salespersonOptions.find((option) => option.email === event.target.value) ?? null;
+                  setForm((current) => ({
+                    ...current,
+                    salespersonEmail: selectedSalesperson?.email ?? '',
+                    salespersonName: selectedSalesperson?.label ?? '',
+                  }));
+                }}
+              >
+                <option value="">Select salesperson</option>
+                {salespersonOptions.map((option) => (
+                  <option key={option.email} value={option.email}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Reference">
+              <input
+                className="control"
+                value={form.customerReference}
+                onChange={(event) => setForm((current) => ({ ...current, customerReference: event.target.value }))}
+              />
+            </Field>
+            <Field label="Delivery terms">
+              <select
+                className="control"
+                value={form.shippingTerm}
+                onChange={(event) => setForm((current) => ({ ...current, shippingTerm: event.target.value }))}
+              >
+                <option value="">Select</option>
+                {availableShippingTerms.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Payment term">
+              <select
+                className="control"
+                value={form.paymentTerm}
+                onChange={(event) => setForm((current) => ({ ...current, paymentTerm: event.target.value }))}
+              >
+                <option value="">Select</option>
+                {availablePaymentTerms.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Shipping Method">
+              <select
+                className="control"
+                value={form.shippingMethod}
+                onChange={(event) => setForm((current) => ({ ...current, shippingMethod: event.target.value }))}
+              >
+                <option value="">Select</option>
+                {availableShippingMethods.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Shipping address">
+              <textarea
+                className="control control--dense"
+                value={[
+                  form.shippingAddress.street,
+                  form.shippingAddress.city,
+                  form.shippingAddress.postcode,
+                  form.shippingAddress.stateRegion,
+                  form.shippingAddress.country,
+                ]
+                  .filter(Boolean)
+                  .join('\n')}
+                onChange={(event) => {
+                  const lines = event.target.value.split('\n');
+                  setForm((current) => ({
+                    ...current,
+                    shippingAddress: {
+                      street: lines[0] ?? '',
+                      city: lines[1] ?? '',
+                      postcode: lines[2] ?? '',
+                      stateRegion: lines[3] ?? '',
+                      country: lines[4] ?? '',
+                    },
+                  }));
+                }}
+              />
+            </Field>
+            <Field label="Internal notes">
+              <textarea
+                className="control control--dense"
+                value={form.internalNotes}
+                onChange={(event) => setForm((current) => ({ ...current, internalNotes: event.target.value }))}
+              />
+            </Field>
+          </div>
+        </div>
+      ) : null}
         {activeTab === 'lines' ? (
           <div className="page-stack">
             <Toolbar>
-              <ToolbarGroup>
-                <Badge tone="info">{lineRows.length} line rows</Badge>
-                <span className="muted-copy">
-                  Line totals recalculate immediately as quantity, price, discount, and tax change.
-                </span>
-              </ToolbarGroup>
               <ToolbarGroup>
                 <Button
                   onClick={() =>
@@ -944,217 +883,172 @@ export function CustomerOrderWorkspace({
               <table className="dense-table dense-table--editor">
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th>Description</th>
-                    <th>Qty</th>
-                    <th>Unit</th>
-                    <th>Unit Price</th>
-                    <th>Line Disc. %</th>
-                    <th>Tax %</th>
-                    <th>Line Date</th>
+                    <th>Product group</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price per UoM</th>
+                    <th>Discount</th>
                     <th>Subtotal</th>
-                    <th>Tax</th>
-                    <th>Total</th>
-                    <th>Remove</th>
+                    <th>Delivery date</th>
+                    <th>Cost</th>
+                    <th>Profit</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                    <th>Shipped</th>
+                    <th className="dense-table__cell--actions" />
                   </tr>
                 </thead>
                 <tbody>
                   {documentTotals.lines.length > 0 ? (
                     documentTotals.lines.map((line, index) => {
-                      const lineTaxRateOptions = includeNumberOption(
-                        taxRateOptions,
-                        line.taxRate,
-                      );
+                      const item = items.find((c) => c.id === line.itemId);
+                      const productGroup = item?.itemGroup ?? '-';
 
                       return (
                         <tr key={line.key}>
-                        <td>
-                          <div className="stack stack--tight">
-                            <select
+                          <td>{productGroup}</td>
+                          <td>
+                            <div className="stack stack--tight">
+                              <select
+                                className="control control--dense"
+                                value={line.itemId}
+                                onChange={(event) => {
+                                  const selItem = items.find(
+                                    (candidate) => candidate.id === Number(event.target.value),
+                                  );
+                                  setLineRows((current) =>
+                                    current.map((candidate, candidateIndex) =>
+                                      candidateIndex === index
+                                        ? {
+                                            ...candidate,
+                                            itemId: selItem?.id ?? 0,
+                                            itemCode: selItem
+                                              ? `ITEM-${String(selItem.id).padStart(4, '0')}`
+                                              : '',
+                                            itemName: selItem?.name ?? '',
+                                            description: selItem?.description ?? selItem?.name ?? '',
+                                          }
+                                        : candidate,
+                                    ),
+                                  );
+                                }}
+                              >
+                                <option value={0}>Select product</option>
+                                {items.map((it) => (
+                                  <option key={it.id} value={it.id}>
+                                    {it.code || `ITEM-${String(it.id).padStart(4, '0')}`} {it.name}
+                                  </option>
+                                ))}
+                              </select>
+                              <span className="muted-copy--small mono">{line.itemCode}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <input
                               className="control control--dense"
-                              value={line.itemId}
-                              onChange={(event) => {
-                                const item = items.find(
-                                  (candidate) => candidate.id === Number(event.target.value),
-                                );
+                              type="number"
+                              min={1}
+                              step="1"
+                              value={line.quantity}
+                              onChange={(event) =>
+                                setLineRows((current) =>
+                                  current.map((candidate, candidateIndex) =>
+                                    candidateIndex === index
+                                      ? { ...candidate, quantity: Number(event.target.value) }
+                                      : candidate,
+                                  ),
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              className="control control--dense"
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={line.unitPrice}
+                              onChange={(event) =>
+                                setLineRows((current) =>
+                                  current.map((candidate, candidateIndex) =>
+                                    candidateIndex === index
+                                      ? { ...candidate, unitPrice: Number(event.target.value) }
+                                      : candidate,
+                                  ),
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              className="control control--dense"
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={line.lineDiscountPercent}
+                              onChange={(event) =>
                                 setLineRows((current) =>
                                   current.map((candidate, candidateIndex) =>
                                     candidateIndex === index
                                       ? {
                                           ...candidate,
-                                          itemId: item?.id ?? 0,
-                                          itemCode: item
-                                            ? `ITEM-${String(item.id).padStart(4, '0')}`
-                                            : '',
-                                          itemName: item?.name ?? '',
-                                          description: item?.description ?? item?.name ?? '',
+                                          lineDiscountPercent: Number(event.target.value),
                                         }
                                       : candidate,
                                   ),
-                                );
-                              }}
+                                )
+                              }
+                            />
+                          </td>
+                          <td className="dense-table__cell--right mono">
+                            {formatCurrency(line.lineTotal)}
+                          </td>
+                          <td>
+                            <input
+                              className="control control--dense"
+                              type="date"
+                              value={line.deliveryDateOverride}
+                              onChange={(event) =>
+                                setLineRows((current) =>
+                                  current.map((candidate, candidateIndex) =>
+                                    candidateIndex === index
+                                      ? { ...candidate, deliveryDateOverride: event.target.value }
+                                      : candidate,
+                                  ),
+                                )
+                              }
+                            />
+                          </td>
+                          <td className="dense-table__cell--right">-</td>
+                          <td className="dense-table__cell--right">-</td>
+                          <td>-</td>
+                          <td>-</td>
+                          <td>-</td>
+                          <td className="dense-table__cell--actions">
+                            <button type="button" className="kebab-btn" title="More actions" aria-label="More actions">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+                                <circle cx="8" cy="3" r="1.5" />
+                                <circle cx="8" cy="8" r="1.5" />
+                                <circle cx="8" cy="13" r="1.5" />
+                              </svg>
+                            </button>
+                            <Button
+                              tone="danger"
+                              onClick={() =>
+                                setLineRows((current) =>
+                                  current.filter((_, lineIndex) => lineIndex !== index),
+                                )
+                              }
                             >
-                              <option value={0}>Select item</option>
-                              {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                  {`ITEM-${String(item.id).padStart(4, '0')}`} {item.name}
-                                </option>
-                              ))}
-                            </select>
-                            <span className="muted-copy--small mono">{line.itemCode}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <textarea
-                            className="control control--dense"
-                            value={line.description}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? { ...candidate, description: event.target.value }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="control control--dense"
-                            type="number"
-                            min={1}
-                            step="1"
-                            value={line.quantity}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? { ...candidate, quantity: Number(event.target.value) }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="control control--dense"
-                            value={line.unit}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? { ...candidate, unit: event.target.value }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="control control--dense"
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={line.unitPrice}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? { ...candidate, unitPrice: Number(event.target.value) }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="control control--dense"
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={line.lineDiscountPercent}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? {
-                                        ...candidate,
-                                        lineDiscountPercent: Number(event.target.value),
-                                      }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          <select
-                            className="control control--dense"
-                            value={line.taxRate}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? { ...candidate, taxRate: Number(event.target.value) }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          >
-                            {lineTaxRateOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}%
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td>
-                          <input
-                            className="control control--dense"
-                            type="date"
-                            value={line.deliveryDateOverride}
-                            onChange={(event) =>
-                              setLineRows((current) =>
-                                current.map((candidate, candidateIndex) =>
-                                  candidateIndex === index
-                                    ? { ...candidate, deliveryDateOverride: event.target.value }
-                                    : candidate,
-                                ),
-                              )
-                            }
-                          />
-                        </td>
-                        <td className="dense-table__cell--right mono">
-                          {formatCurrency(line.lineTotal)}
-                        </td>
-                        <td className="dense-table__cell--right mono">
-                          {formatCurrency(line.taxAmount)}
-                        </td>
-                        <td className="dense-table__cell--right mono">
-                          {formatCurrency(line.totalAmount)}
-                        </td>
-                        <td>
-                          <Button
-                            tone="danger"
-                            onClick={() =>
-                              setLineRows((current) =>
-                                current.filter((_, lineIndex) => lineIndex !== index),
-                              )
-                            }
-                          >
-                            Remove
-                          </Button>
-                        </td>
+                              Remove
+                            </Button>
+                          </td>
                         </tr>
                       );
                     })
                   ) : (
                     <tr>
-                      <td colSpan={12}>
+                      <td colSpan={13}>
                         <EmptyState
                           title="No lines yet"
                           description="Add at least one item row to test the dense MRPeasy-style entry table and live totals behaviour."
@@ -1164,6 +1058,26 @@ export function CustomerOrderWorkspace({
                   )}
                 </tbody>
               </table>
+            </div>
+            <div className="order-summary-bar">
+              <div className="order-summary-bar__item">
+                <span className="order-summary-bar__label">Discount %</span>
+                <span className="order-summary-bar__value">{form.documentDiscountPercent}%</span>
+              </div>
+              <div className="order-summary-bar__item">
+                <span className="order-summary-bar__label">Total qty</span>
+                <span className="order-summary-bar__value">
+                  {documentTotals.lines.reduce((sum, l) => sum + l.quantity, 0)}
+                </span>
+              </div>
+              <div className="order-summary-bar__item">
+                <span className="order-summary-bar__label">Total</span>
+                <span className="order-summary-bar__value">{formatCurrency(documentTotals.totalAmount)}</span>
+              </div>
+              <div className="order-summary-bar__item">
+                <span className="order-summary-bar__label">pcs</span>
+                <span className="order-summary-bar__value">{documentTotals.lines.length}</span>
+              </div>
             </div>
           </div>
         ) : null}
@@ -1322,7 +1236,6 @@ export function CustomerOrderWorkspace({
             </Notice>
           )
         ) : null}
-      </Panel>
     </PageShell>
   );
 }
