@@ -177,7 +177,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     key: 'purchasing',
     href: '/purchase-orders',
-    label: 'Purchasing',
+    label: 'Procurement',
     roles: ['admin', 'office'],
     tabs: [
       {
@@ -191,8 +191,8 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         roles: ['admin', 'office'],
       },
       {
-        href: '/dashboards/purchasing',
-        label: 'Dashboard',
+        href: '/procurement/invoices',
+        label: 'Invoices',
         roles: ['admin', 'office'],
       },
     ],
@@ -201,7 +201,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         '/dashboards/purchasing',
         '/purchase-orders',
         '/suppliers',
-        '/shipments',
+        '/procurement',
       ]),
   },
   {

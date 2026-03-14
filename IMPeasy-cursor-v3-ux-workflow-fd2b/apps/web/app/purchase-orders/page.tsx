@@ -1,23 +1,36 @@
 'use client';
 
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
 import { formatDate } from '../../lib/commercial';
 import { listPurchaseOrders } from '../../lib/api';
 import type { PurchaseOrder } from '../../types/purchase-order';
-import { Badge, DataTable, EmptyState } from '../../components/ui/primitives';
 
 export default function PurchaseOrdersPage(): JSX.Element {
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const router = useRouter();
+  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
       try {
-        const data = await listPurchaseOrders();
-        setPurchaseOrders(data);
+        setOrders(await listPurchaseOrders());
       } catch {
         setError('Unable to load purchase orders.');
       } finally {
@@ -27,52 +40,69 @@ export default function PurchaseOrdersPage(): JSX.Element {
   }, []);
 
   if (loading) {
-    return <p>Loading purchase orders...</p>;
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Loading purchase orders...</Typography>
+      </Box>
+    );
   }
 
   if (error) {
-    return <p role="alert">{error}</p>;
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error" role="alert">{error}</Typography>
+      </Box>
+    );
   }
 
   return (
-    <section>
-      <h1>Purchase Orders</h1>
-      <p>
-        <Link href="/purchase-orders/new">Create purchase order</Link>
-      </p>
-      {purchaseOrders.length === 0 ? (
-        <p>No purchase orders found.</p>
-      ) : (
-        <DataTable
-          columns={[
-            {
-              header: 'PO',
-              cell: (purchaseOrder) => (
-                <div className="stack stack--tight">
-                  <Link href={`/purchase-orders/${purchaseOrder.id}`} className="mono">
-                    {purchaseOrder.number}
-                  </Link>
-                  <span className="muted-copy--small">{purchaseOrder.supplierName}</span>
-                </div>
-              ),
-            },
-            { header: 'Status', width: '110px', cell: (purchaseOrder) => <Badge tone="info">{purchaseOrder.status}</Badge> },
-            { header: 'Order Date', width: '120px', cell: (purchaseOrder) => formatDate(purchaseOrder.orderDate) },
-            { header: 'Expected', width: '120px', cell: (purchaseOrder) => formatDate(purchaseOrder.expectedDate) },
-            { header: 'Buyer', width: '160px', cell: (purchaseOrder) => purchaseOrder.buyer ?? '-' },
-            { header: 'Open Qty', width: '90px', align: 'right', cell: (purchaseOrder) => purchaseOrder.openQuantity },
-            { header: 'Received', width: '90px', align: 'right', cell: (purchaseOrder) => purchaseOrder.receivedQuantity },
-          ]}
-          rows={purchaseOrders}
-          getRowKey={(purchaseOrder) => String(purchaseOrder.id)}
-          emptyState={
-            <EmptyState
-              title="No purchase orders"
-              description="Create the first purchase order to start receiving stock into lots."
-            />
-          }
-        />
-      )}
-    </section>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">Purchase Orders</Typography>
+        <Button
+          component={Link}
+          href="/purchase-orders/new"
+          variant="contained"
+          startIcon={<AddIcon />}
+        >
+          +Create
+        </Button>
+      </Box>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Number</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Expected date</TableCell>
+              <TableCell>Vendor number</TableCell>
+              <TableCell>Vendor name</TableCell>
+              <TableCell align="right" />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {orders.map((po) => (
+              <TableRow key={po.id} hover>
+                <TableCell>{po.number}</TableCell>
+                <TableCell>{formatDate(po.createdAt)}</TableCell>
+                <TableCell>{formatDate(po.expectedDate)}</TableCell>
+                <TableCell>{po.supplierCode ?? po.supplierId}</TableCell>
+                <TableCell>{po.supplierName}</TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    aria-label="Edit"
+                    onClick={() => router.push(`/purchase-orders/${po.id}`)}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }

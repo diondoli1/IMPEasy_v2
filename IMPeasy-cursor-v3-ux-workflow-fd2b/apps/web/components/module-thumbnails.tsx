@@ -44,7 +44,7 @@ function isActive(pathname: string, href: string): boolean {
   }
   if (href === '/purchase-orders') {
     return pathname.startsWith('/purchase-orders') || pathname.startsWith('/suppliers') ||
-      pathname.startsWith('/dashboards/purchasing') || pathname.startsWith('/shipments');
+      pathname.startsWith('/dashboards/purchasing') || pathname.startsWith('/procurement');
   }
   if (href === '/settings/company') {
     return pathname.startsWith('/settings') || pathname === '/roles';

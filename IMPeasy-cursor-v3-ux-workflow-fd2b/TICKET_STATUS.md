@@ -26,10 +26,10 @@
 | TICKET-022 | Stock Settings Tab | ✅ Done |
 | TICKET-023 | Shipments Tab | ✅ Done |
 | TICKET-024 | Inventory Tab | ✅ Done |
-| TICKET-025 | Procurement Shell & Tabs | ⬜ Pending |
-| TICKET-026 | Purchase Orders Tab | ⬜ Pending |
-| TICKET-027 | Vendors Tab | ⬜ Pending |
-| TICKET-028 | Incoming Invoices Tab | ⬜ Pending |
+| TICKET-025 | Procurement Shell & Tabs | ✅ Done |
+| TICKET-026 | Purchase Orders Tab | ✅ Done |
+| TICKET-027 | Vendors Tab | ✅ Done |
+| TICKET-028 | Incoming Invoices Tab | ✅ Done |
 | TICKET-029 | Settings Layout — Left Sidebar | ⬜ Pending |
 | TICKET-030 | Company Details | ⬜ Pending |
 | TICKET-031 | Numbering Formats | ⬜ Pending |
