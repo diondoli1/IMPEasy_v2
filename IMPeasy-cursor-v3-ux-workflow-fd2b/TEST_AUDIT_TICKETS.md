@@ -180,7 +180,7 @@
 
 ---
 
-### TICKET-B11: Kiosk — Separate Module & Status Light Prominence
+### TICKET-B11: Kiosk — Separate Module & Status Light Prominence ✅ DONE
 **Priority:** P3 (Low)  
 **UX Spec:** Kiosk as own module; big boxes with workstation name + indicative light (idle=grey, on job=green, setup=yellow, alarm=red)  
 **Current:** Kiosk as Production tab; status lights small (16×16)  

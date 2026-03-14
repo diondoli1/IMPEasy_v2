@@ -8,6 +8,7 @@ export type NavigationGroupKey =
   | 'production'
   | 'inventory'
   | 'purchasing'
+  | 'kiosk'
   | 'settings';
 
 export type NavigationTab = {
@@ -84,7 +85,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     key: 'production',
     href: '/manufacturing-orders',
     label: 'Production Planning',
-    roles: ['admin', 'operator'],
+    roles: ['admin'],
     tabs: [
       {
         href: '/manufacturing-orders',
@@ -111,11 +112,6 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         label: 'Routings',
         roles: ['admin'],
       },
-      {
-        href: '/kiosk',
-        label: 'Kiosk',
-        roles: ['admin', 'operator'],
-      },
     ],
     matches: (pathname: string) =>
       matchesRoutePrefix(pathname, [
@@ -123,7 +119,6 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         '/manufactured-items',
         '/production/calendar',
         '/dashboards/production',
-        '/kiosk',
         '/items',
         '/boms',
         '/routings',
@@ -133,6 +128,15 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         '/workstations',
         '/workstation-groups',
       ]),
+  },
+  {
+    key: 'kiosk',
+    href: '/kiosk',
+    label: 'Kiosk',
+    roles: ['admin', 'operator'],
+    tabs: [{ href: '/kiosk', label: 'Kiosk', roles: ['admin', 'operator'] }],
+    matches: (pathname: string) =>
+      pathname === '/kiosk' || pathname.startsWith('/kiosk/'),
   },
   {
     key: 'inventory',

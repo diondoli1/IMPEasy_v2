@@ -176,8 +176,8 @@ export default function KioskPage(): JSX.Element {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: 2,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: 3,
               mb: 3,
             }}
           >
@@ -186,20 +186,22 @@ export default function KioskPage(): JSX.Element {
               const status = workstationStatusFromOperations(ops);
               const currentOp = ops.find((o) => o.status === 'running' || o.status === 'paused');
               return (
-                <Card key={ws} sx={{ minHeight: 120 }}>
-                  <CardContent>
+                <Card key={ws} sx={{ minHeight: 180 }}>
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
                     <Box
                       sx={{
-                        width: 16,
-                        height: 16,
+                        width: 56,
+                        height: 56,
                         borderRadius: '50%',
                         bgcolor: statusColor(status),
-                        mb: 1,
+                        mb: 2,
+                        boxShadow: 2,
                       }}
+                      title={status === 'idle' ? 'Idle' : status === 'on_job' ? 'On job' : status === 'setup' ? 'Setup' : 'Alarm'}
                     />
-                    <Typography fontWeight={600}>{ws}</Typography>
+                    <Typography variant="h6" fontWeight={600}>{ws}</Typography>
                     {currentOp && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
                         {currentOp.workOrderNumber} – {currentOp.itemName}
                       </Typography>
                     )}
