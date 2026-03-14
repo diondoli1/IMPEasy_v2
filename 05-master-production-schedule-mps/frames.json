@@ -1,0 +1,80 @@
+[
+  {
+    "fileName": "frame_0001.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0001.jpg",
+    "timestampSeconds": 0,
+    "timestampLabel": "00:00:00"
+  },
+  {
+    "fileName": "frame_0002.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0002.jpg",
+    "timestampSeconds": 2.9,
+    "timestampLabel": "00:00:02"
+  },
+  {
+    "fileName": "frame_0003.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0003.jpg",
+    "timestampSeconds": 8.1,
+    "timestampLabel": "00:00:08"
+  },
+  {
+    "fileName": "frame_0004.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0004.jpg",
+    "timestampSeconds": 174.933,
+    "timestampLabel": "00:02:54"
+  },
+  {
+    "fileName": "frame_0005.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0005.jpg",
+    "timestampSeconds": 182.8,
+    "timestampLabel": "00:03:02"
+  },
+  {
+    "fileName": "frame_0006.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0006.jpg",
+    "timestampSeconds": 187.2,
+    "timestampLabel": "00:03:07"
+  },
+  {
+    "fileName": "frame_0007.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0007.jpg",
+    "timestampSeconds": 340.3,
+    "timestampLabel": "00:05:40"
+  },
+  {
+    "fileName": "frame_0008.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0008.jpg",
+    "timestampSeconds": 345.833,
+    "timestampLabel": "00:05:45"
+  },
+  {
+    "fileName": "frame_0009.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0009.jpg",
+    "timestampSeconds": 365.8,
+    "timestampLabel": "00:06:05"
+  },
+  {
+    "fileName": "frame_0010.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0010.jpg",
+    "timestampSeconds": 389.433,
+    "timestampLabel": "00:06:29"
+  },
+  {
+    "fileName": "frame_0011.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0011.jpg",
+    "timestampSeconds": 392.367,
+    "timestampLabel": "00:06:32"
+  },
+  {
+    "fileName": "frame_0012.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0012.jpg",
+    "timestampSeconds": 435.067,
+    "timestampLabel": "00:07:15"
+  },
+  {
+    "fileName": "frame_0013.jpg",
+    "filePath": "screens/enterprise-functions/05-master-production-schedule-mps/frame_0013.jpg",
+    "timestampSeconds": 456.233,
+    "timestampLabel": "00:07:36"
+  }
+]

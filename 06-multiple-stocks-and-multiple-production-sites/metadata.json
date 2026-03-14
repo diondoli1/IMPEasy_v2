@@ -1,0 +1,125 @@
+{
+  "categoryId": 3,
+  "categoryName": "Enterprise functions",
+  "itemIndex": 5,
+  "title": "Multiple Stocks and Multiple Production Sites",
+  "videoId": "_pkvWTI4vEY",
+  "pageUrl": "https://www.mrpeasy.com/demo-videos/multiple-stocks-and-multiple-production-sites/",
+  "youtubeUrl": "https://www.youtube.com/watch?v=_pkvWTI4vEY",
+  "outputKey": "enterprise-functions/06-multiple-stocks-and-multiple-production-sites",
+  "status": "ok",
+  "durationSeconds": 286.5,
+  "videoPath": "videos/enterprise-functions/_pkvWTI4vEY.mp4",
+  "frameDirectory": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites",
+  "frameCount": 18,
+  "frames": [
+    {
+      "fileName": "frame_0001.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0001.jpg",
+      "timestampSeconds": 0,
+      "timestampLabel": "00:00:00"
+    },
+    {
+      "fileName": "frame_0002.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0002.jpg",
+      "timestampSeconds": 33.8333,
+      "timestampLabel": "00:00:33"
+    },
+    {
+      "fileName": "frame_0003.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0003.jpg",
+      "timestampSeconds": 95.1667,
+      "timestampLabel": "00:01:35"
+    },
+    {
+      "fileName": "frame_0004.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0004.jpg",
+      "timestampSeconds": 96.4667,
+      "timestampLabel": "00:01:36"
+    },
+    {
+      "fileName": "frame_0005.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0005.jpg",
+      "timestampSeconds": 120.867,
+      "timestampLabel": "00:02:00"
+    },
+    {
+      "fileName": "frame_0006.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0006.jpg",
+      "timestampSeconds": 124.067,
+      "timestampLabel": "00:02:04"
+    },
+    {
+      "fileName": "frame_0007.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0007.jpg",
+      "timestampSeconds": 143.267,
+      "timestampLabel": "00:02:23"
+    },
+    {
+      "fileName": "frame_0008.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0008.jpg",
+      "timestampSeconds": 145.8,
+      "timestampLabel": "00:02:25"
+    },
+    {
+      "fileName": "frame_0009.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0009.jpg",
+      "timestampSeconds": 157.533,
+      "timestampLabel": "00:02:37"
+    },
+    {
+      "fileName": "frame_0010.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0010.jpg",
+      "timestampSeconds": 165.867,
+      "timestampLabel": "00:02:45"
+    },
+    {
+      "fileName": "frame_0011.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0011.jpg",
+      "timestampSeconds": 170.733,
+      "timestampLabel": "00:02:50"
+    },
+    {
+      "fileName": "frame_0012.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0012.jpg",
+      "timestampSeconds": 198.133,
+      "timestampLabel": "00:03:18"
+    },
+    {
+      "fileName": "frame_0013.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0013.jpg",
+      "timestampSeconds": 201.133,
+      "timestampLabel": "00:03:21"
+    },
+    {
+      "fileName": "frame_0014.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0014.jpg",
+      "timestampSeconds": 223.633,
+      "timestampLabel": "00:03:43"
+    },
+    {
+      "fileName": "frame_0015.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0015.jpg",
+      "timestampSeconds": 225.833,
+      "timestampLabel": "00:03:45"
+    },
+    {
+      "fileName": "frame_0016.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0016.jpg",
+      "timestampSeconds": 228.767,
+      "timestampLabel": "00:03:48"
+    },
+    {
+      "fileName": "frame_0017.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0017.jpg",
+      "timestampSeconds": 236.9,
+      "timestampLabel": "00:03:56"
+    },
+    {
+      "fileName": "frame_0018.jpg",
+      "filePath": "screens/enterprise-functions/06-multiple-stocks-and-multiple-production-sites/frame_0018.jpg",
+      "timestampSeconds": 246.133,
+      "timestampLabel": "00:04:06"
+    }
+  ]
+}
