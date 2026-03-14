@@ -32,9 +32,9 @@ export const FIXED_ROLE_DESCRIPTIONS: Record<RoleName, string> = {
 };
 
 export const LANDING_PATH_BY_ROLE: Record<RoleName, string> = {
-  admin: '/dashboards/customer-orders',
-  office: '/customer-orders',
-  planner: '/manufacturing-orders',
+  admin: '/dashboard',
+  office: '/dashboard',
+  planner: '/dashboard',
   operator: '/kiosk',
 };
 
@@ -325,6 +325,9 @@ export function canAccessPath(pathname: string, roles: string[]): boolean {
 
   const matchedGroup = getActiveNavigationGroup(pathname);
   if (!matchedGroup) {
+    if (pathname === '/dashboard') {
+      return normalizedRoles.some((r) => ['admin', 'office', 'planner'].includes(r));
+    }
     return pathname === '/' || pathname === '/login';
   }
 

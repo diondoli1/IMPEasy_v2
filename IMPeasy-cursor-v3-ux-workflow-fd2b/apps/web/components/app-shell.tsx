@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 
 import { getCurrentUser } from '../lib/api';
 import { clearAuthToken, getAuthToken } from '../lib/auth-storage';
+import { AuthContextProvider } from '../lib/auth-context';
 import {
   canAccessPath,
   getActiveNavigationGroup,
@@ -17,6 +18,7 @@ import {
 } from '../lib/navigation';
 import type { AuthUser } from '../types/auth';
 import { Badge } from './ui/primitives';
+import { ModuleThumbnails } from './module-thumbnails';
 
 type AppShellProps = {
   children: ReactNode;
@@ -108,44 +110,62 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
   const visibleGroups = currentUser ? getVisibleNavigationGroups(currentUser.roles) : [];
   const activeGroup = getActiveNavigationGroup(pathname);
   const visibleTabs = currentUser ? getVisibleNavigationTabs(pathname, currentUser.roles) : [];
+  const isDashboard = pathname === '/dashboard';
 
   return (
-    <div className="app-shell">
-      <header className="app-shell__banner">
+    <AuthContextProvider value={{ user: currentUser }}>
+      <div className="app-shell">
+        <header className="app-shell__banner">
         <div className="app-shell__banner-inner">
           <div className="app-shell__brand-row">
             <div className="app-shell__brand">
-              <Link href={isAuthenticated ? getLandingPath(currentUser?.roles ?? []) : '/login'}>
+              <Link href={isAuthenticated ? (isDashboard ? '/dashboard' : getLandingPath(currentUser?.roles ?? [])) : '/login'}>
                 <span className="app-shell__brand-mark">IMPeasy</span>
               </Link>
-              <span className="app-shell__brand-copy">Lean manufacturing operations</span>
+              {!isDashboard ? (
+                <span className="app-shell__brand-copy">Lean manufacturing operations</span>
+              ) : null}
             </div>
 
             {isAuthenticated && currentUser ? (
               <div className="app-shell__identity">
                 <div className="app-shell__identity-copy">
-                  <div className="app-shell__identity-label">Signed in</div>
-                  <div className="app-shell__identity-value">{currentUser.email}</div>
-                  <div className="app-shell__role-row">
-                    {normalizedRoles.length > 0 ? (
-                      normalizedRoles.map((role) => (
-                        <Badge key={role} tone="info">
-                          {role}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge tone="warning">No mapped role</Badge>
-                    )}
-                  </div>
+                  {isDashboard ? (
+                    <div className="app-shell__identity-value">{currentUser.name}</div>
+                  ) : (
+                    <>
+                      <div className="app-shell__identity-label">Signed in</div>
+                      <div className="app-shell__identity-value">{currentUser.email}</div>
+                      <div className="app-shell__role-row">
+                        {normalizedRoles.length > 0 ? (
+                          normalizedRoles.map((role) => (
+                            <Badge key={role} tone="info">
+                              {role}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge tone="warning">No mapped role</Badge>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
-                <button type="button" onClick={handleLogout} className="button button--secondary">
-                  Log out
+                <button type="button" onClick={handleLogout} className="button button--secondary" aria-label="Log out">
+                  {isDashboard ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                  ) : (
+                    'Log out'
+                  )}
                 </button>
               </div>
             ) : null}
           </div>
 
-          {isAuthenticated && currentUser ? (
+          {isAuthenticated && currentUser && !isDashboard ? (
             <nav className="app-shell__top-nav" aria-label="Primary navigation">
               {visibleGroups.map((group) => {
                 const isActive = activeGroup?.key === group.key;
@@ -165,7 +185,11 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
         </div>
       </header>
 
-      {isAuthenticated && currentUser && visibleTabs.length > 0 ? (
+      {isAuthenticated && currentUser && !isDashboard ? (
+        <ModuleThumbnails roles={currentUser.roles} />
+      ) : null}
+
+      {isAuthenticated && currentUser && visibleTabs.length > 0 && !isDashboard ? (
         <div className="app-shell__subnav">
           <div className="app-shell__banner-inner app-shell__subnav-inner">
             <div className="app-shell__subnav-label">
@@ -200,5 +224,6 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
         )}
       </main>
     </div>
+    </AuthContextProvider>
   );
 }

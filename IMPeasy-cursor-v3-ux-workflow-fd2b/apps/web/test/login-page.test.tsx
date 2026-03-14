@@ -75,7 +75,7 @@ describe('LoginPage', () => {
     });
 
     expect(setAuthTokenMock).toHaveBeenCalledWith('auth-token-value');
-    expect(routerReplaceMock).toHaveBeenCalledWith('/manufacturing-orders');
+    expect(routerReplaceMock).toHaveBeenCalledWith('/dashboard');
   });
 
   it('shows an error when sign-in fails', async () => {

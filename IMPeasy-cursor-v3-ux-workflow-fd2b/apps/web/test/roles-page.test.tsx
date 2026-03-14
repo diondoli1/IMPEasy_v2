@@ -71,7 +71,7 @@ describe('RolesPage', () => {
       expect(screen.getByRole('heading', { name: 'Users and roles' })).toBeInTheDocument();
     });
 
-    expect(screen.getByText('/dashboards/customer-orders')).toBeInTheDocument();
+    expect(screen.getAllByText('/dashboard').length).toBeGreaterThan(0);
     expect(screen.getByText('planner@impeasy.local')).toBeInTheDocument();
     expect(screen.getAllByText('planner').length).toBeGreaterThan(0);
   });

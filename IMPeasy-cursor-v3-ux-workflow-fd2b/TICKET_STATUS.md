@@ -3,9 +3,9 @@
 | Ticket | Title | Status |
 |--------|-------|--------|
 | TICKET-001 | MUI Setup & Theme | ✅ Done |
-| TICKET-002 | Login Screen Redesign | ⬜ Pending |
-| TICKET-003 | Dashboard Layout & Navigation | ⬜ Pending |
-| TICKET-004 | Module Layout with Thumbnail Boxes | ⬜ Pending |
+| TICKET-002 | Login Screen Redesign | ✅ Done |
+| TICKET-003 | Dashboard Layout & Navigation | ✅ Done |
+| TICKET-004 | Module Layout with Thumbnail Boxes | ✅ Done |
 | TICKET-005 | CRM Shell & Tabs | ⬜ Pending |
 | TICKET-006 | Customer Orders — Kanban Board | ⬜ Pending |
 | TICKET-007 | Customer Order Create Form (Inline) | ⬜ Pending |
