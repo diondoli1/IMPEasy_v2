@@ -1150,6 +1150,26 @@ export async function generateManufacturingOrdersForSalesOrder(
   return parseJsonOrThrow(response) as Promise<ManufacturingOrder[]>;
 }
 
+export type CreateManufacturingOrderInput = {
+  itemId: number;
+  quantity: number;
+  dueDate?: string;
+  bomId?: number;
+  routingId?: number;
+};
+
+export async function createManufacturingOrder(
+  input: CreateManufacturingOrderInput,
+): Promise<ManufacturingOrder> {
+  const response = await apiFetch(`${API_BASE_URL}/manufacturing-orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  return parseJsonOrThrow(response) as Promise<ManufacturingOrder>;
+}
+
 export async function listBomsByItem(itemId: number): Promise<Bom[]> {
   const response = await apiFetch(`${API_BASE_URL}/boms/item/${itemId}`, {
     cache: 'no-store',

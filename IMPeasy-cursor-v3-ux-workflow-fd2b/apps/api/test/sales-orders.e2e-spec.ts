@@ -48,7 +48,8 @@ type RoutingOperationRecord = {
 
 type WorkOrderRecord = {
   id: number;
-  salesOrderLineId: number;
+  salesOrderLineId: number | null;
+  itemId?: number | null;
   bomId?: number | null;
   routingId: number;
   quantity: number;
@@ -229,12 +230,17 @@ class PrismaServiceMock {
     };
   }
 
-  private buildWorkOrderSummary(workOrder: WorkOrderRecord): WorkOrderWithSummaryRelations {
+  private buildWorkOrderSummary(workOrder: WorkOrderRecord): WorkOrderWithSummaryRelations & { item?: ItemRecord } {
+    const salesOrderLine =
+      workOrder.salesOrderLineId != null
+        ? this.salesOrderLines.find((line) => line.id === workOrder.salesOrderLineId)
+        : undefined;
+    const item =
+      workOrder.itemId != null ? this.items.find((i) => i.id === workOrder.itemId) : undefined;
     return {
       ...workOrder,
-      salesOrderLine: this.buildSalesOrderLineWithRelations(
-        this.salesOrderLines.find((line) => line.id === workOrder.salesOrderLineId),
-      ),
+      salesOrderLine: this.buildSalesOrderLineWithRelations(salesOrderLine),
+      item,
       bom: null,
       routing: this.routings.find((entry) => entry.id === workOrder.routingId),
       assignedOperator: null,
@@ -701,19 +707,22 @@ class PrismaServiceMock {
       where,
       include,
     }: {
-      where: { salesOrderLine: { salesOrderId: number } };
+      where?: { salesOrderLine?: { salesOrderId: number } };
       include?: unknown;
-      orderBy?: { id: 'asc' | 'desc' };
+      orderBy?: { id: 'asc' | 'desc' } | Array<{ dueDate?: 'asc' | 'desc'; id?: 'asc' | 'desc' }>;
     }): Promise<Array<WorkOrderRecord | WorkOrderWithDetailRelations>> => {
-      const salesOrderLineIds = this.salesOrderLines
-        .filter((line) => line.salesOrderId === where.salesOrderLine.salesOrderId)
-        .map((line) => line.id);
-
-      const workOrders = this.workOrders
-        .filter((workOrder) => salesOrderLineIds.includes(workOrder.salesOrderLineId))
-        .sort((left, right) => left.id - right.id);
-
-      return include ? workOrders.map((workOrder) => this.buildWorkOrderDetail(workOrder)) : workOrders;
+      let workOrders: WorkOrderRecord[];
+      if (where?.salesOrderLine?.salesOrderId != null) {
+        const salesOrderLineIds = this.salesOrderLines
+          .filter((line) => line.salesOrderId === where.salesOrderLine!.salesOrderId)
+          .map((line) => line.id);
+        workOrders = this.workOrders
+          .filter((w) => w.salesOrderLineId != null && salesOrderLineIds.includes(w.salesOrderLineId!))
+          .sort((left, right) => left.id - right.id);
+      } else {
+        workOrders = [...this.workOrders].sort((left, right) => left.id - right.id);
+      }
+      return include ? workOrders.map((w) => this.buildWorkOrderDetail(w)) : workOrders;
     },
     findUnique: async ({
       where,
@@ -741,7 +750,8 @@ class PrismaServiceMock {
       data,
     }: {
       data: {
-        salesOrderLineId: number;
+        salesOrderLineId?: number | null;
+        itemId?: number | null;
         bomId?: number | null;
         routingId: number;
         quantity: number;
@@ -753,7 +763,8 @@ class PrismaServiceMock {
       const now = new Date();
       const created: WorkOrderRecord = {
         id: this.nextWorkOrderId++,
-        salesOrderLineId: data.salesOrderLineId,
+        salesOrderLineId: data.salesOrderLineId ?? null,
+        itemId: data.itemId ?? null,
         bomId: data.bomId ?? null,
         routingId: data.routingId,
         quantity: data.quantity,
@@ -1023,6 +1034,53 @@ describe('SalesOrdersController (e2e)', () => {
 
   afterEach(async () => {
     await app.close();
+  });
+
+  it('creates direct manufacturing order via POST /manufacturing-orders', async () => {
+    const itemResponse = await request(app.getHttpServer()).post('/items').send({
+      name: 'Direct MO Item',
+      description: 'For direct create test',
+    });
+    expect(itemResponse.status).toBe(201);
+
+    const routingResponse = await request(app.getHttpServer()).post('/routings').send({
+      itemId: itemResponse.body.id,
+      name: 'Direct MO Routing',
+      description: 'Test routing',
+    });
+    expect(routingResponse.status).toBe(201);
+
+    await request(app.getHttpServer())
+      .post(`/routings/${routingResponse.body.id}/operations`)
+      .send({
+        sequence: 10,
+        name: 'Op 1',
+        description: 'First op',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch(`/routings/${routingResponse.body.id}/default`)
+      .expect(200);
+
+    const createResponse = await request(app.getHttpServer())
+      .post('/manufacturing-orders')
+      .send({
+        itemId: itemResponse.body.id,
+        quantity: 5,
+        dueDate: '2026-03-25',
+      });
+    expect(createResponse.status).toBe(201);
+    expect(createResponse.body.itemId).toBe(itemResponse.body.id);
+    expect(createResponse.body.quantity).toBe(5);
+    expect(createResponse.body.customerName).toBe('Direct');
+    expect(createResponse.body.salesOrderLineId).toBe(0);
+
+    const listResponse = await request(app.getHttpServer()).get('/manufacturing-orders');
+    expect(listResponse.status).toBe(200);
+    expect(listResponse.body.some((mo: { id: number }) => mo.id === createResponse.body.id)).toBe(
+      true,
+    );
   });
 
   it('full MRP flow: Customer Order → Quote → Sales Order → MO → Work Order → Kiosk operation', async () => {

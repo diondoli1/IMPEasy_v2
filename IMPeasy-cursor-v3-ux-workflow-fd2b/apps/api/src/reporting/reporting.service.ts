@@ -78,6 +78,7 @@ const PRODUCTION_PERFORMANCE_DASHBOARD_INCLUDE = {
       },
     },
   },
+  item: true,
   workOrderOperations: {
     include: {
       inspection: true,
@@ -881,14 +882,21 @@ export class ReportingService {
       0,
     );
 
+    const effectiveItemId = workOrder.itemId ?? workOrder.salesOrderLine?.itemId ?? 0;
+    const effectiveItem = workOrder.item ?? workOrder.salesOrderLine?.item;
+    const customerId = workOrder.salesOrderLine?.salesOrder?.customerId ?? 0;
+    const customerName = workOrder.salesOrderLine?.salesOrder?.customer?.name ?? 'Direct';
+    const salesOrderId = workOrder.salesOrderLine?.salesOrderId ?? 0;
+    const salesOrderLineId = workOrder.salesOrderLineId ?? 0;
+
     return {
       workOrderId: workOrder.id,
-      salesOrderId: workOrder.salesOrderLine.salesOrderId,
-      salesOrderLineId: workOrder.salesOrderLineId,
-      itemId: workOrder.salesOrderLine.itemId,
-      itemName: workOrder.salesOrderLine.item.name,
-      customerId: workOrder.salesOrderLine.salesOrder.customerId,
-      customerName: workOrder.salesOrderLine.salesOrder.customer.name,
+      salesOrderId,
+      salesOrderLineId,
+      itemId: effectiveItemId,
+      itemName: effectiveItem?.name ?? `Item ${effectiveItemId}`,
+      customerId,
+      customerName,
       workOrderStatus: workOrder.status,
       plannedQuantity: workOrder.quantity,
       operationCount: workOrder.workOrderOperations.length,

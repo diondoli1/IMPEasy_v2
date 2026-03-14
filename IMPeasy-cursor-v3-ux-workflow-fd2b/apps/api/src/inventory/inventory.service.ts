@@ -720,16 +720,26 @@ export class InventoryService {
             },
             ...(scopedItemIds
               ? {
-                  salesOrderLine: {
-                    itemId: {
-                      in: scopedItemIds,
+                  OR: [
+                    {
+                      salesOrderLine: {
+                        itemId: {
+                          in: scopedItemIds,
+                        },
+                      },
                     },
-                  },
+                    {
+                      itemId: {
+                        in: scopedItemIds,
+                      },
+                    },
+                  ],
                 }
               : {}),
           },
           select: {
             quantity: true,
+            itemId: true,
             salesOrderLine: {
               select: {
                 itemId: true,
@@ -786,7 +796,10 @@ export class InventoryService {
     }
 
     for (const workOrder of workOrders) {
-      ensureSummary(workOrder.salesOrderLine.itemId).wipQuantity += workOrder.quantity;
+      const itemId = workOrder.itemId ?? workOrder.salesOrderLine?.itemId;
+      if (itemId) {
+        ensureSummary(itemId).wipQuantity += workOrder.quantity;
+      }
     }
 
     return summaryByItem;

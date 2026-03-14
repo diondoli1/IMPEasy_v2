@@ -134,6 +134,7 @@ model Item {
   purchaseOrderLines    PurchaseOrderLine[]
   preferredVendor       Supplier?              @relation(fields: [preferredVendorId], references: [id])
   stockLots             StockLot[]
+  workOrders            WorkOrder[]
 
   @@index([defaultBomId])
   @@index([defaultRoutingId])
@@ -411,7 +412,8 @@ model RoutingOperation {
 
 model WorkOrder {
   id                  Int                  @id @default(autoincrement())
-  salesOrderLineId    Int                  @unique
+  salesOrderLineId    Int?                 @unique
+  itemId              Int?
   bomId               Int?
   routingId           Int
   quantity            Int
@@ -425,7 +427,8 @@ model WorkOrder {
   finishedGoodsLotId  Int?                 @unique
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  salesOrderLine      SalesOrderLine       @relation(fields: [salesOrderLineId], references: [id])
+  salesOrderLine      SalesOrderLine?      @relation(fields: [salesOrderLineId], references: [id])
+  item                Item?                @relation(fields: [itemId], references: [id])
   bom                 Bom?                 @relation(fields: [bomId], references: [id])
   routing             Routing              @relation(fields: [routingId], references: [id])
   assignedOperator    User?                @relation("WorkOrderAssignedOperator", fields: [assignedOperatorId], references: [id])
@@ -438,6 +441,7 @@ model WorkOrder {
   @@index([bomId])
   @@index([routingId])
   @@index([assignedOperatorId])
+  @@index([itemId])
   @@map("work_orders")
 }
 

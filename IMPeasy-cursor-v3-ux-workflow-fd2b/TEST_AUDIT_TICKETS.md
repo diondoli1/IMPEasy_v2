@@ -75,7 +75,8 @@
 - Routing table: editable; can add/edit routing
 - Inline add/edit BOM and Routing
 
-**Acceptance:** Create MO with BOM and routing per spec
+**Acceptance:** Create MO with BOM and routing per spec  
+**Status:** ✅ DONE — Schema: salesOrderLineId optional, itemId added. API: POST /manufacturing-orders for direct create. Frontend: manufacturing-orders/new with Direct create tab (Product group, Product, Quantity, Due Date) and From customer order tab. BOM/Routing use item defaults; inline editing deferred.
 
 ---
 

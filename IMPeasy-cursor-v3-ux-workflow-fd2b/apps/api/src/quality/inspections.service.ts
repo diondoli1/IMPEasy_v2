@@ -235,29 +235,31 @@ export class InspectionsService {
       },
     });
 
-    return workOrders.map((workOrder) => {
-      const highestSequence = workOrder.workOrderOperations.reduce<number | null>(
-        (currentMax, operation) =>
-          currentMax === null || operation.sequence > currentMax ? operation.sequence : currentMax,
-        null,
-      );
+    return workOrders
+      .filter((w) => w.salesOrderLineId != null)
+      .map((workOrder) => {
+        const highestSequence = workOrder.workOrderOperations.reduce<number | null>(
+          (currentMax, operation) =>
+            currentMax === null || operation.sequence > currentMax ? operation.sequence : currentMax,
+          null,
+        );
 
-      if (highestSequence === null) {
+        if (highestSequence === null) {
+          return {
+            salesOrderLineId: workOrder.salesOrderLineId as number,
+            qualityClearedQuantity: 0,
+          };
+        }
+
+        const qualityClearedQuantity = workOrder.workOrderOperations
+          .filter((operation) => operation.sequence === highestSequence)
+          .reduce((total, operation) => total + (operation.inspection?.passedQuantity ?? 0), 0);
+
         return {
-          salesOrderLineId: workOrder.salesOrderLineId,
-          qualityClearedQuantity: 0,
+          salesOrderLineId: workOrder.salesOrderLineId as number,
+          qualityClearedQuantity,
         };
-      }
-
-      const qualityClearedQuantity = workOrder.workOrderOperations
-        .filter((operation) => operation.sequence === highestSequence)
-        .reduce((total, operation) => total + (operation.inspection?.passedQuantity ?? 0), 0);
-
-      return {
-        salesOrderLineId: workOrder.salesOrderLineId,
-        qualityClearedQuantity,
-      };
-    });
+      });
   }
 
   private async getInspectionByOperationOrThrow(operationId: number): Promise<Inspection> {

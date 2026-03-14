@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CreateManufacturingOrderDto } from './dto/create-manufacturing-order.dto';
 import { UpdateMaterialBookingDto } from './dto/update-material-booking.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { UpsertMaterialBookingDto } from './dto/upsert-material-booking.dto';
@@ -16,6 +17,17 @@ export class ManufacturingOrdersController {
   @Get()
   listAll(): Promise<WorkOrderResponseDto[]> {
     return this.workOrdersService.listAll();
+  }
+
+  @Post()
+  createDirect(@Body() payload: CreateManufacturingOrderDto): Promise<WorkOrderResponseDto> {
+    return this.workOrdersService.createDirect({
+      itemId: payload.itemId,
+      quantity: payload.quantity,
+      dueDate: payload.dueDate,
+      bomId: payload.bomId,
+      routingId: payload.routingId,
+    });
   }
 
   @Get(':id')

@@ -57,6 +57,9 @@ const WORK_ORDER_DETAIL_INCLUDE = {
       },
     },
   },
+  item: {
+    select: ITEM_SELECT,
+  },
   bom: {
     include: {
       bomItems: {
@@ -144,6 +147,9 @@ const OPERATION_INCLUDE = {
             select: ITEM_SELECT,
           },
         },
+      },
+      item: {
+        select: ITEM_SELECT,
       },
       routing: {
         select: {
@@ -340,6 +346,116 @@ export class WorkOrdersService {
     return this.listBySalesOrder(salesOrderId);
   }
 
+  async createDirect(payload: {
+    itemId: number;
+    quantity: number;
+    dueDate?: string;
+    bomId?: number;
+    routingId?: number;
+  }): Promise<WorkOrderResponseDto> {
+    const numberingSnapshot = await this.numberingService.getSnapshot();
+
+    const item = await this.prisma.item.findUnique({
+      where: { id: payload.itemId },
+      select: {
+        id: true,
+        defaultBomId: true,
+        defaultRoutingId: true,
+      },
+    });
+
+    if (!item) {
+      throw new NotFoundException(`Item ${payload.itemId} not found`);
+    }
+
+    const routingId = payload.routingId ?? item.defaultRoutingId;
+    if (!routingId) {
+      throw new BadRequestException(
+        `Item ${item.id} must have a default routing or provide routingId for direct MO creation`,
+      );
+    }
+
+    const bomId = payload.bomId ?? item.defaultBomId ?? null;
+
+    const [bom, routing, routingOperations] = await Promise.all([
+      bomId
+        ? this.prisma.bom.findUnique({
+            where: { id: bomId },
+            select: { id: true, itemId: true },
+          })
+        : Promise.resolve(null),
+      this.prisma.routing.findUnique({
+        where: { id: routingId },
+        select: { id: true, itemId: true },
+      }),
+      this.prisma.routingOperation.findMany({
+        where: { routingId },
+        orderBy: [{ sequence: 'asc' }, { id: 'asc' }],
+      }),
+    ]);
+
+    if (bom && bom.itemId !== item.id) {
+      throw new BadRequestException(`BOM ${bom.id} does not belong to item ${item.id}`);
+    }
+
+    if (!routing) {
+      throw new NotFoundException(`Routing ${routingId} not found`);
+    }
+
+    if (routing.itemId !== item.id) {
+      throw new BadRequestException(`Routing ${routing.id} does not belong to item ${item.id}`);
+    }
+
+    if (routingOperations.length === 0) {
+      throw new BadRequestException(
+        `Routing ${routing.id} must have at least one operation before creating manufacturing orders`,
+      );
+    }
+
+    const dueDate = payload.dueDate ? new Date(payload.dueDate) : new Date();
+
+    const created = await this.prisma.workOrder.create({
+      data: {
+        salesOrderLineId: null,
+        itemId: payload.itemId,
+        bomId,
+        routingId,
+        quantity: payload.quantity,
+        dueDate,
+        status: 'planned',
+        assignedWorkstation: routingOperations[0]?.workstation ?? null,
+      },
+      include: WORK_ORDER_DETAIL_INCLUDE,
+    });
+
+    for (const operation of routingOperations) {
+      await this.prisma.workOrderOperation.create({
+        data: {
+          workOrderId: created.id,
+          routingOperationId: operation.id,
+          sequence: operation.sequence,
+          plannedQuantity: payload.quantity,
+          status: 'queued',
+          workstation: operation.workstation ?? null,
+        },
+      });
+    }
+
+    await this.appendHistory(
+      this.prisma,
+      created.id,
+      'created',
+      'system',
+      `Manufacturing order ${this.numberingService.formatFromSnapshot(
+        numberingSnapshot,
+        'manufacturing_orders',
+        created.id,
+      )} created directly for item ${payload.itemId}.`,
+    );
+
+    return this.toWorkOrderResponse(created, numberingSnapshot);
+  }
+
   async findOne(id: number): Promise<WorkOrderDetailResponseDto> {
     const workOrder = await this.getWorkOrderOrThrow(id);
     return this.toWorkOrderDetailResponse(
@@ -476,7 +592,7 @@ export class WorkOrdersService {
         },
       });
 
-      if (workOrder.salesOrderLine.salesOrder.status === 'released') {
+      if (workOrder.salesOrderLine?.salesOrder?.status === 'released') {
         await tx.salesOrder.update({
           where: { id: workOrder.salesOrderLine.salesOrderId },
           data: {
@@ -872,9 +988,16 @@ export class WorkOrdersService {
               },
             });
           } else {
+            const finishedItemId =
+              operation.workOrder.itemId ?? operation.workOrder.salesOrderLine?.itemId;
+            if (!finishedItemId) {
+              throw new BadRequestException(
+                `Manufacturing order ${operation.workOrderId} has no item for finished goods`,
+              );
+            }
             const createdLot = await tx.stockLot.create({
               data: {
-                itemId: operation.workOrder.salesOrderLine.itemId,
+                itemId: finishedItemId,
                 lotNumber: this.numberingService.formatFromSnapshot(
                   numberingSnapshot,
                   'lots',
@@ -900,9 +1023,16 @@ export class WorkOrdersService {
             finishedGoodsLotId = createdLot.id;
           }
 
+          const finishedItemId =
+            operation.workOrder.itemId ?? operation.workOrder.salesOrderLine?.itemId;
+          if (!finishedItemId) {
+            throw new BadRequestException(
+              `Manufacturing order ${operation.workOrderId} has no item for finished output`,
+            );
+          }
           await this.inventoryService.recordTransaction(
             {
-              itemId: operation.workOrder.salesOrderLine.itemId,
+              itemId: finishedItemId,
               stockLotId: finishedGoodsLotId,
               transactionType: 'finished_output',
               quantity: goodQuantity,
@@ -939,10 +1069,11 @@ export class WorkOrdersService {
         for (const itemId of affectedComponentItemIds) {
           await this.inventoryService.syncInventoryItemQuantity(itemId, tx);
         }
-        await this.inventoryService.syncInventoryItemQuantity(
-          operation.workOrder.salesOrderLine.itemId,
-          tx,
-        );
+        const finishedItemId =
+          operation.workOrder.itemId ?? operation.workOrder.salesOrderLine?.itemId;
+        if (finishedItemId) {
+          await this.inventoryService.syncInventoryItemQuantity(finishedItemId, tx);
+        }
       }
 
       await this.appendHistory(
@@ -1215,20 +1346,34 @@ export class WorkOrdersService {
         })
       )?.salesOrderLine;
 
-    if (!salesOrderLine) {
-      throw new NotFoundException(`Manufacturing order ${workOrder.id} is missing its sales-order line`);
+    const effectiveItemId = workOrder.itemId ?? salesOrderLine?.itemId;
+    if (!effectiveItemId) {
+      throw new NotFoundException(
+        `Manufacturing order ${workOrder.id} is missing item (no sales-order line or itemId)`,
+      );
     }
 
+    const salesOrderLineWithRelations = salesOrderLine as
+      | (typeof salesOrderLine & {
+          item?: { code: string | null; name: string };
+          salesOrder?: { customerId: number; customer?: { name: string } };
+        })
+      | null;
+
     const [item, salesOrder, routing] = await Promise.all([
-      salesOrderLine.item ??
+      workOrder.item ??
+        salesOrderLineWithRelations?.item ??
         this.prisma.item.findUnique({
-          where: { id: salesOrderLine.itemId },
+          where: { id: effectiveItemId },
           select: ITEM_SELECT,
         }),
-      salesOrderLine.salesOrder ??
-        this.prisma.salesOrder.findUnique({
-          where: { id: salesOrderLine.salesOrderId },
-        }),
+      salesOrderLineWithRelations?.salesOrder ??
+        (salesOrderLine
+          ? this.prisma.salesOrder.findUnique({
+              where: { id: salesOrderLine.salesOrderId },
+              include: { customer: { select: { id: true, name: true, code: true } } },
+            })
+          : null),
       workOrder.routing ??
         this.prisma.routing.findUnique({
           where: { id: workOrder.routingId },
@@ -1266,6 +1411,9 @@ export class WorkOrdersService {
     const assignedOperator =
       currentOperation?.assignedOperator ?? workOrder.assignedOperator ?? null;
 
+    const salesOrderId = salesOrderLine?.salesOrderId ?? 0;
+    const salesOrderLineId = workOrder.salesOrderLineId ?? 0;
+
     return {
       id: workOrder.id,
       documentNumber: this.numberingService.formatFromSnapshot(
@@ -1273,18 +1421,20 @@ export class WorkOrdersService {
         'manufacturing_orders',
         workOrder.id,
       ),
-      salesOrderId: salesOrderLine.salesOrderId,
-      salesOrderNumber: this.numberingService.formatFromSnapshot(
-        numberingSnapshot,
-        'sales_orders',
-        salesOrderLine.salesOrderId,
-      ),
-      salesOrderLineId: workOrder.salesOrderLineId,
-      itemId: salesOrderLine.itemId,
-      itemCode: item?.code ?? buildItemCode(salesOrderLine.itemId),
-      itemName: item?.name ?? `Item ${salesOrderLine.itemId}`,
+      salesOrderId,
+      salesOrderNumber: salesOrderId
+        ? this.numberingService.formatFromSnapshot(
+            numberingSnapshot,
+            'sales_orders',
+            salesOrderId,
+          )
+        : '-',
+      salesOrderLineId,
+      itemId: effectiveItemId,
+      itemCode: item?.code ?? buildItemCode(effectiveItemId),
+      itemName: item?.name ?? `Item ${effectiveItemId}`,
       customerId,
-      customerName: customer?.name ?? 'Unknown customer',
+      customerName: customer?.name ?? 'Direct',
       bomId: workOrder.bomId ?? null,
       bomName: workOrder.bom?.name ?? null,
       routingId: workOrder.routingId,
@@ -1496,15 +1646,15 @@ export class WorkOrdersService {
     numberingSnapshot: NumberingSnapshot,
   ): OperationQueueResponseDto {
     const assignedOperator = operation.assignedOperator ?? operation.workOrder.assignedOperator ?? null;
-    const salesOrderLineItem = operation.workOrder.salesOrderLine.item;
+    const effectiveItem =
+      operation.workOrder.item ??
+      operation.workOrder.salesOrderLine?.item;
+    const effectiveItemId =
+      operation.workOrder.itemId ?? operation.workOrder.salesOrderLine?.itemId ?? 0;
     const itemCode =
-      salesOrderLineItem?.code ??
-      operation.workOrder.salesOrderLine.itemCode ??
-      buildItemCode(operation.workOrder.salesOrderLine.itemId);
+      effectiveItem?.code ?? buildItemCode(effectiveItemId);
     const itemName =
-      salesOrderLineItem?.name ??
-      operation.workOrder.salesOrderLine.itemName ??
-      `Item ${operation.workOrder.salesOrderLine.itemId}`;
+      effectiveItem?.name ?? `Item ${effectiveItemId}`;
     const operationName =
       operation.routingOperation?.name ?? `Operation ${operation.sequence}`;
     const workstation =
@@ -1518,9 +1668,9 @@ export class WorkOrdersService {
         'manufacturing_orders',
         operation.workOrderId,
       ),
-      salesOrderId: operation.workOrder.salesOrderLine.salesOrderId,
-      salesOrderLineId: operation.workOrder.salesOrderLineId,
-      itemId: operation.workOrder.salesOrderLine.itemId,
+      salesOrderId: operation.workOrder.salesOrderLine?.salesOrderId ?? 0,
+      salesOrderLineId: operation.workOrder.salesOrderLineId ?? 0,
+      itemId: effectiveItemId,
       itemCode,
       itemName,
       routingOperationId: operation.routingOperationId,
@@ -1539,15 +1689,15 @@ export class WorkOrdersService {
     numberingSnapshot: NumberingSnapshot,
   ): OperationDetailResponseDto {
     const assignedOperator = operation.assignedOperator ?? operation.workOrder.assignedOperator ?? null;
-    const salesOrderLineItem = operation.workOrder.salesOrderLine.item;
+    const effectiveItem =
+      operation.workOrder.item ??
+      operation.workOrder.salesOrderLine?.item;
+    const effectiveItemId =
+      operation.workOrder.itemId ?? operation.workOrder.salesOrderLine?.itemId ?? 0;
     const itemCode =
-      salesOrderLineItem?.code ??
-      operation.workOrder.salesOrderLine.itemCode ??
-      buildItemCode(operation.workOrder.salesOrderLine.itemId);
+      effectiveItem?.code ?? buildItemCode(effectiveItemId);
     const itemName =
-      salesOrderLineItem?.name ??
-      operation.workOrder.salesOrderLine.itemName ??
-      `Item ${operation.workOrder.salesOrderLine.itemId}`;
+      effectiveItem?.name ?? `Item ${effectiveItemId}`;
     const routingName =
       operation.workOrder.routing?.name ?? `Routing ${operation.workOrder.routingId}`;
     const operationName =
@@ -1563,9 +1713,9 @@ export class WorkOrdersService {
         'manufacturing_orders',
         operation.workOrderId,
       ),
-      salesOrderId: operation.workOrder.salesOrderLine.salesOrderId,
-      salesOrderLineId: operation.workOrder.salesOrderLineId,
-      itemId: operation.workOrder.salesOrderLine.itemId,
+      salesOrderId: operation.workOrder.salesOrderLine?.salesOrderId ?? 0,
+      salesOrderLineId: operation.workOrder.salesOrderLineId ?? 0,
+      itemId: effectiveItemId,
       itemCode,
       itemName,
       routingId: operation.workOrder.routingId,
