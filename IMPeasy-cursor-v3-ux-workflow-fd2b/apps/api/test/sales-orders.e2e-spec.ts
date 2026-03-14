@@ -958,6 +958,11 @@ class PrismaServiceMock {
     },
   };
 
+  materialBooking = {
+    findMany: async (): Promise<unknown[]> => [],
+    update: async (): Promise<unknown> => ({}),
+  };
+
   productionLog = {
     findMany: async ({
       where,
@@ -1018,6 +1023,123 @@ describe('SalesOrdersController (e2e)', () => {
 
   afterEach(async () => {
     await app.close();
+  });
+
+  it('full MRP flow: Customer Order → Quote → Sales Order → MO → Work Order → Kiosk operation', async () => {
+    const customerResponse = await request(app.getHttpServer()).post('/customers').send({
+      name: 'MRP Flow Customer',
+      email: 'mrp@flow.test',
+      phone: '+1 555 000 0000',
+    });
+    expect(customerResponse.status).toBe(201);
+
+    const itemResponse = await request(app.getHttpServer()).post('/items').send({
+      name: 'MRP Test Item',
+      description: 'For flow test',
+    });
+    expect(itemResponse.status).toBe(201);
+
+    const quoteResponse = await request(app.getHttpServer()).post('/quotes').send({
+      customerId: customerResponse.body.id,
+      notes: 'Full MRP flow test',
+    });
+    expect(quoteResponse.status).toBe(201);
+
+    await request(app.getHttpServer())
+      .post(`/quotes/${quoteResponse.body.id}/lines`)
+      .send({
+        itemId: itemResponse.body.id,
+        quantity: 2,
+        unitPrice: 10,
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch(`/quotes/${quoteResponse.body.id}/status`)
+      .send({ status: 'sent' })
+      .expect(200);
+    await request(app.getHttpServer())
+      .patch(`/quotes/${quoteResponse.body.id}/status`)
+      .send({ status: 'approved' })
+      .expect(200);
+
+    const convertResponse = await request(app.getHttpServer()).post(
+      `/quotes/${quoteResponse.body.id}/convert`,
+    );
+    expect(convertResponse.status).toBe(201);
+    const salesOrderId = convertResponse.body.salesOrder.id as number;
+
+    const routingResponse = await request(app.getHttpServer()).post('/routings').send({
+      itemId: itemResponse.body.id,
+      name: 'MRP Routing',
+      description: 'Flow test routing',
+    });
+    expect(routingResponse.status).toBe(201);
+
+    await request(app.getHttpServer())
+      .post(`/routings/${routingResponse.body.id}/operations`)
+      .send({
+        sequence: 10,
+        name: 'Op 1',
+        description: 'First op',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post(`/routings/${routingResponse.body.id}/operations`)
+      .send({
+        sequence: 20,
+        name: 'Op 2',
+        description: 'Second op',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch(`/routings/${routingResponse.body.id}/default`)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .patch(`/sales-orders/${salesOrderId}/status`)
+      .send({ status: 'confirmed' })
+      .expect(200);
+    await request(app.getHttpServer())
+      .patch(`/sales-orders/${salesOrderId}/status`)
+      .send({ status: 'released' })
+      .expect(200);
+
+    const generateResponse = await request(app.getHttpServer()).post(
+      `/sales-orders/${salesOrderId}/work-orders/generate`,
+    );
+    expect(generateResponse.status).toBe(201);
+    expect(generateResponse.body).toHaveLength(1);
+    const workOrderId = generateResponse.body[0].id as number;
+
+    const releaseResponse = await request(app.getHttpServer()).post(
+      `/manufacturing-orders/${workOrderId}/release`,
+    );
+    expect(releaseResponse.status).toBe(201);
+    expect(releaseResponse.body.status).toBe('released');
+
+    const queueResponse = await request(app.getHttpServer()).get('/operations/queue');
+    expect(queueResponse.status).toBe(200);
+    expect(queueResponse.body.length).toBeGreaterThanOrEqual(1);
+    const operationId = queueResponse.body[0].id as number;
+
+    const startResponse = await request(app.getHttpServer()).post(
+      `/operations/${operationId}/start`,
+    );
+    expect(startResponse.status).toBe(201);
+    expect(startResponse.body.status).toBe('running');
+
+    const completeResponse = await request(app.getHttpServer())
+      .post(`/operations/${operationId}/complete`)
+      .send({ goodQuantity: 2, scrapQuantity: 0 });
+    expect(completeResponse.status).toBe(201);
+    expect(completeResponse.body.status).toBe('completed');
+
+    const workOrderDetail = await request(app.getHttpServer()).get(`/work-orders/${workOrderId}`);
+    expect(workOrderDetail.status).toBe(200);
+    expect(workOrderDetail.body.salesOrderId).toBe(salesOrderId);
   });
 
   it('returns sales order detail after quote conversion', async () => {

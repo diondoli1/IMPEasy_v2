@@ -214,7 +214,8 @@
 - Create E2E or integration test for full MRP flow
 - Verify each step produces correct data for next step
 
-**Acceptance:** Full MRP flow passes automated test
+**Acceptance:** Full MRP flow passes automated test  
+**Status:** ✅ DONE — Added `full MRP flow` e2e test in `sales-orders.e2e-spec.ts` covering: Customer → Quote → Lines → Approve → Convert → SO → Confirm → Release → Generate WO → Release MO → Operations queue → Start operation → Complete first operation
 
 ---
 
