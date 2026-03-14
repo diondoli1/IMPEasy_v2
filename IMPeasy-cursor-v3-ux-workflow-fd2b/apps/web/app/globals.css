@@ -8,6 +8,10 @@
   --color-line-strong: #b6c2d3;
   --color-line: #d7dfea;
   --color-line-soft: #e7edf5;
+  --color-line-ctrl: #e0e0e0;
+  --color-table-header: #f5f8fc;
+  --color-table-header-border: #e8eef5;
+  --color-table-row-alt: #f9fafc;
   --color-panel: rgba(255, 255, 255, 0.94);
   --color-panel-strong: #ffffff;
   --color-panel-muted: #f3f6fb;

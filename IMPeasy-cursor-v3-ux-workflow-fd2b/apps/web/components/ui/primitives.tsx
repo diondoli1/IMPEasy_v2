@@ -8,7 +8,7 @@ function cx(...values: ClassValue[]): string {
   return values.filter(Boolean).join(' ');
 }
 
-export type ButtonTone = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonTone = 'primary' | 'secondary' | 'ghost' | 'danger' | 'utility';
 export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
 export type ButtonLinkProps = {
@@ -54,6 +54,7 @@ export type NoticeProps = {
 export type FieldProps = {
   label: string;
   hint?: string;
+  required?: boolean;
   children: ReactNode;
 };
 
@@ -70,6 +71,7 @@ export type DataTableProps<Row> = {
   rows: Row[];
   getRowKey: (row: Row) => string;
   emptyState?: ReactNode;
+  renderRowActions?: (row: Row) => ReactNode;
 };
 
 export type StatCardProps = {
@@ -184,10 +186,10 @@ export function FormGrid({
   return <div className={cx('form-grid', columns === 2 && 'form-grid--two')}>{children}</div>;
 }
 
-export function Field({ label, hint, children }: FieldProps): JSX.Element {
+export function Field({ label, hint, required, children }: FieldProps): JSX.Element {
   return (
     <label className="field">
-      <span className="field__label">{label}</span>
+      <span className={cx('field__label', required && 'field__label--required')}>{label}</span>
       {children}
       {hint ? <p className="field__hint">{hint}</p> : null}
     </label>
@@ -224,7 +226,11 @@ export function DataTable<Row>({
   rows,
   getRowKey,
   emptyState,
+  renderRowActions,
 }: DataTableProps<Row>): JSX.Element {
+  const hasActions = Boolean(renderRowActions);
+  const colSpan = columns.length + (hasActions ? 1 : 0);
+
   return (
     <div className="dense-table-wrap">
       <table className="dense-table">
@@ -236,6 +242,7 @@ export function DataTable<Row>({
                 {column.header}
               </th>
             ))}
+            {hasActions ? <th className="dense-table__cell--actions" /> : null}
           </tr>
         </thead>
         <tbody>
@@ -253,11 +260,14 @@ export function DataTable<Row>({
                     {column.cell(row)}
                   </td>
                 ))}
+                {hasActions ? (
+                  <td className="dense-table__cell--actions">{renderRowActions!(row)}</td>
+                ) : null}
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={columns.length}>
+              <td colSpan={colSpan}>
                 {emptyState ?? (
                   <EmptyState
                     title="Nothing here yet"

@@ -42,6 +42,19 @@ export type SettingsTemplateProps = {
   aside?: ReactNode;
 };
 
+export type DetailTemplateProps = {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  formTitle?: string;
+  form: ReactNode;
+  tableTitle?: string;
+  tableDescription?: string;
+  table?: ReactNode;
+  aside?: ReactNode;
+};
+
 export function PageShell({
   eyebrow,
   title,
@@ -138,6 +151,45 @@ export function SettingsTemplate({
         <Panel title={title} description={description}>
           {form}
         </Panel>
+        {aside ? <div className="page-stack">{aside}</div> : null}
+      </div>
+    </PageShell>
+  );
+}
+
+export function DetailTemplate({
+  eyebrow,
+  title,
+  description,
+  actions,
+  formTitle,
+  form,
+  tableTitle,
+  tableDescription,
+  table,
+  aside,
+}: DetailTemplateProps): JSX.Element {
+  return (
+    <PageShell eyebrow={eyebrow} title={title} description={description ?? ''}>
+      <div className={aside ? 'split-grid' : 'page-stack'}>
+        <div className="page-stack">
+          {actions ? <div className="detail-page__actions">{actions}</div> : null}
+          <div className="detail-page__form-section">
+            <Panel title={formTitle ?? 'Order details'} description={formTitle ? undefined : description}>
+              {form}
+            </Panel>
+          </div>
+          {table ? (
+            <div className="detail-page__table-section">
+              <Panel
+                title={tableTitle ?? 'Product line items'}
+                description={tableDescription}
+              >
+                {table}
+              </Panel>
+            </div>
+          ) : null}
+        </div>
         {aside ? <div className="page-stack">{aside}</div> : null}
       </div>
     </PageShell>
