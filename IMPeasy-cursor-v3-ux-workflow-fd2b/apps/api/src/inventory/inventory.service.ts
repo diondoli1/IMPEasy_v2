@@ -335,7 +335,7 @@ export class InventoryService {
       itemId: item.id,
       itemCode: item.code,
       itemName: item.name,
-      unitOfMeasure: item.unitOfMeasure,
+      unitOfMeasure: item.unitOfMeasure ?? 'pcs',
       reorderPoint: item.reorderPoint,
       onHandQuantity: summary?.onHandQuantity ?? 0,
       availableQuantity: Math.max(
@@ -810,7 +810,7 @@ export class InventoryService {
       id: number;
       code: string | null;
       name: string;
-      unitOfMeasure: string;
+      unitOfMeasure: string | null;
       reorderPoint: number;
     },
     summary?: StockItemSummary,
@@ -822,7 +822,7 @@ export class InventoryService {
       itemId: item.id,
       itemCode: item.code,
       itemName: item.name,
-      unitOfMeasure: item.unitOfMeasure,
+      unitOfMeasure: item.unitOfMeasure ?? 'pcs',
       onHandQuantity,
       availableQuantity: Math.max(0, onHandQuantity - bookedQuantity),
       bookedQuantity,

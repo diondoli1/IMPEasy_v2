@@ -18,7 +18,7 @@ type DashboardBox = {
 };
 
 const DASHBOARD_BOXES: DashboardBox[] = [
-  { label: 'CRM', href: '/crm', roles: ['admin'] },
+  { label: 'CRM', href: '/customer-orders', roles: ['admin'] },
   { label: 'Production Planning', href: '/manufacturing-orders', roles: ['admin'] },
   { label: 'Stock', href: '/stock/items', roles: ['admin'] },
   { label: 'Procurement', href: '/purchase-orders', roles: ['admin'] },

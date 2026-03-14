@@ -110,7 +110,7 @@ model Item {
   description           String?
   isActive              Boolean                @default(true)
   itemGroup             String?
-  unitOfMeasure         String                 @default("pcs")
+  unitOfMeasure         String?                @default("pcs")
   itemType              String                 @default("produced")
   defaultBomId          Int?
   defaultRoutingId      Int?
