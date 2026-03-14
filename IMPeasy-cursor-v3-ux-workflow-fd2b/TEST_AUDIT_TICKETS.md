@@ -51,7 +51,7 @@
 
 ## Phase B: UX Spec Compliance — Critical Gaps
 
-### TICKET-B1: Create Purchase Order — Full Header + Line Items
+### TICKET-B1: Create Purchase Order — Full Header + Line Items ✅ DONE
 **Priority:** P1 (High)  
 **UX Spec:** +Create = Vendor, Expected date, Order Date, Due date, Arrival date + line items table (Product group, Item, Vendor Part no, Ordered quantity, Price, Subtotal, Expected quantity, Expected date)  
 **Current:** PurchaseOrderForm has Vendor and Notes only; no date fields, no line items  
@@ -79,7 +79,7 @@
 
 ---
 
-### TICKET-B3: Stock Items — Create Item (not Track Inventory)
+### TICKET-B3: Stock Items — Create Item (not Track Inventory) ✅ DONE
 **Priority:** P1 (High)  
 **UX Spec:** +Create = Part No, Part Desc, Product group, Unit of measurement, This is a procured item, Selling Price. Save → Item details page.  
 **Current:** Stock Items +Create links to `/inventory/items/new` (Track Inventory Item), not item creation  
@@ -105,7 +105,7 @@
 
 ---
 
-### TICKET-B5: Create Vendor — Add Payment Period
+### TICKET-B5: Create Vendor — Add Payment Period ✅ DONE
 **Priority:** P2 (Medium)  
 **UX Spec:** +Create = Name, Phone, Email, Payment Period  
 **Current:** SupplierForm has Name, Email, Phone, Active; no Payment Period  

@@ -4,6 +4,7 @@ export class SupplierResponseDto {
   name!: string;
   email!: string | null;
   phone!: string | null;
+  paymentTerm!: string | null;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

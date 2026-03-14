@@ -27,4 +27,10 @@ export class CreateSupplierDto {
     message: 'phone must be a valid phone number',
   })
   phone?: string;
+
+  @TrimOptionalString()
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  paymentTerm?: string;
 }

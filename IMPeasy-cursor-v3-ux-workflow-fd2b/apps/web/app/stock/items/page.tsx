@@ -60,7 +60,7 @@ export default function StockItemsPage(): JSX.Element {
         <Typography variant="h6">Items</Typography>
         <Button
           component={Link}
-          href="/inventory/items/new"
+          href="/stock/items/new"
           variant="contained"
           startIcon={<AddIcon />}
         >

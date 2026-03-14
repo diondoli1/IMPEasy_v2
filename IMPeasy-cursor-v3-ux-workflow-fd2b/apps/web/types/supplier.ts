@@ -4,6 +4,7 @@ export type Supplier = {
   name: string;
   email: string | null;
   phone: string | null;
+  paymentTerm: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -14,6 +15,7 @@ export type SupplierInput = {
   name: string;
   email?: string;
   phone?: string;
+  paymentTerm?: string;
   isActive?: boolean;
 };
 

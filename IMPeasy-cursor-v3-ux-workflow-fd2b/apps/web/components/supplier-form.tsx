@@ -23,6 +23,9 @@ export function SupplierForm({
   const [name, setName] = useState(initial?.name ?? '');
   const [email, setEmail] = useState(initial?.email ?? '');
   const [phone, setPhone] = useState(initial?.phone ?? '');
+  const [paymentTerm, setPaymentTerm] = useState(
+    (initial as { paymentTerm?: string } | undefined)?.paymentTerm ?? '',
+  );
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function SupplierForm({
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
+        ...(paymentTerm.trim() ? { paymentTerm: paymentTerm.trim() } : {}),
         ...(allowStatusChange ? { isActive } : {}),
       });
       setSuccess('Saved successfully.');
@@ -86,6 +90,15 @@ export function SupplierForm({
       <label>
         Phone
         <input value={phone} onChange={(event) => setPhone(event.target.value)} name="phone" />
+      </label>
+      <label>
+        Payment Period
+        <input
+          value={paymentTerm}
+          onChange={(event) => setPaymentTerm(event.target.value)}
+          name="paymentTerm"
+          placeholder="e.g. Net 30"
+        />
       </label>
       {allowStatusChange ? (
         <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

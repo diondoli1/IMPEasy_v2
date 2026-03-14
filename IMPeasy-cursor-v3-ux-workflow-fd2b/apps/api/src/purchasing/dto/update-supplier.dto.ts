@@ -40,6 +40,12 @@ export class UpdateSupplierDto {
   })
   phone?: string | null;
 
+  @TrimOptionalNullableString()
+  @ValidateWhenPresent()
+  @IsString()
+  @MinLength(1)
+  paymentTerm?: string | null;
+
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
