@@ -211,43 +211,18 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     roles: ['admin'],
     tabs: [
       {
-        href: '/roles',
-        label: 'Roles',
-        roles: ['admin'],
-      },
-      {
         href: '/settings/company',
-        label: 'Company',
+        label: 'Company details',
         roles: ['admin'],
       },
       {
         href: '/settings/numbering',
-        label: 'Numbering',
+        label: 'Numbering formats',
         roles: ['admin'],
       },
       {
-        href: '/settings/payment-terms',
-        label: 'Payment Terms',
-        roles: ['admin'],
-      },
-      {
-        href: '/settings/shipping-terms',
-        label: 'Shipping Terms',
-        roles: ['admin'],
-      },
-      {
-        href: '/settings/shipping-methods',
-        label: 'Shipping Methods',
-        roles: ['admin'],
-      },
-      {
-        href: '/settings/tax-rates',
-        label: 'Tax Rates',
-        roles: ['admin'],
-      },
-      {
-        href: '/settings/document-templates',
-        label: 'Templates',
+        href: '/roles',
+        label: 'User roles',
         roles: ['admin'],
       },
     ],

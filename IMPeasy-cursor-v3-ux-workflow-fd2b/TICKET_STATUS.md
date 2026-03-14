@@ -30,10 +30,10 @@
 | TICKET-026 | Purchase Orders Tab | ✅ Done |
 | TICKET-027 | Vendors Tab | ✅ Done |
 | TICKET-028 | Incoming Invoices Tab | ✅ Done |
-| TICKET-029 | Settings Layout — Left Sidebar | ⬜ Pending |
-| TICKET-030 | Company Details | ⬜ Pending |
-| TICKET-031 | Numbering Formats | ⬜ Pending |
-| TICKET-032 | User Roles | ⬜ Pending |
+| TICKET-029 | Settings Layout — Left Sidebar | ✅ Done |
+| TICKET-030 | Company Details | ✅ Done |
+| TICKET-031 | Numbering Formats | ✅ Done |
+| TICKET-032 | User Roles | ✅ Done |
 | TICKET-033 | Kiosk — Admin View | ⬜ Pending |
 | TICKET-034 | Kiosk — Operator View (Workstation Select) | ⬜ Pending |
 | TICKET-035 | Kiosk — Operator Job Execution | ⬜ Pending |

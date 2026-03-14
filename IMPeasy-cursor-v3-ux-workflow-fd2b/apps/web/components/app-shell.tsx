@@ -189,7 +189,7 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
         <ModuleThumbnails roles={currentUser.roles} />
       ) : null}
 
-      {isAuthenticated && currentUser && visibleTabs.length > 0 && !isDashboard ? (
+      {isAuthenticated && currentUser && visibleTabs.length > 0 && !isDashboard && activeGroup?.key !== 'settings' ? (
         <div className="app-shell__subnav">
           <div className="app-shell__banner-inner app-shell__subnav-inner">
             <div className="app-shell__subnav-label">
