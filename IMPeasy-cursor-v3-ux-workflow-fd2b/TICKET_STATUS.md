@@ -2,7 +2,7 @@
 
 | Ticket | Title | Status |
 |--------|-------|--------|
-| TICKET-001 | MUI Setup & Theme | ⬜ Pending |
+| TICKET-001 | MUI Setup & Theme | ✅ Done |
 | TICKET-002 | Login Screen Redesign | ⬜ Pending |
 | TICKET-003 | Dashboard Layout & Navigation | ⬜ Pending |
 | TICKET-004 | Module Layout with Thumbnail Boxes | ⬜ Pending |

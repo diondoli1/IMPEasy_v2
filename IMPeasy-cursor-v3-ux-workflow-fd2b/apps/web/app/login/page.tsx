@@ -1,37 +1,36 @@
 'use client';
 
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import React, { FormEvent, useState } from 'react';
 
 import { loginUser } from '../../lib/api';
 import { setAuthToken } from '../../lib/auth-storage';
 import { getLandingPath } from '../../lib/navigation';
-import { Button, Field, FormGrid, Notice, Panel } from '../../components/ui/primitives';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage(): JSX.Element {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const validate = (): string | null => {
-    if (!email.trim()) {
-      return 'Email is required.';
+    if (!username.trim()) {
+      return 'Username is required.';
     }
 
-    if (!EMAIL_PATTERN.test(email.trim())) {
-      return 'Email must be valid.';
+    if (EMAIL_PATTERN.test(username.trim()) && password.length < 8) {
+      return 'Password must be at least 8 characters.';
     }
 
     if (!password) {
       return 'Password is required.';
-    }
-
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters.';
     }
 
     return null;
@@ -51,90 +50,82 @@ export default function LoginPage(): JSX.Element {
 
     try {
       const response = await loginUser({
-        email: email.trim().toLowerCase(),
+        email: username.trim().toLowerCase(),
         password,
       });
 
       setAuthToken(response.accessToken);
       router.replace(getLandingPath(response.user.roles));
     } catch {
-      setError('Invalid email or password.');
+      setError('Invalid username or password.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="page-stack">
-      <div className="split-grid split-grid--balanced">
-        <Panel
-          title="Sign in"
-          description="Use one of the seeded MVP users to verify role-based landing pages and shell visibility."
-          muted
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '80vh',
+        px: 2,
+      }}
+    >
+      <Typography
+        component="h1"
+        variant="h4"
+        sx={{ fontWeight: 600, mb: 4 }}
+      >
+        IMPEasy
+      </Typography>
+
+      <Box
+        component="form"
+        noValidate
+        onSubmit={(e) => void handleSubmit(e)}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          width: '100%',
+          maxWidth: 320,
+        }}
+      >
+        <TextField
+          label="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          fullWidth
+          required
+          error={Boolean(error)}
+        />
+
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          fullWidth
+          required
+          error={Boolean(error)}
+          helperText={error ?? undefined}
+        />
+
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={isSubmitting}
+          fullWidth
+          sx={{ mt: 1 }}
         >
-          <form onSubmit={(event) => void handleSubmit(event)} className="page-stack">
-            <FormGrid>
-              <Field label="Email">
-                <input
-                  className="control"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
-                  aria-label="Email"
-                />
-              </Field>
-
-              <Field label="Password">
-                <input
-                  className="control"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete="current-password"
-                  aria-label="Password"
-                />
-              </Field>
-            </FormGrid>
-
-            {error ? (
-              <Notice title="Unable to sign in" tone="warning">
-                <span role="alert">{error}</span>
-              </Notice>
-            ) : null}
-
-            <div className="page-shell__actions">
-              <Button type="submit" tone="primary" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in...' : 'Sign in'}
-              </Button>
-            </div>
-          </form>
-        </Panel>
-
-        <Panel
-          title="MVP-010 review users"
-          description="The shell slice expects one user per fixed role. Manual checkpoint instructions will point to the same accounts."
-        >
-          <div className="stack">
-            <div className="link-list__item">
-              <span>admin.review@impeasy.local</span>
-              <span className="muted-copy">admin</span>
-            </div>
-            <div className="link-list__item">
-              <span>office@impeasy.local</span>
-              <span className="muted-copy">office</span>
-            </div>
-            <div className="link-list__item">
-              <span>planner@impeasy.local</span>
-              <span className="muted-copy">planner</span>
-            </div>
-            <div className="link-list__item">
-              <span>operator@impeasy.local</span>
-              <span className="muted-copy">operator</span>
-            </div>
-          </div>
-        </Panel>
-      </div>
-    </div>
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
+        </Button>
+      </Box>
+    </Box>
   );
 }

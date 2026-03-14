@@ -38,7 +38,7 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Email is required.');
+      expect(screen.getByText('Username is required.')).toBeInTheDocument();
     });
   });
 
@@ -58,10 +58,10 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: /username/i }), {
       target: { value: 'planner@impeasy.local' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), {
+    fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: 'StrongPass1!' },
     });
 
@@ -83,16 +83,16 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: /username/i }), {
       target: { value: 'planner@impeasy.local' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), {
+    fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: 'WrongPass1!' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Invalid email or password.');
+      expect(screen.getByText('Invalid username or password.')).toBeInTheDocument();
     });
   });
 });

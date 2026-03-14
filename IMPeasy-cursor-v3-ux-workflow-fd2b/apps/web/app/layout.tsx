@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '../components/app-shell';
+import { ThemeRegistry } from '../components/theme-registry';
 import './globals.css';
 
 const plexSans = IBM_Plex_Sans({
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: { children: ReactNode }): React
   return (
     <html lang="en">
       <body className={`${plexSans.variable} ${plexMono.variable}`}>
-        <AppShell>{children}</AppShell>
+        <ThemeRegistry>
+          <AppShell>{children}</AppShell>
+        </ThemeRegistry>
       </body>
     </html>
   );
