@@ -46,7 +46,7 @@ export default function NewBomPage(): JSX.Element {
         submitLabel="Create BOM"
         onSubmit={async (payload) => {
           const bom = await createBom(payload);
-          router.push(`/boms/${bom.id}`);
+          router.replace(`/boms/${bom.id}`);
         }}
       />
     </section>

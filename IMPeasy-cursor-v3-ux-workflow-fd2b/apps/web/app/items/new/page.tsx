@@ -19,7 +19,7 @@ export default function NewItemPage(): JSX.Element {
         submitLabel="Create item"
         onSubmit={async (payload) => {
           const item = await createItem(payload);
-          router.push(`/items/${item.id}`);
+          router.replace(`/items/${item.id}`);
         }}
       />
     </section>

@@ -52,7 +52,7 @@ export default function NewManufacturedItemPage(): JSX.Element {
             submitLabel="Create manufactured item"
             onSubmit={async (payload) => {
               const created = await createManufacturedItem(payload);
-              router.push(`/manufactured-items/${created.id}`);
+              router.replace(`/manufactured-items/${created.id}`);
             }}
           />
         </Panel>

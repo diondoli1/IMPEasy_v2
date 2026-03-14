@@ -21,7 +21,7 @@ export default function NewContactPage(): JSX.Element {
         submitLabel="Create contact"
         onSubmit={async (payload) => {
           const contact = await createContact(customerId, payload);
-          router.push(`/contacts/${contact.id}`);
+          router.replace(`/contacts/${contact.id}`);
         }}
       />
     </section>

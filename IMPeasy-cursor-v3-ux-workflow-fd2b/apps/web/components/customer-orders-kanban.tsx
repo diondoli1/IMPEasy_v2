@@ -37,7 +37,8 @@ type KanbanItem = {
 
 function getQuoteColumn(quote: Quote): ColumnKey {
   if (quote.status === 'draft') return 'quotation';
-  if (quote.status === 'approved' || quote.status === 'sent') return 'waiting_confirmation';
+  if (quote.status === 'sent') return 'waiting_confirmation';
+  if (quote.status === 'approved') return 'confirmed';
   return 'quotation';
 }
 

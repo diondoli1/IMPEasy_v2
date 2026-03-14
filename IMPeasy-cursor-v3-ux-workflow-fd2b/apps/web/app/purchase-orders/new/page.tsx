@@ -46,7 +46,7 @@ export default function NewPurchaseOrderPage(): JSX.Element {
         submitLabel="Create purchase order"
         onSubmit={async (payload) => {
           const purchaseOrder = await createPurchaseOrder(payload);
-          router.push(`/purchase-orders/${purchaseOrder.id}`);
+          router.replace(`/purchase-orders/${purchaseOrder.id}`);
         }}
       />
     </section>

@@ -53,7 +53,7 @@ export default function NewInventoryItemPage(): JSX.Element {
         submitLabel="Create inventory item"
         onSubmit={async (payload) => {
           const created = await createInventoryItem(payload);
-          router.push(`/inventory/items/${created.id}`);
+          router.replace(`/inventory/items/${created.id}`);
         }}
       />
     </section>

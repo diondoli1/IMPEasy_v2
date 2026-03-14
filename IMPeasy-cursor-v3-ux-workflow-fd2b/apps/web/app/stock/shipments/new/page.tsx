@@ -79,7 +79,7 @@ export default function CreateShipmentPage(): JSX.Element {
         notes: shippingAddress ? `Shipping: ${shippingAddress}` : undefined,
       };
       const shipment = await createShipment(input);
-      router.push(`/shipments/${shipment.id}`);
+      router.replace(`/shipments/${shipment.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create shipment.');
     } finally {

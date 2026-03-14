@@ -37,13 +37,13 @@
 | TICKET-033 | Kiosk — Admin View | ✅ Done |
 | TICKET-034 | Kiosk — Operator View (Workstation Select) | ✅ Done |
 | TICKET-035 | Kiosk — Operator Job Execution | ✅ Done |
-| TICKET-036 | API Alignment — Customer Orders & Quotes | ⬜ Pending |
+| TICKET-036 | API Alignment — Customer Orders & Quotes | ✅ Done |
 | TICKET-037 | API Alignment — Workstations & Workstation Groups | ⬜ Pending |
 | TICKET-038 | API Alignment — Numbering | ⬜ Pending |
 | TICKET-039 | API Alignment — Username vs Email | ✅ Done |
 | TICKET-040 | Remove Legacy Primitives | ✅ Done |
 | TICKET-041 | Inline Form Behavior — Universal | ⬜ Pending |
-| TICKET-042 | Save → Details Conversion — Universal | ⬜ Pending |
+| TICKET-042 | Save → Details Conversion — Universal | ✅ Done |
 | TICKET-043 | Operator Role Restriction | ✅ Done |
 | TICKET-044 | End-to-End & Visual QA | ✅ Done |
 

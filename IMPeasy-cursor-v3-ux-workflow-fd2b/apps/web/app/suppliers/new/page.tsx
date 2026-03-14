@@ -19,7 +19,7 @@ export default function NewSupplierPage(): JSX.Element {
         submitLabel="Create supplier"
         onSubmit={async (payload) => {
           const supplier = await createSupplier(payload);
-          router.push(`/suppliers/${supplier.id}`);
+          router.replace(`/suppliers/${supplier.id}`);
         }}
       />
     </section>

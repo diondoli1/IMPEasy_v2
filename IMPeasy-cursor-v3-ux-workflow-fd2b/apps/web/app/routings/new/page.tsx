@@ -46,7 +46,7 @@ export default function NewRoutingPage(): JSX.Element {
         submitLabel="Create routing"
         onSubmit={async (payload) => {
           const routing = await createRouting(payload);
-          router.push(`/routings/${routing.id}`);
+          router.replace(`/routings/${routing.id}`);
         }}
       />
     </section>
