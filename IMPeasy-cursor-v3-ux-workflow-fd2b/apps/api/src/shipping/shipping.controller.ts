@@ -22,6 +22,11 @@ import { ShippingService } from './shipping.service';
 export class ShipmentsController {
   constructor(private readonly shippingService: ShippingService) {}
 
+  @Get()
+  list(): Promise<ShipmentResponseDto[]> {
+    return this.shippingService.listAll();
+  }
+
   @Get(':shipmentId')
   findOne(
     @Param('shipmentId', ParseIntPipe) shipmentId: number,

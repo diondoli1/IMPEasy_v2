@@ -86,6 +86,15 @@ export class ShippingService {
     private readonly numberingService: NumberingService,
   ) {}
 
+  async listAll(): Promise<ShipmentResponseDto[]> {
+    const numberingSnapshot = await this.numberingService.getSnapshot();
+    const shipments = await this.prisma.shipment.findMany({
+      include: SHIPMENT_INCLUDE,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    });
+    return shipments.map((shipment) => this.mapShipmentSummary(shipment, numberingSnapshot));
+  }
+
   async listBySalesOrder(salesOrderId: number): Promise<ShipmentResponseDto[]> {
     await this.salesOrdersService.findOne(salesOrderId);
     const numberingSnapshot = await this.numberingService.getSnapshot();

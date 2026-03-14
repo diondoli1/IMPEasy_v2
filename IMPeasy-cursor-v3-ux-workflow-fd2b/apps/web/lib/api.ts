@@ -688,6 +688,11 @@ export async function getSalesOrderShippingAvailability(
   }));
 }
 
+export async function listShipments(): Promise<Shipment[]> {
+  const response = await apiFetch(`${API_BASE_URL}/shipments`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<Shipment[]>;
+}
+
 export async function listSalesOrderShipments(salesOrderId: number): Promise<Shipment[]> {
   const response = await apiFetch(`${API_BASE_URL}/sales-orders/${salesOrderId}/shipments`, {
     cache: 'no-store',

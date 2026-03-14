@@ -21,11 +21,11 @@
 | TICKET-017 | Workstation Group Tab | ✅ Done |
 | TICKET-018 | BOM Tab — Create & Table | ✅ Done |
 | TICKET-019 | Routings Tab — Create & Table | ✅ Done |
-| TICKET-020 | Stock Shell & Tabs | ⬜ Pending |
-| TICKET-021 | Stock Items Tab | ⬜ Pending |
-| TICKET-022 | Stock Settings Tab | ⬜ Pending |
-| TICKET-023 | Shipments Tab | ⬜ Pending |
-| TICKET-024 | Inventory Tab | ⬜ Pending |
+| TICKET-020 | Stock Shell & Tabs | ✅ Done |
+| TICKET-021 | Stock Items Tab | ✅ Done |
+| TICKET-022 | Stock Settings Tab | ✅ Done |
+| TICKET-023 | Shipments Tab | ✅ Done |
+| TICKET-024 | Inventory Tab | ✅ Done |
 | TICKET-025 | Procurement Shell & Tabs | ⬜ Pending |
 | TICKET-026 | Purchase Orders Tab | ⬜ Pending |
 | TICKET-027 | Vendors Tab | ⬜ Pending |

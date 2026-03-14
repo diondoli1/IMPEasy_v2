@@ -17,21 +17,22 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { listStockItems } from '../../../lib/api';
-import type { StockItem } from '../../../types/inventory';
+import { listShipments } from '../../../lib/api';
+import { formatDate } from '../../../lib/commercial';
+import type { Shipment } from '../../../types/shipment';
 
-export default function StockItemsPage(): JSX.Element {
+export default function StockShipmentsPage(): JSX.Element {
   const router = useRouter();
-  const [items, setItems] = useState<StockItem[]>([]);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
       try {
-        setItems(await listStockItems());
+        setShipments(await listShipments());
       } catch {
-        setError('Unable to load stock items.');
+        setError('Unable to load shipments.');
       } finally {
         setLoading(false);
       }
@@ -41,7 +42,7 @@ export default function StockItemsPage(): JSX.Element {
   if (loading) {
     return (
       <Box sx={{ p: 3 }}>
-        <Typography>Loading stock items...</Typography>
+        <Typography>Loading shipments...</Typography>
       </Box>
     );
   }
@@ -57,13 +58,8 @@ export default function StockItemsPage(): JSX.Element {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Items</Typography>
-        <Button
-          component={Link}
-          href="/inventory/items/new"
-          variant="contained"
-          startIcon={<AddIcon />}
-        >
+        <Typography variant="h6">Shipments</Typography>
+        <Button component={Link} href="/stock/shipments/new" variant="contained" startIcon={<AddIcon />}>
           +Create
         </Button>
       </Box>
@@ -72,36 +68,28 @@ export default function StockItemsPage(): JSX.Element {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Part No</TableCell>
-              <TableCell>Part Description</TableCell>
-              <TableCell>Group number</TableCell>
-              <TableCell>Group Name</TableCell>
-              <TableCell align="right">In stock</TableCell>
-              <TableCell align="right">Available</TableCell>
-              <TableCell align="right">Booked</TableCell>
-              <TableCell>UoM</TableCell>
-              <TableCell align="right">Cost</TableCell>
+              <TableCell>Number</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Delivery Date</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Order</TableCell>
+              <TableCell>Customer number</TableCell>
+              <TableCell>Customer name</TableCell>
               <TableCell align="right" />
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((item) => (
-              <TableRow key={item.itemId} hover>
-                <TableCell>{item.itemCode ?? '-'}</TableCell>
-                <TableCell>{item.itemName}</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell align="right">{item.onHandQuantity}</TableCell>
-                <TableCell align="right">{item.availableQuantity}</TableCell>
-                <TableCell align="right">{item.bookedQuantity}</TableCell>
-                <TableCell>{item.unitOfMeasure}</TableCell>
-                <TableCell align="right">-</TableCell>
+            {shipments.map((s) => (
+              <TableRow key={s.id} hover>
+                <TableCell>{s.number}</TableCell>
+                <TableCell>{formatDate(s.createdAt)}</TableCell>
+                <TableCell>{formatDate(s.shipDate)}</TableCell>
+                <TableCell>{s.status}</TableCell>
+                <TableCell>{s.salesOrderNumber}</TableCell>
+                <TableCell>{s.customerId}</TableCell>
+                <TableCell>{s.customerName}</TableCell>
                 <TableCell align="right">
-                  <IconButton
-                    size="small"
-                    aria-label="Edit item"
-                    onClick={() => router.push(`/stock/items/${item.itemId}`)}
-                  >
+                  <IconButton size="small" aria-label="Edit" onClick={() => router.push(`/shipments/${s.id}`)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
                 </TableCell>

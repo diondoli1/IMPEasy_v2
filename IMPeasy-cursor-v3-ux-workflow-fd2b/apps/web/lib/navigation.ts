@@ -140,37 +140,39 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
   {
     key: 'inventory',
     href: '/stock/items',
-    label: 'Inventory',
+    label: 'Stock',
     roles: ['admin', 'office', 'planner'],
     tabs: [
       {
         href: '/stock/items',
-        label: 'Stock Items',
+        label: 'Items',
         roles: ['admin', 'office', 'planner'],
       },
       {
-        href: '/stock/lots',
-        label: 'Lots',
+        href: '/stock/settings',
+        label: 'Stock settings',
         roles: ['admin', 'office', 'planner'],
       },
       {
-        href: '/stock/movements',
-        label: 'Movements',
+        href: '/stock/shipments',
+        label: 'Shipments',
         roles: ['admin', 'office', 'planner'],
       },
       {
-        href: '/stock/critical-on-hand',
-        label: 'Critical',
-        roles: ['admin', 'office', 'planner'],
-      },
-      {
-        href: '/dashboards/inventory',
-        label: 'Dashboard',
+        href: '/stock/inventory',
+        label: 'Inventory',
         roles: ['admin', 'office', 'planner'],
       },
     ],
     matches: (pathname: string) =>
-      matchesRoutePrefix(pathname, ['/dashboards/inventory', '/inventory', '/stock']),
+      matchesRoutePrefix(pathname, [
+        '/dashboards/inventory',
+        '/inventory',
+        '/stock',
+        '/stock/settings',
+        '/stock/shipments',
+        '/stock/inventory',
+      ]),
   },
   {
     key: 'purchasing',
