@@ -212,6 +212,33 @@ async function ensureItems(accessToken) {
   return ensuredItems;
 }
 
+async function ensureInventoryItems(accessToken, items) {
+  const existing = await apiRequest('/inventory-items', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  const existingItemIds = new Set(existing.map((inv) => inv.itemId));
+
+  for (const item of items) {
+    if (existingItemIds.has(item.id)) {
+      continue;
+    }
+    try {
+      await apiRequest('/inventory-items', {
+        method: 'POST',
+        headers: jsonHeaders(accessToken),
+        body: JSON.stringify({
+          itemId: item.id,
+          quantityOnHand: 0,
+        }),
+      });
+    } catch {
+      // Skip if already exists or other non-fatal error
+    }
+  }
+}
+
 async function ensureCustomer(accessToken) {
   const customers = await apiRequest('/customers', {
     headers: {
@@ -451,6 +478,7 @@ async function main() {
   await assignRoles(accessToken, roleIdsByName);
 
   const items = await ensureItems(accessToken);
+  await ensureInventoryItems(accessToken, items);
   const customer = await ensureCustomer(accessToken);
   const draftQuote = await ensureDraftQuote(accessToken, customer, items);
   const converted = await ensureConvertedSalesOrder(accessToken, customer, items);

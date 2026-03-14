@@ -10,6 +10,24 @@ npx prisma migrate deploy
 
 If the database already has tables but migrations were not tracked (e.g. baseline), apply missing migrations manually.
 
+## Stock & Inventory (Stock Items, Shipments, Inventory)
+
+If Stock → Items shows "Unable to load stock items", Stock → Shipments shows "Unable to load shipments", or Stock → Inventory is empty:
+
+1. Ensure **product_groups** and **numbering_settings** exist (required by stock items and shipments APIs):
+   ```bash
+   PGPASSWORD=postgres psql -h localhost -U postgres -d impeasy -f prisma/migrations/20260311223000_mvp_050_settings_permissions_dashboards/migration.sql
+   PGPASSWORD=postgres psql -h localhost -U postgres -d impeasy -f prisma/migrations/20260320000000_add_product_groups_and_units/migration.sql
+   ```
+
+2. For **Inventory** to show data: run the seed scripts. MVP-020 creates inventory items for demo items; MVP-040 creates full procurement flow with received stock:
+   ```bash
+   npm run seed:mvp-010-users
+   npm run seed:mvp-020-demo   # Creates inventory items for Stock → Inventory
+   # Or for full procurement + stock: npm run seed:mvp-040-demo
+   ```
+   Or create inventory items manually via Procurement → Purchase Orders → Receive, or via the Inventory Items API.
+
 ## Procurement Tables (Vendors, Purchase Orders, Incoming Invoices)
 
 If Procurement → Vendors shows "Unable to load vendors" or Procurement → Invoices shows "Unable to load incoming invoices", ensure these tables exist:
