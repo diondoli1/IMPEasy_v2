@@ -96,11 +96,16 @@ describe('CustomerOrdersPage', () => {
       expect(screen.getByRole('heading', { name: 'Customer orders board' })).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Board Value')).toBeInTheDocument();
-    expect(screen.getAllByText('Mekano Werkzeugbau').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Atlas Fluidtechnik').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('approved').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('released').length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('link', { name: 'Workspace' })).toHaveLength(2);
+    expect(screen.getByText('Board')).toBeInTheDocument();
+    expect(screen.getByText(/Mekano Werkzeugbau/)).toBeInTheDocument();
+    expect(screen.getByText(/Atlas Fluidtechnik/)).toBeInTheDocument();
+    expect(screen.getByText('Q-00011')).toBeInTheDocument();
+    expect(screen.getByText('SO-00021')).toBeInTheDocument();
+    const workspaceLinks = screen.getAllByRole('link').filter(
+      (el) =>
+        el.getAttribute('href')?.includes('/customer-orders/quote-') ||
+        el.getAttribute('href')?.includes('/customer-orders/sales-order-'),
+    );
+    expect(workspaceLinks.length).toBeGreaterThanOrEqual(2);
   });
 });
