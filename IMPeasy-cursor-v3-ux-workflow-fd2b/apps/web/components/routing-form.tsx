@@ -14,10 +14,11 @@ type RoutingFormProps = {
   items: ItemOption[];
   submitLabel: string;
   onSubmit: (input: RoutingInput) => Promise<void>;
+  initialItemId?: number;
 };
 
-export function RoutingForm({ items, submitLabel, onSubmit }: RoutingFormProps): JSX.Element {
-  const [itemId, setItemId] = useState('');
+export function RoutingForm({ items, submitLabel, onSubmit, initialItemId }: RoutingFormProps): JSX.Element {
+  const [itemId, setItemId] = useState(initialItemId ? String(initialItemId) : '');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);

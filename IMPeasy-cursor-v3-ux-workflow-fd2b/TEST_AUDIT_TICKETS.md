@@ -192,7 +192,7 @@
 
 ---
 
-### TICKET-B12: BOM & Routing — Popup Create Flow
+### TICKET-B12: BOM & Routing — Popup Create Flow ✅ DONE
 **Priority:** P3 (Low)  
 **UX Spec:** +Create → Popup: Product group, Product (no create in popup) → Proceed. Then form with BOM/routing tables.  
 **Current:** Different flow; no popup  

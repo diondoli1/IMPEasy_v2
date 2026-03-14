@@ -4,6 +4,14 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -13,9 +21,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { listManufacturedItems } from '../../lib/api';
 import type { Item } from '../../types/item';
@@ -25,6 +32,9 @@ export default function BomsPage(): JSX.Element {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createPopupOpen, setCreatePopupOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState<string>('');
 
   useEffect(() => {
     void (async () => {
@@ -37,6 +47,27 @@ export default function BomsPage(): JSX.Element {
       }
     })();
   }, []);
+
+  const productGroups = useMemo(
+    () => Array.from(new Set(items.map((i) => i.itemGroup).filter(Boolean))).sort() as string[],
+    [items],
+  );
+  const itemsInGroup = useMemo(
+    () =>
+      selectedGroup
+        ? items.filter((i) => i.itemGroup === selectedGroup)
+        : items,
+    [items, selectedGroup],
+  );
+
+  const handleProceed = () => {
+    if (selectedItemId) {
+      setCreatePopupOpen(false);
+      setSelectedGroup('');
+      setSelectedItemId('');
+      router.push(`/boms/new?itemId=${selectedItemId}`);
+    }
+  };
 
   const itemsWithBom = items.filter((i) => i.defaultBomId != null);
 
@@ -61,14 +92,66 @@ export default function BomsPage(): JSX.Element {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">BOM</Typography>
         <Button
-          component={Link}
-          href="/boms/new"
           variant="contained"
           startIcon={<AddIcon />}
+          onClick={() => {
+            setCreatePopupOpen(true);
+            setSelectedGroup('');
+            setSelectedItemId('');
+          }}
         >
           +Create
         </Button>
       </Box>
+
+      <Dialog open={createPopupOpen} onClose={() => setCreatePopupOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create BOM</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth sx={{ mt: 1, mb: 2 }}>
+            <InputLabel>Product group</InputLabel>
+            <Select
+              value={selectedGroup}
+              label="Product group"
+              onChange={(e) => {
+                setSelectedGroup(e.target.value);
+                setSelectedItemId('');
+              }}
+            >
+              <MenuItem value="">
+                <em>Select</em>
+              </MenuItem>
+              {productGroups.map((g) => (
+                <MenuItem key={g} value={g}>
+                  {g}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 1 }}>
+            <InputLabel>Product</InputLabel>
+            <Select
+              value={selectedItemId}
+              label="Product"
+              onChange={(e) => setSelectedItemId(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>Select</em>
+              </MenuItem>
+              {itemsInGroup.map((item) => (
+                <MenuItem key={item.id} value={String(item.id)}>
+                  {item.code} – {item.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreatePopupOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleProceed} disabled={!selectedItemId}>
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <TableContainer component={Paper}>
         <Table>

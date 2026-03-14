@@ -14,10 +14,11 @@ type BomFormProps = {
   items: ItemOption[];
   submitLabel: string;
   onSubmit: (input: BomInput) => Promise<void>;
+  initialItemId?: number;
 };
 
-export function BomForm({ items, submitLabel, onSubmit }: BomFormProps): JSX.Element {
-  const [itemId, setItemId] = useState('');
+export function BomForm({ items, submitLabel, onSubmit, initialItemId }: BomFormProps): JSX.Element {
+  const [itemId, setItemId] = useState(initialItemId ? String(initialItemId) : '');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
