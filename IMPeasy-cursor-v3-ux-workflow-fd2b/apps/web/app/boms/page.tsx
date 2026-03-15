@@ -24,22 +24,34 @@ import Typography from '@mui/material/Typography';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { listManufacturedItems } from '../../lib/api';
+import { listManufacturedItems, listProductGroups } from '../../lib/api';
+import { InlineCreateItemDialog } from '../../components/inline-create-item-dialog';
+import { InlineCreateProductGroupDialog } from '../../components/inline-create-product-group-dialog';
 import type { Item } from '../../types/item';
+import type { ProductGroup } from '../../types/stock-settings';
+import { SCROLLABLE_SELECT_MENU_PROPS } from '../../lib/select-utils';
 
 export default function BomsPage(): JSX.Element {
   const router = useRouter();
   const [items, setItems] = useState<Item[]>([]);
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createPopupOpen, setCreatePopupOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedItemId, setSelectedItemId] = useState<string>('');
+  const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
 
   useEffect(() => {
     void (async () => {
       try {
-        setItems(await listManufacturedItems());
+        const [itemData, groupData] = await Promise.all([
+          listManufacturedItems(),
+          listProductGroups(),
+        ]);
+        setItems(itemData);
+        setProductGroups(groupData);
       } catch {
         setError('Unable to load BOMs.');
       } finally {
@@ -48,9 +60,15 @@ export default function BomsPage(): JSX.Element {
     })();
   }, []);
 
-  const productGroups = useMemo(
-    () => Array.from(new Set(items.map((i) => i.itemGroup).filter(Boolean))).sort() as string[],
-    [items],
+  const productGroupNames = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...productGroups.map((g) => g.name),
+          ...items.map((i) => i.itemGroup).filter(Boolean) as string[],
+        ]),
+      ).sort(),
+    [items, productGroups],
   );
   const itemsInGroup = useMemo(
     () =>
@@ -113,16 +131,25 @@ export default function BomsPage(): JSX.Element {
               value={selectedGroup}
               label="Product group"
               onChange={(e) => {
-                setSelectedGroup(e.target.value);
-                setSelectedItemId('');
+                const v = e.target.value;
+                if (v === '__add_new__') {
+                  setAddProductGroupDialogOpen(true);
+                } else {
+                  setSelectedGroup(v);
+                  setSelectedItemId('');
+                }
               }}
+              MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
             >
               <MenuItem value="">
-                <em>Select</em>
+                <em>Select product group</em>
               </MenuItem>
-              {productGroups.map((g) => (
-                <MenuItem key={g} value={g}>
-                  {g}
+              <MenuItem value="__add_new__">
+                <em>Add new product group</em>
+              </MenuItem>
+              {productGroupNames.map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
                 </MenuItem>
               ))}
             </Select>
@@ -132,10 +159,21 @@ export default function BomsPage(): JSX.Element {
             <Select
               value={selectedItemId}
               label="Product"
-              onChange={(e) => setSelectedItemId(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === '__add_new__') {
+                  setAddProductDialogOpen(true);
+                } else {
+                  setSelectedItemId(v);
+                }
+              }}
+              MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
             >
               <MenuItem value="">
-                <em>Select</em>
+                <em>Select product</em>
+              </MenuItem>
+              <MenuItem value="__add_new__">
+                <em>Add new product</em>
               </MenuItem>
               {itemsInGroup.map((item) => (
                 <MenuItem key={item.id} value={String(item.id)}>
@@ -152,6 +190,25 @@ export default function BomsPage(): JSX.Element {
           </Button>
         </DialogActions>
       </Dialog>
+      <InlineCreateProductGroupDialog
+        open={addProductGroupDialogOpen}
+        onClose={() => setAddProductGroupDialogOpen(false)}
+        onCreated={(created) => {
+          setProductGroups((prev) => [...prev, created]);
+          setSelectedGroup(created.name);
+          setAddProductGroupDialogOpen(false);
+        }}
+      />
+      <InlineCreateItemDialog
+        open={addProductDialogOpen}
+        onClose={() => setAddProductDialogOpen(false)}
+        onCreated={(created) => {
+          setItems((prev) => [...prev, created]);
+          setSelectedItemId(String(created.id));
+          setAddProductDialogOpen(false);
+        }}
+        asManufactured
+      />
 
       <TableContainer component={Paper}>
         <Table>

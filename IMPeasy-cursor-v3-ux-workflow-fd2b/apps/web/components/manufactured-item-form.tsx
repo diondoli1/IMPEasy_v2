@@ -3,10 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { listProductGroups } from '../lib/api';
 import type { Bom } from '../types/bom';
 import type { Item, ItemInput } from '../types/item';
 import type { Routing } from '../types/routing';
 import type { Supplier } from '../types/supplier';
+import type { ProductGroup } from '../types/stock-settings';
+import { InlineCreateProductGroupDialog } from './inline-create-product-group-dialog';
 import { Button, Field, FormGrid, Notice } from './ui/primitives';
 
 type ManufacturedItemFormProps = {
@@ -63,6 +66,8 @@ export function ManufacturedItemForm({
   onSubmit,
 }: ManufacturedItemFormProps): JSX.Element {
   const [form, setForm] = useState<ManufacturedItemFormState>(() => createFormState(initial));
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
+  const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -70,6 +75,10 @@ export function ManufacturedItemForm({
   useEffect(() => {
     setForm(createFormState(initial));
   }, [initial]);
+
+  useEffect(() => {
+    void listProductGroups().then(setProductGroups);
+  }, []);
 
   function updateField<Key extends keyof ManufacturedItemFormState>(
     key: Key,
@@ -171,13 +180,27 @@ export function ManufacturedItemForm({
             onChange={(event) => updateField('name', event.target.value)}
           />
         </Field>
-        <Field label="Item Group">
-          <input
+        <Field label="Product group">
+          <select
             className="control"
             value={form.itemGroup}
-            onChange={(event) => updateField('itemGroup', event.target.value)}
-            placeholder="Assemblies"
-          />
+            onChange={(event) => {
+              const v = event.target.value;
+              if (v === '__add_new__') {
+                setAddProductGroupDialogOpen(true);
+              } else {
+                updateField('itemGroup', v);
+              }
+            }}
+          >
+            <option value="">Select product group</option>
+            <option value="__add_new__">Add new product group</option>
+            {productGroups.map((g) => (
+              <option key={g.id} value={g.name}>
+                {g.name}
+              </option>
+            ))}
+          </select>
         </Field>
         <Field label="Description">
           <textarea
@@ -297,6 +320,15 @@ export function ManufacturedItemForm({
           {isSubmitting ? 'Saving...' : submitLabel}
         </Button>
       </div>
+      <InlineCreateProductGroupDialog
+        open={addProductGroupDialogOpen}
+        onClose={() => setAddProductGroupDialogOpen(false)}
+        onCreated={(created) => {
+          setProductGroups((prev) => [...prev, created]);
+          updateField('itemGroup', created.name);
+          setAddProductGroupDialogOpen(false);
+        }}
+      />
     </form>
   );
 }

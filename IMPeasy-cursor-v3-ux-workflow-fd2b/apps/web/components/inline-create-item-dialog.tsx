@@ -22,6 +22,7 @@ import {
   listProductGroups,
   listUnitOfMeasures,
 } from '../lib/api';
+import { SCROLLABLE_SELECT_MENU_PROPS } from '../lib/select-utils';
 import { InlineCreateProductGroupDialog } from './inline-create-product-group-dialog';
 import type { Item, ItemInput } from '../types/item';
 import type { ProductGroup, UnitOfMeasure } from '../types/stock-settings';
@@ -152,6 +153,7 @@ export function InlineCreateItemDialog({
                     setProductGroup(v);
                   }
                 }}
+                MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
               >
                 <MenuItem value="">
                   <em>None</em>
@@ -172,6 +174,7 @@ export function InlineCreateItemDialog({
                 value={unitOfMeasure}
                 label="Unit of measurement"
                 onChange={(e) => setUnitOfMeasure(e.target.value)}
+                MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
               >
                 {uomOptions.map((uom) => (
                   <MenuItem key={uom} value={uom}>{uom}</MenuItem>

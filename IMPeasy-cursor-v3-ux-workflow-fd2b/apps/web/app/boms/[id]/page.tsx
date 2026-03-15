@@ -28,6 +28,7 @@ import {
   updateBomItem,
 } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/commercial';
+import { InlineCreateItemDialog } from '../../../components/inline-create-item-dialog';
 import type { Bom, BomItem } from '../../../types/bom';
 import type { Item } from '../../../types/item';
 
@@ -84,6 +85,7 @@ export default function BomDetailPage(): JSX.Element {
   const [itemError, setItemError] = useState<string | null>(null);
   const [savingHeader, setSavingHeader] = useState(false);
   const [savingItem, setSavingItem] = useState(false);
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
 
   const loadPage = useCallback(async () => {
     const [bomData, bomItemsData, itemsData] = await Promise.all([
@@ -382,11 +384,17 @@ export default function BomDetailPage(): JSX.Element {
                 <select
                   className="control"
                   value={itemEditor.itemId}
-                  onChange={(event) =>
-                    setItemEditor((current) => ({ ...current, itemId: event.target.value }))
-                  }
+                  onChange={(event) => {
+                    const v = event.target.value;
+                    if (v === '__add_new__') {
+                      setAddProductDialogOpen(true);
+                    } else {
+                      setItemEditor((current) => ({ ...current, itemId: v }));
+                    }
+                  }}
                 >
                   <option value="">Select item</option>
+                  <option value="__add_new__">Add new product</option>
                   {items.map((itemOption) => (
                     <option key={itemOption.id} value={String(itemOption.id)}>
                       {itemOption.code} {itemOption.name}
@@ -456,6 +464,15 @@ export default function BomDetailPage(): JSX.Element {
           </Panel>
         </div>
       </div>
+      <InlineCreateItemDialog
+        open={addProductDialogOpen}
+        onClose={() => setAddProductDialogOpen(false)}
+        onCreated={(created) => {
+          setItems((prev) => [...prev, created]);
+          setItemEditor((current) => ({ ...current, itemId: String(created.id) }));
+          setAddProductDialogOpen(false);
+        }}
+      />
     </PageShell>
   );
 }

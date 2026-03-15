@@ -18,11 +18,12 @@ import React, { useEffect, useState } from 'react';
 
 import {
   createItem,
-  createProductGroup,
   listProductGroups,
   listUnitOfMeasures,
 } from '../../../../lib/api';
+import { InlineCreateProductGroupDialog } from '../../../../components/inline-create-product-group-dialog';
 import type { ProductGroup } from '../../../../types/stock-settings';
+import { SCROLLABLE_SELECT_MENU_PROPS } from '../../../../lib/select-utils';
 import type { UnitOfMeasure } from '../../../../types/stock-settings';
 
 const FALLBACK_UOM = ['pcs', 'kg', 'm', 'L', 'h', 'box', 'pallet'];
@@ -39,10 +40,7 @@ export default function NewStockItemPage(): JSX.Element {
   const [sellingPrice, setSellingPrice] = useState('');
   const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
   const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([]);
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
-  const [groupSaving, setGroupSaving] = useState(false);
-  const [groupError, setGroupError] = useState<string | null>(null);
+  const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,68 +94,6 @@ export default function NewStockItemPage(): JSX.Element {
     }
   };
 
-  const handleCreateGroup = async (): Promise<void> => {
-    if (!newGroupName.trim()) {
-      setGroupError('Name is required.');
-      return;
-    }
-    setGroupSaving(true);
-    setGroupError(null);
-    try {
-      const created = await createProductGroup({ name: newGroupName.trim() });
-      setProductGroups((prev) => [...prev, created]);
-      setProductGroup(created.name);
-      setNewGroupName('');
-      setShowCreateGroup(false);
-    } catch {
-      setGroupError('Unable to create product group.');
-    } finally {
-      setGroupSaving(false);
-    }
-  };
-
-  if (showCreateGroup) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Create product group
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => {
-              setShowCreateGroup(false);
-              setNewGroupName('');
-              setGroupError(null);
-            }}
-          >
-            Back
-          </Button>
-        </Box>
-        {groupError && (
-          <Typography color="error" sx={{ mb: 2 }} role="alert">{groupError}</Typography>
-        )}
-        <Paper sx={{ p: 2, maxWidth: 520 }}>
-          <TextField
-            fullWidth
-            label="Name"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <Button
-            variant="contained"
-            onClick={() => void handleCreateGroup()}
-            disabled={groupSaving || !newGroupName.trim()}
-          >
-            {groupSaving ? 'Saving...' : 'Save'}
-          </Button>
-        </Paper>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -199,18 +135,19 @@ export default function NewStockItemPage(): JSX.Element {
               label="Product group"
               onChange={(e) => {
                 const v = e.target.value;
-                if (v === '__create__') {
-                  setShowCreateGroup(true);
+                if (v === '__add_new__') {
+                  setAddProductGroupDialogOpen(true);
                 } else {
                   setProductGroup(v);
                 }
               }}
+              MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
             >
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value="__create__">
-                <em>Add new group</em>
+              <MenuItem value="__add_new__">
+                <em>Add new product group</em>
               </MenuItem>
               {productGroups.map((g) => (
                 <MenuItem key={g.id} value={g.name}>
@@ -225,6 +162,7 @@ export default function NewStockItemPage(): JSX.Element {
               value={unitOfMeasure}
               label="Unit of measurement"
               onChange={(e) => setUnitOfMeasure(e.target.value)}
+              MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
             >
               {uomOptions.map((uom) => (
                 <MenuItem key={uom} value={uom}>{uom}</MenuItem>
@@ -249,6 +187,15 @@ export default function NewStockItemPage(): JSX.Element {
           />
         </Box>
       </Paper>
+      <InlineCreateProductGroupDialog
+        open={addProductGroupDialogOpen}
+        onClose={() => setAddProductGroupDialogOpen(false)}
+        onCreated={(created) => {
+          setProductGroups((prev) => [...prev, created]);
+          setProductGroup(created.name);
+          setAddProductGroupDialogOpen(false);
+        }}
+      />
     </Box>
   );
 }

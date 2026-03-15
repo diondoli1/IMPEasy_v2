@@ -47,6 +47,7 @@ import {
 } from '../../../lib/api';
 import { InlineCreateItemDialog } from '../../../components/inline-create-item-dialog';
 import { InlineCreateProductGroupDialog } from '../../../components/inline-create-product-group-dialog';
+import { SCROLLABLE_SELECT_MENU_PROPS } from '../../../lib/select-utils';
 import type { Item } from '../../../types/item';
 import type { SalesOrder } from '../../../types/sales-order';
 
@@ -104,6 +105,7 @@ export default function NewManufacturingOrderPage(): JSX.Element {
   const [message, setMessage] = useState<string | null>(null);
   const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
   const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+  const [addComponentDialogOpen, setAddComponentDialogOpen] = useState(false);
   const [extraProductGroups, setExtraProductGroups] = useState<string[]>([]);
 
   useEffect(() => {
@@ -517,6 +519,7 @@ export default function NewManufacturingOrderPage(): JSX.Element {
                     setSelectedItemId('');
                   }
                 }}
+                MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
               >
                 <MenuItem value="">
                   <em>All groups</em>
@@ -545,6 +548,7 @@ export default function NewManufacturingOrderPage(): JSX.Element {
                     setSelectedItemId(v);
                   }
                 }}
+                MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
               >
                 <MenuItem value="">
                   <em>Select product</em>
@@ -636,10 +640,21 @@ export default function NewManufacturingOrderPage(): JSX.Element {
                         <Select
                           value={newBomItemId}
                           label="Component"
-                          onChange={(e) => setNewBomItemId(e.target.value)}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === '__add_new__') {
+                              setAddComponentDialogOpen(true);
+                            } else {
+                              setNewBomItemId(v);
+                            }
+                          }}
+                          MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
                         >
                           <MenuItem value="">
                             <em>Select component</em>
+                          </MenuItem>
+                          <MenuItem value="__add_new__">
+                            <em>Add new product</em>
                           </MenuItem>
                           {componentItems.map((i) => (
                             <MenuItem key={i.id} value={i.id}>
@@ -896,6 +911,21 @@ export default function NewManufacturingOrderPage(): JSX.Element {
             );
           }
           setAddProductDialogOpen(false);
+        }}
+        asManufactured
+      />
+      <InlineCreateItemDialog
+        open={addComponentDialogOpen}
+        onClose={() => setAddComponentDialogOpen(false)}
+        onCreated={(created) => {
+          setItems((prev) => [...prev, created]);
+          setNewBomItemId(String(created.id));
+          if (created.itemGroup) {
+            setExtraProductGroups((prev) =>
+              prev.includes(created.itemGroup!) ? prev : [...prev, created.itemGroup!],
+            );
+          }
+          setAddComponentDialogOpen(false);
         }}
         asManufactured
       />

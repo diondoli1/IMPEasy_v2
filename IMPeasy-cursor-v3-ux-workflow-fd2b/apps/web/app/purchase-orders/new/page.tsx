@@ -23,9 +23,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { createPurchaseOrder, createPurchaseOrderLine, listItems, listSuppliers } from '../../../lib/api';
+import {
+  createPurchaseOrder,
+  createPurchaseOrderLine,
+  listItems,
+  listProductGroups,
+  listSuppliers,
+} from '../../../lib/api';
+import { InlineCreateItemDialog } from '../../../components/inline-create-item-dialog';
+import { InlineCreateProductGroupDialog } from '../../../components/inline-create-product-group-dialog';
 import type { Item } from '../../../types/item';
+import type { ProductGroup } from '../../../types/stock-settings';
 import type { Supplier } from '../../../types/supplier';
+import { SCROLLABLE_SELECT_MENU_PROPS } from '../../../lib/select-utils';
 
 type LineRow = {
   id: string;
@@ -48,7 +58,11 @@ export default function NewPurchaseOrderPage(): JSX.Element {
   const router = useRouter();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
   const [supplierId, setSupplierId] = useState('');
+  const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+  const [addProductLineId, setAddProductLineId] = useState<string | null>(null);
   const [orderDate, setOrderDate] = useState(toDateInput(new Date()));
   const [expectedDate, setExpectedDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -62,12 +76,14 @@ export default function NewPurchaseOrderPage(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        const [suppliersData, itemsData] = await Promise.all([
+        const [suppliersData, itemsData, groupsData] = await Promise.all([
           listSuppliers(),
           listItems(),
+          listProductGroups(),
         ]);
         setSuppliers(suppliersData);
         setItems(itemsData);
+        setProductGroups(groupsData);
       } catch {
         setError('Unable to load suppliers and items.');
       } finally {
@@ -106,10 +122,20 @@ export default function NewPurchaseOrderPage(): JSX.Element {
             next.itemGroup = item.itemGroup ?? '';
           }
         }
+        if (updates.itemGroup !== undefined) {
+          next.itemGroup = updates.itemGroup;
+        }
         return next;
       }),
     );
   };
+
+  const productGroupNames = Array.from(
+    new Set([
+      ...productGroups.map((g) => g.name),
+      ...lines.map((r) => r.itemGroup).filter(Boolean),
+    ]),
+  ).sort();
 
   const handleSave = async (): Promise<void> => {
     const sid = Number(supplierId);
@@ -239,7 +265,7 @@ export default function NewPurchaseOrderPage(): JSX.Element {
           <TableHead>
             <TableRow>
               <TableCell>Product group</TableCell>
-              <TableCell>Item</TableCell>
+              <TableCell>Product</TableCell>
               <TableCell align="right">Ordered quantity</TableCell>
               <TableCell align="right">Price</TableCell>
               <TableCell align="right">Subtotal</TableCell>
@@ -249,7 +275,32 @@ export default function NewPurchaseOrderPage(): JSX.Element {
           <TableBody>
             {lines.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.itemGroup || '-'}</TableCell>
+                <TableCell>
+                  <Select
+                    size="small"
+                    value={row.itemGroup || ''}
+                    displayEmpty
+                    onChange={(e) => {
+                      const v = String(e.target.value ?? '');
+                      if (v === '__add_new__') {
+                        setAddProductLineId(row.id);
+                        setAddProductGroupDialogOpen(true);
+                      } else {
+                        updateLine(row.id, { itemGroup: v });
+                      }
+                    }}
+                    sx={{ minWidth: 140 }}
+                    MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
+                  >
+                    <MenuItem value="">Select product group</MenuItem>
+                    <MenuItem value="__add_new__">Add new product group</MenuItem>
+                    {productGroupNames.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
                 <TableCell>
                   <Select
                     size="small"
@@ -257,18 +308,30 @@ export default function NewPurchaseOrderPage(): JSX.Element {
                     displayEmpty
                     onChange={(e) => {
                       const v = String(e.target.value ?? '');
-                      updateLine(row.id, {
-                        itemId: v === '' ? '' : Number(v),
-                      });
+                      if (v === '__add_new__') {
+                        setAddProductLineId(row.id);
+                        setAddProductDialogOpen(true);
+                      } else {
+                        updateLine(row.id, {
+                          itemId: v === '' ? '' : Number(v),
+                        });
+                      }
                     }}
                     sx={{ minWidth: 180 }}
+                    MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
                   >
-                    <MenuItem value="">Select item</MenuItem>
-                    {items.map((item) => (
-                      <MenuItem key={item.id} value={item.id}>
-                        {item.name} {item.code ? `(${item.code})` : ''}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="">Select product</MenuItem>
+                    <MenuItem value="__add_new__">Add new product</MenuItem>
+                    {items
+                      .filter(
+                        (item) =>
+                          !row.itemGroup || (item.itemGroup ?? '') === row.itemGroup,
+                      )
+                      .map((item) => (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.name} {item.code ? `(${item.code})` : ''}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </TableCell>
                 <TableCell align="right">
@@ -315,6 +378,40 @@ export default function NewPurchaseOrderPage(): JSX.Element {
       <Button startIcon={<AddIcon />} onClick={addLine} sx={{ mt: 1 }}>
         Add line
       </Button>
+      <InlineCreateProductGroupDialog
+        open={addProductGroupDialogOpen}
+        onClose={() => {
+          setAddProductGroupDialogOpen(false);
+          setAddProductLineId(null);
+        }}
+        onCreated={(created) => {
+          setProductGroups((prev) => [...prev, created]);
+          if (addProductLineId) {
+            updateLine(addProductLineId, { itemGroup: created.name });
+          }
+          setAddProductGroupDialogOpen(false);
+          setAddProductLineId(null);
+        }}
+      />
+      <InlineCreateItemDialog
+        open={addProductDialogOpen}
+        onClose={() => {
+          setAddProductDialogOpen(false);
+          setAddProductLineId(null);
+        }}
+        onCreated={(created) => {
+          setItems((prev) => [...prev, created]);
+          if (addProductLineId) {
+            updateLine(addProductLineId, {
+              itemId: created.id,
+              itemCode: created.code ?? '',
+              itemGroup: created.itemGroup ?? '',
+            });
+          }
+          setAddProductDialogOpen(false);
+          setAddProductLineId(null);
+        }}
+      />
     </Box>
   );
 }
