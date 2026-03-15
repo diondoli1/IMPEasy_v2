@@ -60,22 +60,35 @@ export default function KioskPage(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        const [user, queue, moList, wsList] = await Promise.all([
+        const [userResult, queueResult, moResult, wsResult] = await Promise.allSettled([
           getCurrentUser(),
           listOperationQueue(),
           listManufacturingOrders(),
           listWorkstations(),
         ]);
-        setCurrentUser(user);
+        const user = userResult.status === 'fulfilled' ? userResult.value : null;
+        const queue = queueResult.status === 'fulfilled' ? queueResult.value : [];
+        const moList = moResult.status === 'fulfilled' ? moResult.value : [];
+        const wsList = wsResult.status === 'fulfilled' ? wsResult.value : [];
+        const failures: string[] = [];
+        if (userResult.status === 'rejected') failures.push(`auth: ${userResult.reason?.message ?? 'failed'}`);
+        if (queueResult.status === 'rejected') failures.push(`operations: ${queueResult.reason?.message ?? 'failed'}`);
+        if (moResult.status === 'rejected') failures.push(`manufacturing-orders: ${moResult.reason?.message ?? 'failed'}`);
+        if (wsResult.status === 'rejected') failures.push(`workstations: ${wsResult.reason?.message ?? 'failed'}`);
+        setCurrentUser(user ?? null);
         setOperations(queue);
         setManufacturingOrders(
           moList.filter(
-            (mo) => mo.status === 'released' || mo.status === 'in_progress',
+            (mo: ManufacturingOrder) =>
+              mo.status === 'released' || mo.status === 'in_progress',
           ),
         );
         setWorkstations(wsList);
-      } catch {
-        setError('Unable to load kiosk data.');
+        if (failures.length > 0) {
+          setError(`Unable to load kiosk data. ${failures.join('; ')}`);
+        }
+      } catch (e) {
+        setError(`Unable to load kiosk data. ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         setLoading(false);
       }
@@ -152,7 +165,7 @@ export default function KioskPage(): JSX.Element {
     );
   }
 
-  if (error && !proceeding && !currentUser) {
+  if (!currentUser) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography color="error" role="alert">
@@ -162,11 +175,14 @@ export default function KioskPage(): JSX.Element {
     );
   }
 
-  if (!currentUser) {
+  if (error && workstations.length === 0) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography color="error" role="alert">
-          Unable to load kiosk.
+          {error}
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          Ensure the API is running and you have access to workstations, manufacturing orders, and operations.
         </Typography>
       </Box>
     );
@@ -271,6 +287,11 @@ export default function KioskPage(): JSX.Element {
   if (!selectedWorkstation) {
     return (
       <Box sx={{ p: 3 }}>
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }} role="alert">
+            {error}
+          </Typography>
+        )}
         <Typography variant="h6" sx={{ mb: 2 }}>
           Select workstation
         </Typography>
@@ -324,6 +345,11 @@ export default function KioskPage(): JSX.Element {
   /** Operator view: Step 2 – Select manufacturing order and Proceed */
   return (
     <Box sx={{ p: 3 }}>
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }} role="alert">
+          {error}
+        </Typography>
+      )}
       <Button
         variant="outlined"
         onClick={handleBackToWorkstations}
@@ -337,12 +363,6 @@ export default function KioskPage(): JSX.Element {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Select a manufacturing order and press Proceed to go to the machine.
       </Typography>
-
-      {error && (
-        <Typography color="error" sx={{ mb: 2 }} role="alert">
-          {error}
-        </Typography>
-      )}
 
       {ordersForWorkstation.length === 0 ? (
         <Typography color="text.secondary" sx={{ py: 3 }}>
