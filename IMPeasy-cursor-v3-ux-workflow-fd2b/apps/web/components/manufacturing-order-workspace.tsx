@@ -229,10 +229,17 @@ export function ManufacturingOrderWorkspace({
                   setMaterialEditors(createMaterialEditors(releasedOrder));
                   setOperationAssignments(createOperationAssignments(releasedOrder));
                   setMessage('Manufacturing Order released.');
-                } catch {
-                  setWorkspaceError(
-                    'Unable to release the Manufacturing Order. Confirm that all required materials are fully booked first.',
-                  );
+                } catch (err) {
+                  const raw = err instanceof Error ? err.message : String(err);
+                  let msg =
+                    'Unable to release the Manufacturing Order. Confirm that all required materials are fully booked first.';
+                  try {
+                    const parsed = JSON.parse(raw);
+                    if (typeof parsed?.message === 'string') msg = parsed.message;
+                  } catch {
+                    if (raw && raw.length < 200) msg = raw;
+                  }
+                  setWorkspaceError(msg);
                 } finally {
                   setReleasing(false);
                 }

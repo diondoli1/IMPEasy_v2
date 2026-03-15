@@ -610,9 +610,11 @@ export class WorkOrdersService {
           },
         });
       }
+    });
 
+    try {
       await this.appendHistory(
-        tx,
+        this.prisma,
         id,
         'released',
         'system',
@@ -622,7 +624,9 @@ export class WorkOrdersService {
           id,
         )} released and operation ${firstQueuedOperation.sequence} is ready.`,
       );
-    });
+    } catch {
+      // History append is non-critical; release still succeeds
+    }
 
     return this.findOne(id);
   }
