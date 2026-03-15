@@ -7,7 +7,7 @@ import { UpdateWorkstationGroupDto } from './dto/update-workstation-group.dto';
 import { WorkstationGroupsService } from './workstation-groups.service';
 
 @Controller('workstation-groups')
-@Roles('admin', 'planner')
+@Roles('admin', 'planner', 'operator')
 export class WorkstationGroupsController {
   constructor(private readonly service: WorkstationGroupsService) {}
 
@@ -22,11 +22,13 @@ export class WorkstationGroupsController {
   }
 
   @Post()
+  @Roles('admin', 'planner')
   create(@Body() payload: CreateWorkstationGroupDto): Promise<WorkstationGroupResponseDto> {
     return this.service.create(payload);
   }
 
   @Patch(':id')
+  @Roles('admin', 'planner')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateWorkstationGroupDto,

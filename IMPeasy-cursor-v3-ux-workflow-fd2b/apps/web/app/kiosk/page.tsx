@@ -27,11 +27,13 @@ import {
   getCurrentUser,
   listManufacturingOrders,
   listOperationQueue,
+  listWorkstations,
 } from '../../lib/api';
 import { formatDate } from '../../lib/commercial';
 import type { AuthUser } from '../../types/auth';
 import type { ManufacturingOrder } from '../../types/manufacturing-order';
 import type { OperationQueueEntry } from '../../types/operation';
+import type { Workstation } from '../../types/workstation';
 
 type WorkstationStatus = 'idle' | 'on_job' | 'setup' | 'alarm';
 
@@ -59,12 +61,23 @@ function statusColor(status: WorkstationStatus): string {
   }
 }
 
+/** Match operation workstation (from routing) to workstation name (from API). */
+function operationMatchesWorkstation(opWorkstation: string | null, wsName: string): boolean {
+  if (!opWorkstation) return false;
+  return (
+    opWorkstation === wsName ||
+    wsName.includes(opWorkstation) ||
+    opWorkstation.includes(wsName)
+  );
+}
+
 const WORKSTATION_SELECT_KEY = 'kiosk-selected-workstation';
 
 export default function KioskPage(): JSX.Element {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [operations, setOperations] = useState<OperationQueueEntry[]>([]);
   const [manufacturingOrders, setManufacturingOrders] = useState<ManufacturingOrder[]>([]);
+  const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | null>(null);
   const [workstationDialogOpen, setWorkstationDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -73,10 +86,11 @@ export default function KioskPage(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        const [user, queue, moList] = await Promise.all([
+        const [user, queue, moList, wsList] = await Promise.all([
           getCurrentUser(),
           listOperationQueue(),
           listManufacturingOrders(),
+          listWorkstations(),
         ]);
         setCurrentUser(user);
         setOperations(queue);
@@ -86,6 +100,7 @@ export default function KioskPage(): JSX.Element {
               mo.status === 'released' || mo.status === 'in_progress',
           ),
         );
+        setWorkstations(wsList);
         const stored = typeof window !== 'undefined' ? sessionStorage.getItem(WORKSTATION_SELECT_KEY) : null;
         if (stored) setSelectedWorkstation(stored);
       } catch {
@@ -104,17 +119,11 @@ export default function KioskPage(): JSX.Element {
     return op.assignedOperatorId === currentUser?.id;
   });
 
-  const workstations = Array.from(
-    new Set(
-      visibleOperations
-        .map((o) => o.workstation)
-        .filter((w): w is string => Boolean(w)),
-    ),
-  ).sort();
-
   const opsByWorkstation = workstations.reduce<Record<string, OperationQueueEntry[]>>(
     (acc, ws) => {
-      acc[ws] = visibleOperations.filter((o) => o.workstation === ws);
+      acc[ws.name] = visibleOperations.filter((o) =>
+        operationMatchesWorkstation(o.workstation, ws.name),
+      );
       return acc;
     },
     {},
@@ -154,7 +163,9 @@ export default function KioskPage(): JSX.Element {
   }
 
   const filteredOps = selectedWorkstation
-    ? visibleOperations.filter((o) => o.workstation === selectedWorkstation)
+    ? visibleOperations.filter((o) =>
+        operationMatchesWorkstation(o.workstation, selectedWorkstation),
+      )
     : visibleOperations;
 
   return (
@@ -168,49 +179,66 @@ export default function KioskPage(): JSX.Element {
         )}
       </Box>
 
+      <Typography variant="subtitle1" sx={{ mb: 2 }}>
+        Workstations
+      </Typography>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 3,
+          mb: 3,
+        }}
+      >
+        {workstations.map((ws) => {
+          const ops = opsByWorkstation[ws.name] ?? [];
+          const status = workstationStatusFromOperations(ops);
+          const currentOp = ops.find((o) => o.status === 'running' || o.status === 'paused');
+          const handleBoxClick = () => {
+            if (!isAdmin) {
+              setSelectedWorkstation(ws.name);
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem(WORKSTATION_SELECT_KEY, ws.name);
+              }
+              setWorkstationDialogOpen(false);
+            }
+          };
+          return (
+            <Card
+              key={ws.id}
+              sx={{
+                minHeight: 180,
+                cursor: isAdmin ? 'default' : 'pointer',
+                '&:hover': isAdmin ? {} : { boxShadow: 4 },
+              }}
+              onClick={handleBoxClick}
+            >
+              <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    bgcolor: statusColor(status),
+                    mb: 2,
+                    boxShadow: 2,
+                  }}
+                  title={status === 'idle' ? 'Idle' : status === 'on_job' ? 'On job' : status === 'setup' ? 'Setup' : 'Alarm'}
+                />
+                <Typography variant="h6" fontWeight={600}>{ws.name}</Typography>
+                {currentOp && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                    {currentOp.workOrderNumber} – {currentOp.itemName}
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+
       {isAdmin && (
         <>
-          <Typography variant="subtitle1" sx={{ mb: 2 }}>
-            Workstations
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 3,
-              mb: 3,
-            }}
-          >
-            {workstations.map((ws) => {
-              const ops = opsByWorkstation[ws] ?? [];
-              const status = workstationStatusFromOperations(ops);
-              const currentOp = ops.find((o) => o.status === 'running' || o.status === 'paused');
-              return (
-                <Card key={ws} sx={{ minHeight: 180 }}>
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
-                    <Box
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '50%',
-                        bgcolor: statusColor(status),
-                        mb: 2,
-                        boxShadow: 2,
-                      }}
-                      title={status === 'idle' ? 'Idle' : status === 'on_job' ? 'On job' : status === 'setup' ? 'Setup' : 'Alarm'}
-                    />
-                    <Typography variant="h6" fontWeight={600}>{ws}</Typography>
-                    {currentOp && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-                        {currentOp.workOrderNumber} – {currentOp.itemName}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </Box>
-
           <Typography variant="subtitle1" sx={{ mb: 2 }}>
             Manufacturing backlog
           </Typography>
@@ -266,6 +294,11 @@ export default function KioskPage(): JSX.Element {
           </Box>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {filteredOps.length === 0 && selectedWorkstation && (
+              <Typography color="text.secondary" sx={{ py: 2 }}>
+                No operations at this workstation.
+              </Typography>
+            )}
             {filteredOps.map((op) => (
               <Card key={op.id} sx={{ minWidth: 220 }}>
                 <CardContent>
@@ -306,8 +339,8 @@ export default function KioskPage(): JSX.Element {
                 <em>Select</em>
               </MenuItem>
               {workstations.map((ws) => (
-                <MenuItem key={ws} value={ws}>
-                  {ws}
+                <MenuItem key={ws.id} value={ws.name}>
+                  {ws.name}
                 </MenuItem>
               ))}
             </Select>

@@ -7,7 +7,7 @@ import { UpdateWorkstationDto } from './dto/update-workstation.dto';
 import { WorkstationsService } from './workstations.service';
 
 @Controller('workstations')
-@Roles('admin', 'planner')
+@Roles('admin', 'planner', 'operator')
 export class WorkstationsController {
   constructor(private readonly service: WorkstationsService) {}
 
@@ -22,11 +22,13 @@ export class WorkstationsController {
   }
 
   @Post()
+  @Roles('admin', 'planner')
   create(@Body() payload: CreateWorkstationDto): Promise<WorkstationResponseDto> {
     return this.service.create(payload);
   }
 
   @Patch(':id')
+  @Roles('admin', 'planner')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateWorkstationDto,

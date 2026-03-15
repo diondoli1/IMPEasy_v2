@@ -10,7 +10,7 @@ import { WorkOrderResponseDto } from './dto/work-order-response.dto';
 import { WorkOrdersService } from './work-orders.service';
 
 @Controller('manufacturing-orders')
-@Roles('admin', 'planner')
+@Roles('admin', 'planner', 'operator')
 export class ManufacturingOrdersController {
   constructor(private readonly workOrdersService: WorkOrdersService) {}
 
@@ -20,6 +20,7 @@ export class ManufacturingOrdersController {
   }
 
   @Post()
+  @Roles('admin', 'planner')
   createDirect(@Body() payload: CreateManufacturingOrderDto): Promise<WorkOrderResponseDto> {
     return this.workOrdersService.createDirect({
       itemId: payload.itemId,
@@ -36,6 +37,7 @@ export class ManufacturingOrdersController {
   }
 
   @Patch(':id')
+  @Roles('admin', 'planner')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpdateWorkOrderDto,
@@ -44,11 +46,13 @@ export class ManufacturingOrdersController {
   }
 
   @Post(':id/release')
+  @Roles('admin', 'planner')
   release(@Param('id', ParseIntPipe) id: number): Promise<WorkOrderDetailResponseDto> {
     return this.workOrdersService.releaseWorkOrder(id);
   }
 
   @Post(':id/bookings')
+  @Roles('admin', 'planner')
   createOrUpdateBooking(
     @Param('id', ParseIntPipe) id: number,
     @Body() payload: UpsertMaterialBookingDto,
@@ -57,6 +61,7 @@ export class ManufacturingOrdersController {
   }
 
   @Patch(':id/bookings/:bookingId')
+  @Roles('admin', 'planner')
   updateBooking(
     @Param('id', ParseIntPipe) id: number,
     @Param('bookingId', ParseIntPipe) bookingId: number,
