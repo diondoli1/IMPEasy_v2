@@ -692,15 +692,19 @@ export class WorkOrdersService {
           },
         });
       }
+    });
 
+    try {
       await this.appendHistory(
-        tx,
+        this.prisma,
         workOrderId,
         'booking',
         'system',
         `Booked ${payload.quantity} from lot ${stockLot.lotNumber} for component ${bomItem.item.code ?? buildItemCode(bomItem.item.id)}.`,
       );
-    });
+    } catch {
+      // History append is non-critical; booking still succeeds
+    }
 
     return this.findOne(workOrderId);
   }

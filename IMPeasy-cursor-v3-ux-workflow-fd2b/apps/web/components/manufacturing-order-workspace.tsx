@@ -602,8 +602,16 @@ export function ManufacturingOrderWorkspace({
                                     setMaterialEditors(createMaterialEditors(updatedOrder));
                                     setOperationAssignments(createOperationAssignments(updatedOrder));
                                     setMessage('Material booking saved.');
-                                  } catch {
-                                    setWorkspaceError('Unable to save the material booking.');
+                                  } catch (err) {
+                                    const raw = err instanceof Error ? err.message : String(err);
+                                    let msg = 'Unable to save the material booking.';
+                                    try {
+                                      const parsed = JSON.parse(raw);
+                                      if (typeof parsed?.message === 'string') msg = parsed.message;
+                                    } catch {
+                                      if (raw && raw.length < 200) msg = raw;
+                                    }
+                                    setWorkspaceError(msg);
                                   } finally {
                                     setSavingMaterialId(null);
                                   }
