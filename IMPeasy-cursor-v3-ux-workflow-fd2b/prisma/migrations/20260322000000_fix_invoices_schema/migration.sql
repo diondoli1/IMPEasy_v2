@@ -26,7 +26,7 @@ CREATE INDEX IF NOT EXISTS "invoices_customerId_idx" ON "invoices"("customerId")
 
 -- Add issueDate (Prisma uses issueDate)
 ALTER TABLE "invoices" ADD COLUMN IF NOT EXISTS "issueDate" TIMESTAMP(3);
-UPDATE "invoices" SET "issueDate" = COALESCE("invoiceDate", "createdAt") WHERE "issueDate" IS NULL;
+UPDATE "invoices" SET "issueDate" = "createdAt" WHERE "issueDate" IS NULL;
 ALTER TABLE "invoices" ALTER COLUMN "issueDate" SET DEFAULT CURRENT_TIMESTAMP;
 
 -- Add paidAt

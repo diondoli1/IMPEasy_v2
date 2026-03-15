@@ -192,6 +192,19 @@ async function ensureUsers() {
 }
 
 async function loginFirstAvailableUser() {
+  const adminEmail = process.env.IMPEASY_ADMIN_EMAIL ?? 'admin@impeasy.local';
+  const adminPassword = process.env.IMPEASY_ADMIN_PASSWORD ?? 'Admin123!';
+  try {
+    const response = await apiRequest('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+    });
+    return response.accessToken;
+  } catch {
+    // Fall through to SEED_USERS
+  }
+
   for (const user of SEED_USERS) {
     try {
       const response = await apiRequest('/auth/login', {

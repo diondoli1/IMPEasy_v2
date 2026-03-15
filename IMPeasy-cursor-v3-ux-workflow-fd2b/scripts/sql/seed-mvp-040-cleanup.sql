@@ -77,7 +77,7 @@ where "workOrderId" in (
   where so."customerReference" = 'MVP040-SHIP-DEMO'
 );
 
-delete from work_order_history
+delete from work_order_histories
 where "workOrderId" in (
   select wo.id
   from work_orders wo

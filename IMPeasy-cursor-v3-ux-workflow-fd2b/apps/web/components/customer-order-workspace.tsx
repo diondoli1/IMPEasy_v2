@@ -1090,9 +1090,12 @@ export function CustomerOrderWorkspace({
                               {Array.from(
                                 new Set([
                                   ...productGroups.map((g) => g.name),
+                                  ...items.map((i) => i.itemGroup).filter(Boolean) as string[],
                                   ...(line.itemGroup ? [line.itemGroup] : []),
                                 ]),
-                              ).map((name) => (
+                              )
+                                .sort()
+                                .map((name) => (
                                 <option key={name} value={name}>
                                   {name}
                                 </option>

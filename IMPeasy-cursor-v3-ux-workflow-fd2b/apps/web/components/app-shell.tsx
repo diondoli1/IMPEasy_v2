@@ -12,7 +12,6 @@ import {
   canAccessPath,
   getActiveNavigationGroup,
   getLandingPath,
-  getVisibleNavigationGroups,
   getVisibleNavigationTabs,
   normalizeRoles,
 } from '../lib/navigation';
@@ -109,7 +108,6 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
   };
 
   const normalizedRoles = currentUser ? normalizeRoles(currentUser.roles) : [];
-  const visibleGroups = currentUser ? getVisibleNavigationGroups(currentUser.roles) : [];
   const activeGroup = getActiveNavigationGroup(pathname);
   const visibleTabs = currentUser ? getVisibleNavigationTabs(pathname, currentUser.roles) : [];
   const isDashboard = pathname === '/dashboard';
@@ -166,24 +164,6 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
               </div>
             ) : null}
           </div>
-
-          {isAuthenticated && currentUser && !isDashboard ? (
-            <nav className="app-shell__top-nav" aria-label="Primary navigation">
-              {visibleGroups.map((group) => {
-                const isActive = activeGroup?.key === group.key;
-
-                return (
-                  <Link
-                    key={group.key}
-                    href={group.href}
-                    className={`app-shell__top-link${isActive ? ' app-shell__top-link--active' : ''}`}
-                  >
-                    {group.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          ) : null}
         </div>
       </header>
 

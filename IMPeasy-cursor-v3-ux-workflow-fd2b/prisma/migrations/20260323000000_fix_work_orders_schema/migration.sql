@@ -49,15 +49,22 @@ ALTER TABLE "work_orders" ADD COLUMN IF NOT EXISTS "dueDate" TIMESTAMP(3);
 ALTER TABLE "work_orders" ADD COLUMN IF NOT EXISTS "releasedAt" TIMESTAMP(3);
 ALTER TABLE "work_orders" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP(3);
 
--- work_order_histories: add eventType and message (Prisma expects these)
-ALTER TABLE "work_order_histories" ADD COLUMN IF NOT EXISTS "eventType" TEXT;
-ALTER TABLE "work_order_histories" ADD COLUMN IF NOT EXISTS "message" TEXT;
-UPDATE "work_order_histories" SET "eventType" = COALESCE("action", 'status_change') WHERE "eventType" IS NULL;
-UPDATE "work_order_histories" SET "message" = COALESCE("notes", '') WHERE "message" IS NULL;
-ALTER TABLE "work_order_histories" ALTER COLUMN "eventType" SET DEFAULT 'status_change';
-ALTER TABLE "work_order_histories" ALTER COLUMN "message" SET DEFAULT '';
-ALTER TABLE "work_order_histories" ALTER COLUMN "eventType" SET NOT NULL;
-ALTER TABLE "work_order_histories" ALTER COLUMN "message" SET NOT NULL;
+-- work_order_history (renamed to work_order_histories in later migration): add eventType and message if missing (Prisma expects these)
+ALTER TABLE "work_order_history" ADD COLUMN IF NOT EXISTS "eventType" TEXT;
+ALTER TABLE "work_order_history" ADD COLUMN IF NOT EXISTS "message" TEXT;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='work_order_history' AND column_name='action') THEN
+    UPDATE "work_order_history" SET "eventType" = COALESCE("action", 'status_change') WHERE "eventType" IS NULL;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='work_order_history' AND column_name='notes') THEN
+    UPDATE "work_order_history" SET "message" = COALESCE("notes", '') WHERE "message" IS NULL;
+  END IF;
+END $$;
+ALTER TABLE "work_order_history" ALTER COLUMN "eventType" SET DEFAULT 'status_change';
+ALTER TABLE "work_order_history" ALTER COLUMN "message" SET DEFAULT '';
+ALTER TABLE "work_order_history" ALTER COLUMN "eventType" SET NOT NULL;
+ALTER TABLE "work_order_history" ALTER COLUMN "message" SET NOT NULL;
 
 -- work_order_operations: add missing columns for Prisma
 ALTER TABLE "work_order_operations" ADD COLUMN IF NOT EXISTS "reworkSourceOperationId" INTEGER;
