@@ -71,15 +71,28 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    // Operator: allow access when route requires operator (kiosk needs workstations, manufacturing-orders)
+    // Check both metadata and path as fallback (metadata can be undefined in some NestJS setups)
+    const path = ((request as { path?: string }).path ?? String(request.url ?? '').split('?')[0]) || '';
+    const method = (request.method ?? 'GET').toUpperCase();
+    const isKioskRoute =
+      (path === '/manufacturing-orders' ||
+        path === '/workstations' ||
+        path.startsWith('/manufacturing-orders/') ||
+        path.startsWith('/workstations/') ||
+        path === '/operations/queue' ||
+        path.startsWith('/operations/')) &&
+      (method === 'GET' || (path.startsWith('/operations/') && ['POST', 'PATCH'].includes(method)));
+    const routeRequiresOperator =
+      (requiredRoles && requiredRoles.some((r) => r === 'operator')) || isKioskRoute;
+    if (userRoleNames.includes('operator') && routeRequiresOperator) {
+      return true;
+    }
+
     // Map office/planner to admin for backward compatibility (UX spec: Admin & Operator only)
     const effectiveRoles = userRoleNames.includes('office') || userRoleNames.includes('planner')
       ? [...userRoleNames, 'admin']
       : userRoleNames;
-
-    // Operator: allow access when route requires operator (kiosk needs workstations, manufacturing-orders)
-    if (userRoleNames.includes('operator') && requiredRoles.some((r) => r === 'operator')) {
-      return true;
-    }
 
     const hasRequiredRole = requiredRoles.some((requiredRole) =>
       effectiveRoles.includes(requiredRole),
