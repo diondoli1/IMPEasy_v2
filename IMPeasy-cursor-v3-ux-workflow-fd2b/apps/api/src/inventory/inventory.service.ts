@@ -321,7 +321,12 @@ export class InventoryService {
       throw new NotFoundException(`Item ${itemId} not found`);
     }
 
-    const summaryByItem = await this.buildStockSummaryMap([itemId]);
+    let summaryByItem: Map<number, StockItemSummary>;
+    try {
+      summaryByItem = await this.buildStockSummaryMap([itemId]);
+    } catch {
+      summaryByItem = new Map();
+    }
     const lots = await this.listLotsForItems([itemId], undefined, numberingSnapshot);
     const movements = await this.listMovementRecords({
       where: { itemId },
@@ -1052,29 +1057,30 @@ export class InventoryService {
   private async listMovementRecords(input?: {
     where?: Prisma.InventoryTransactionWhereInput;
   }, numberingSnapshot?: NumberingSnapshot): Promise<StockMovementResponseDto[]> {
-    const resolvedNumberingSnapshot =
-      numberingSnapshot ?? (await this.numberingService.getSnapshot());
-    const movements = await this.prisma.inventoryTransaction.findMany({
-      where: input?.where,
-      include: {
-        item: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
+    try {
+      const resolvedNumberingSnapshot =
+        numberingSnapshot ?? (await this.numberingService.getSnapshot());
+      const movements = await this.prisma.inventoryTransaction.findMany({
+        where: input?.where,
+        include: {
+          item: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
+          },
+          stockLot: {
+            select: {
+              id: true,
+              lotNumber: true,
+            },
           },
         },
-        stockLot: {
-          select: {
-            id: true,
-            lotNumber: true,
-          },
-        },
-      },
-      orderBy: [{ transactionDate: 'desc' }, { id: 'desc' }],
-    });
+        orderBy: [{ transactionDate: 'desc' }, { id: 'desc' }],
+      });
 
-    return movements.map((movement) => ({
+      return movements.map((movement) => ({
       id: movement.id,
       itemId: movement.itemId,
       itemCode: movement.item.code ?? buildItemCode(movement.itemId),
@@ -1095,5 +1101,9 @@ export class InventoryService {
       transactionDate: movement.transactionDate,
       notes: movement.notes ?? null,
     }));
+    } catch {
+      // inventory_transactions table may not exist
+      return [];
+    }
   }
 }
