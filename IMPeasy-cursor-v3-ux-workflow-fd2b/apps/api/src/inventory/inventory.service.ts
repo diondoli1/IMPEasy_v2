@@ -192,30 +192,35 @@ export class InventoryService {
       return new Map<number, number>();
     }
 
-    const transactions = await this.prisma.inventoryTransaction.findMany({
-      where: {
-        transactionType: {
-          in: ['receive', 'purchase_receipt'],
+    try {
+      const transactions = await this.prisma.inventoryTransaction.findMany({
+        where: {
+          transactionType: {
+            in: ['receive', 'purchase_receipt'],
+          },
+          purchaseOrderLineId: {
+            in: purchaseOrderLineIds,
+          },
         },
-        purchaseOrderLineId: {
-          in: purchaseOrderLineIds,
-        },
-      },
-      orderBy: { id: 'asc' },
-    });
+        orderBy: { id: 'asc' },
+      });
 
-    const receivedByLine = new Map<number, number>();
+      const receivedByLine = new Map<number, number>();
 
-    for (const transaction of transactions) {
-      if (transaction.purchaseOrderLineId === null) {
-        continue;
+      for (const transaction of transactions) {
+        if (transaction.purchaseOrderLineId === null) {
+          continue;
+        }
+
+        const current = receivedByLine.get(transaction.purchaseOrderLineId) ?? 0;
+        receivedByLine.set(transaction.purchaseOrderLineId, current + transaction.quantity);
       }
 
-      const current = receivedByLine.get(transaction.purchaseOrderLineId) ?? 0;
-      receivedByLine.set(transaction.purchaseOrderLineId, current + transaction.quantity);
+      return receivedByLine;
+    } catch {
+      // inventory_transactions table may not exist
+      return new Map<number, number>();
     }
-
-    return receivedByLine;
   }
 
   async receivePurchaseOrderLine(
@@ -273,12 +278,22 @@ export class InventoryService {
       },
     });
 
-    const summaryByItem = await this.buildStockSummaryMap(items.map((item) => item.id));
+    let summaryByItem: Map<number, StockItemSummary>;
+    try {
+      summaryByItem = await this.buildStockSummaryMap(items.map((item) => item.id));
+    } catch {
+      summaryByItem = new Map();
+    }
 
-    const productGroups = await this.prisma.productGroup.findMany({
-      select: { code: true, name: true },
-    });
-    const groupNameToCode = new Map(productGroups.map((g) => [g.name, g.code]));
+    let groupNameToCode = new Map<string, string | null>();
+    try {
+      const productGroups = await this.prisma.productGroup.findMany({
+        select: { code: true, name: true },
+      });
+      groupNameToCode = new Map(productGroups.map((g) => [g.name, g.code]));
+    } catch {
+      // product_groups may not exist or be accessible; continue without product group codes
+    }
 
     return items.map((item) =>
       this.toStockItemResponse(
