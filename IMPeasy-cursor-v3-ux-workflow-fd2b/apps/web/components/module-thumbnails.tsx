@@ -1,5 +1,11 @@
 'use client';
 
+import GroupIcon from '@mui/icons-material/Group';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import SettingsIcon from '@mui/icons-material/Settings';
+import TouchAppIcon from '@mui/icons-material/TouchApp';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -11,15 +17,16 @@ type ModuleThumb = {
   label: string;
   href: string;
   roles: RoleName[];
+  Icon: React.ComponentType<{ sx?: object }>;
 };
 
 const MODULE_THUMBS: ModuleThumb[] = [
-  { label: 'CRM', href: '/crm', roles: ['admin'] },
-  { label: 'Production', href: '/manufacturing-orders', roles: ['admin'] },
-  { label: 'Stock', href: '/stock/items', roles: ['admin'] },
-  { label: 'Procurement', href: '/purchase-orders', roles: ['admin'] },
-  { label: 'Settings', href: '/settings/company', roles: ['admin'] },
-  { label: 'Kiosk', href: '/kiosk', roles: ['admin', 'operator'] },
+  { label: 'CRM', href: '/crm', roles: ['admin'], Icon: GroupIcon },
+  { label: 'Production', href: '/manufacturing-orders', roles: ['admin'], Icon: PrecisionManufacturingIcon },
+  { label: 'Stock', href: '/stock/items', roles: ['admin'], Icon: Inventory2Icon },
+  { label: 'Procurement', href: '/purchase-orders', roles: ['admin'], Icon: ShoppingCartIcon },
+  { label: 'Settings', href: '/settings/company', roles: ['admin'], Icon: SettingsIcon },
+  { label: 'Kiosk', href: '/kiosk', roles: ['admin', 'operator'], Icon: TouchAppIcon },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -81,6 +88,7 @@ export function ModuleThumbnails({ roles }: ModuleThumbnailsProps): JSX.Element 
     >
       {visibleThumbs.map((thumb) => {
         const active = isActive(pathname, thumb.href);
+        const Icon = thumb.Icon;
         return (
           <Link
             key={thumb.href}
@@ -89,23 +97,27 @@ export function ModuleThumbnails({ roles }: ModuleThumbnailsProps): JSX.Element 
           >
             <Box
               sx={{
-                width: 80,
-                height: 80,
+                width: 88,
+                height: 88,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: 1,
+                borderRadius: 1.5,
                 bgcolor: active ? 'primary.main' : 'action.hover',
                 color: active ? 'primary.contrastText' : 'text.primary',
                 fontWeight: 600,
                 fontSize: '0.75rem',
                 textAlign: 'center',
-                px: 2,
+                boxShadow: 1,
+                transition: 'all 0.2s ease',
                 '&:hover': {
                   bgcolor: active ? 'primary.dark' : 'action.selected',
+                  boxShadow: 2,
                 },
               }}
             >
+              <Icon sx={{ fontSize: 28, mb: 0.5 }} />
               {thumb.label}
             </Box>
           </Link>

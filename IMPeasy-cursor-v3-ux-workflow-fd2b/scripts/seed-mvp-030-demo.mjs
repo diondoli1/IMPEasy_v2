@@ -83,6 +83,16 @@ const BOM_DEFINITION = {
   notes: 'Seeded by scripts/seed-mvp-030-demo.mjs',
 };
 
+const WORKSTATION_GROUPS = [
+  { code: 'WSG-ASSY-A', name: 'Assembly Cell A', type: 'Assembly', hourlyRate: 45 },
+  { code: 'WSG-ASSY-B', name: 'Assembly Cell B', type: 'Assembly', hourlyRate: 45 },
+];
+
+const WORKSTATIONS = [
+  { code: 'WS-ASSY-A1', name: 'Assembly Cell A - Station 1', groupCode: 'WSG-ASSY-A', type: 'Assembly', hourlyRate: 45 },
+  { code: 'WS-ASSY-B1', name: 'Assembly Cell B - Station 1', groupCode: 'WSG-ASSY-B', type: 'Assembly', hourlyRate: 45 },
+];
+
 const ROUTING_DEFINITION = {
   code: 'ROUT-MVP030-ASSY',
   name: 'Servo Bracket Demo Routing',
@@ -93,6 +103,7 @@ const ROUTING_DEFINITION = {
     name: 'Bracket Assembly',
     description: 'Assemble and verify the seeded servo bracket order.',
     workstation: 'Assembly Cell A',
+    workstationGroupCode: 'WSG-ASSY-A',
     setupTimeMinutes: 15,
     runTimeMinutes: 8,
     queueNotes: 'Release after booking the seeded component lots.',
@@ -177,6 +188,19 @@ async function ensureUsers() {
 }
 
 async function loginFirstAvailableUser() {
+  const adminEmail = process.env.IMPEASY_ADMIN_EMAIL ?? 'admin@impeasy.local';
+  const adminPassword = process.env.IMPEASY_ADMIN_PASSWORD ?? 'Admin123!';
+  try {
+    const response = await apiRequest('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+    });
+    return response.accessToken;
+  } catch {
+    // Fall through to SEED_USERS
+  }
+
   for (const user of SEED_USERS) {
     try {
       const response = await apiRequest('/auth/login', {
@@ -253,6 +277,50 @@ async function assignRoles(accessToken, roleIdsByName) {
   }
 
   return users;
+}
+
+async function ensureWorkstationGroups() {
+  const groups = [];
+  for (const seed of WORKSTATION_GROUPS) {
+    const existing = await prisma.workstationGroup.findFirst({
+      where: { code: seed.code },
+    });
+    const data = {
+      code: seed.code,
+      name: seed.name,
+      type: seed.type,
+      hourlyRate: seed.hourlyRate,
+    };
+    const group = existing
+      ? await prisma.workstationGroup.update({ where: { id: existing.id }, data })
+      : await prisma.workstationGroup.create({ data });
+    groups.push(group);
+  }
+  return groups;
+}
+
+async function ensureWorkstations(groups) {
+  const groupByCode = new Map(groups.map((g) => [g.code, g]));
+  const workstations = [];
+  for (const seed of WORKSTATIONS) {
+    const group = groupByCode.get(seed.groupCode);
+    if (!group) throw new Error(`Workstation group ${seed.groupCode} not found`);
+    const existing = await prisma.workstation.findFirst({
+      where: { code: seed.code },
+    });
+    const data = {
+      workstationGroupId: group.id,
+      code: seed.code,
+      name: seed.name,
+      type: seed.type,
+      hourlyRate: seed.hourlyRate,
+    };
+    const ws = existing
+      ? await prisma.workstation.update({ where: { id: existing.id }, data })
+      : await prisma.workstation.create({ data });
+    workstations.push(ws);
+  }
+  return workstations;
 }
 
 async function ensureCustomer() {
@@ -658,6 +726,12 @@ async function ensureProductionMasterData(finishedItem, componentItems) {
         },
       });
 
+  const workstationGroup = ROUTING_DEFINITION.operation.workstationGroupCode
+    ? await prisma.workstationGroup.findFirst({
+        where: { code: ROUTING_DEFINITION.operation.workstationGroupCode },
+      })
+    : null;
+
   await prisma.routingOperation.deleteMany({
     where: { routingId: routing.id },
   });
@@ -669,6 +743,7 @@ async function ensureProductionMasterData(finishedItem, componentItems) {
       name: ROUTING_DEFINITION.operation.name,
       description: ROUTING_DEFINITION.operation.description,
       workstation: ROUTING_DEFINITION.operation.workstation,
+      workstationGroupId: workstationGroup?.id ?? null,
       setupTimeMinutes: ROUTING_DEFINITION.operation.setupTimeMinutes,
       runTimeMinutes: ROUTING_DEFINITION.operation.runTimeMinutes,
       queueNotes: ROUTING_DEFINITION.operation.queueNotes,
@@ -717,9 +792,10 @@ async function ensureStockLots(componentItems) {
   }
 }
 
-async function generatePlannedWorkOrder(salesOrderId, operatorUserId) {
+async function generatePlannedWorkOrder(salesOrderId, operatorUserId, accessToken) {
   const generated = await apiRequest(`/sales-orders/${salesOrderId}/work-orders/generate`, {
     method: 'POST',
+    headers: jsonHeaders(accessToken),
   });
 
   if (!Array.isArray(generated) || generated.length === 0) {
@@ -730,9 +806,7 @@ async function generatePlannedWorkOrder(salesOrderId, operatorUserId) {
 
   await apiRequest(`/manufacturing-orders/${workOrderId}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: jsonHeaders(accessToken),
     body: JSON.stringify({
       assignedOperatorId: operatorUserId,
       assignedWorkstation: ROUTING_DEFINITION.operation.workstation,
@@ -741,7 +815,9 @@ async function generatePlannedWorkOrder(salesOrderId, operatorUserId) {
     }),
   });
 
-  return apiRequest(`/manufacturing-orders/${workOrderId}`);
+  return apiRequest(`/manufacturing-orders/${workOrderId}`, {
+    headers: jsonHeaders(accessToken),
+  });
 }
 
 async function main() {
@@ -759,6 +835,9 @@ async function main() {
     throw new Error('Planner and operator seed users must exist before seeding the MVP-030 demo flow.');
   }
 
+  const workstationGroups = await ensureWorkstationGroups();
+  await ensureWorkstations(workstationGroups);
+
   const customer = await ensureCustomer();
   const finishedItem = await ensureItem(PRODUCED_ITEM);
   const componentItems = [];
@@ -772,7 +851,7 @@ async function main() {
   await ensureStockLots(componentItems);
   await cleanupDemoWorkOrders(salesOrder.id);
 
-  const workOrder = await generatePlannedWorkOrder(salesOrder.id, operatorUser.id);
+  const workOrder = await generatePlannedWorkOrder(salesOrder.id, operatorUser.id, accessToken);
 
   console.log('Seed complete.');
   console.table(
