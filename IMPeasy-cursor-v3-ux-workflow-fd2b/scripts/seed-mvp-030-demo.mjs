@@ -58,7 +58,7 @@ const COMPONENT_ITEMS = [
     notes: 'Seeded component item for the MVP-030 manufacturing-order demo flow.',
     bomQuantity: 1,
     lotNumber: 'LOT-MVP030-PLATE-01',
-    lotQuantity: 40,
+    lotQuantity: 100,
   },
   {
     code: 'RM-MVP030-FASTENER',
@@ -71,7 +71,7 @@ const COMPONENT_ITEMS = [
     notes: 'Seeded component item for the MVP-030 manufacturing-order demo flow.',
     bomQuantity: 4,
     lotNumber: 'LOT-MVP030-FASTENER-01',
-    lotQuantity: 160,
+    lotQuantity: 250,
   },
 ];
 
@@ -447,6 +447,11 @@ async function upsertQuoteAndSalesOrder(customer, finishedItem) {
     });
   }
 
+  const NUM_LINES = 6;
+  const subtotalAmount = roundMoney(lineTotal * NUM_LINES);
+  const totalTaxAmount = roundMoney(taxAmount * NUM_LINES);
+  const totalAmountAll = roundMoney(totalAmount * NUM_LINES);
+
   const quoteData = {
     customerId: customer.id,
     status: 'converted',
@@ -476,10 +481,10 @@ async function upsertQuoteAndSalesOrder(customer, finishedItem) {
     shippingPostcode: customer.shippingPostcode,
     shippingStateRegion: customer.shippingStateRegion,
     shippingCountry: customer.shippingCountry,
-    subtotalAmount: lineTotal,
+    subtotalAmount,
     discountAmount: 0,
-    taxAmount,
-    totalAmount,
+    taxAmount: totalTaxAmount,
+    totalAmount: totalAmountAll,
   };
 
   quote = quote
@@ -491,24 +496,26 @@ async function upsertQuoteAndSalesOrder(customer, finishedItem) {
         data: quoteData,
       });
 
-  await prisma.quoteLine.create({
-    data: {
-      quoteId: quote.id,
-      itemId: finishedItem.id,
-      itemCode: finishedItem.code,
-      itemName: finishedItem.name,
-      description: 'Seeded production demo line for manual Manufacturing Order review.',
-      quantity,
-      unit: finishedItem.unitOfMeasure,
-      unitPrice,
-      lineDiscountPercent: discountPercent,
-      taxRate,
-      deliveryDateOverride: promisedDate,
-      lineTotal,
-      taxAmount,
-      totalAmount,
-    },
-  });
+  for (let i = 0; i < NUM_LINES; i++) {
+    await prisma.quoteLine.create({
+      data: {
+        quoteId: quote.id,
+        itemId: finishedItem.id,
+        itemCode: finishedItem.code,
+        itemName: finishedItem.name,
+        description: 'Seeded production demo line for manual Manufacturing Order review.',
+        quantity,
+        unit: finishedItem.unitOfMeasure,
+        unitPrice,
+        lineDiscountPercent: discountPercent,
+        taxRate,
+        deliveryDateOverride: promisedDate,
+        lineTotal,
+        taxAmount,
+        totalAmount,
+      },
+    });
+  }
 
   const salesOrderData = {
     quoteId: quote.id,
@@ -539,10 +546,10 @@ async function upsertQuoteAndSalesOrder(customer, finishedItem) {
     shippingPostcode: customer.shippingPostcode,
     shippingStateRegion: customer.shippingStateRegion,
     shippingCountry: customer.shippingCountry,
-    subtotalAmount: lineTotal,
+    subtotalAmount,
     discountAmount: 0,
-    taxAmount,
-    totalAmount,
+    taxAmount: totalTaxAmount,
+    totalAmount: totalAmountAll,
   };
 
   salesOrder = salesOrder
@@ -554,24 +561,32 @@ async function upsertQuoteAndSalesOrder(customer, finishedItem) {
         data: salesOrderData,
       });
 
-  const salesOrderLine = await prisma.salesOrderLine.create({
-    data: {
-      salesOrderId: salesOrder.id,
-      itemId: finishedItem.id,
-      itemCode: finishedItem.code,
-      itemName: finishedItem.name,
-      description: 'Seeded production demo line for manual Manufacturing Order review.',
-      quantity,
-      unit: finishedItem.unitOfMeasure,
-      unitPrice,
-      lineDiscountPercent: discountPercent,
-      taxRate,
-      deliveryDateOverride: promisedDate,
-      lineTotal,
-      taxAmount,
-      totalAmount,
-    },
+  for (let i = 0; i < NUM_LINES; i++) {
+    await prisma.salesOrderLine.create({
+      data: {
+        salesOrderId: salesOrder.id,
+        itemId: finishedItem.id,
+        itemCode: finishedItem.code,
+        itemName: finishedItem.name,
+        description: 'Seeded production demo line for manual Manufacturing Order review.',
+        quantity,
+        unit: finishedItem.unitOfMeasure,
+        unitPrice,
+        lineDiscountPercent: discountPercent,
+        taxRate,
+        deliveryDateOverride: promisedDate,
+        lineTotal,
+        taxAmount,
+        totalAmount,
+      },
+    });
+  }
+
+  const salesOrderLines = await prisma.salesOrderLine.findMany({
+    where: { salesOrderId: salesOrder.id },
+    orderBy: { id: 'asc' },
   });
+  const salesOrderLine = salesOrderLines[0];
 
   await prisma.salesOrderAudit.createMany({
     data: [
@@ -792,7 +807,7 @@ async function ensureStockLots(componentItems) {
   }
 }
 
-async function generatePlannedWorkOrder(salesOrderId, operatorUserId, accessToken) {
+async function generatePlannedWorkOrders(salesOrderId, operatorUserId, accessToken) {
   const generated = await apiRequest(`/sales-orders/${salesOrderId}/work-orders/generate`, {
     method: 'POST',
     headers: jsonHeaders(accessToken),
@@ -802,22 +817,20 @@ async function generatePlannedWorkOrder(salesOrderId, operatorUserId, accessToke
     throw new Error(`No Manufacturing Order was generated for sales order ${salesOrderId}.`);
   }
 
-  const workOrderId = generated[0].id;
+  for (const wo of generated) {
+    await apiRequest(`/manufacturing-orders/${wo.id}`, {
+      method: 'PATCH',
+      headers: jsonHeaders(accessToken),
+      body: JSON.stringify({
+        assignedOperatorId: operatorUserId,
+        assignedWorkstation: ROUTING_DEFINITION.operation.workstation,
+        notes:
+          'Seeded for the MVP-030 checkpoint. Book the seeded lots, release the Manufacturing Order, then finish the kiosk operation.',
+      }),
+    });
+  }
 
-  await apiRequest(`/manufacturing-orders/${workOrderId}`, {
-    method: 'PATCH',
-    headers: jsonHeaders(accessToken),
-    body: JSON.stringify({
-      assignedOperatorId: operatorUserId,
-      assignedWorkstation: ROUTING_DEFINITION.operation.workstation,
-      notes:
-        'Seeded for the MVP-030 checkpoint. Book the seeded lots, release the Manufacturing Order, then finish the kiosk operation.',
-    }),
-  });
-
-  return apiRequest(`/manufacturing-orders/${workOrderId}`, {
-    headers: jsonHeaders(accessToken),
-  });
+  return generated;
 }
 
 async function main() {
@@ -851,7 +864,7 @@ async function main() {
   await ensureStockLots(componentItems);
   await cleanupDemoWorkOrders(salesOrder.id);
 
-  const workOrder = await generatePlannedWorkOrder(salesOrder.id, operatorUser.id, accessToken);
+  const workOrders = await generatePlannedWorkOrders(salesOrder.id, operatorUser.id, accessToken);
 
   console.log('Seed complete.');
   console.table(
@@ -883,11 +896,11 @@ async function main() {
       id: salesOrder.id,
       route: `${WEB_BASE_URL}/customer-orders/sales-order-${salesOrder.id}`,
     },
-    {
+    ...workOrders.map((wo) => ({
       kind: 'manufacturing_order',
-      id: workOrder.id,
-      route: `${WEB_BASE_URL}/manufacturing-orders/${workOrder.id}`,
-    },
+      id: wo.id,
+      route: `${WEB_BASE_URL}/manufacturing-orders/${wo.id}`,
+    })),
     {
       kind: 'production_calendar',
       id: '',
