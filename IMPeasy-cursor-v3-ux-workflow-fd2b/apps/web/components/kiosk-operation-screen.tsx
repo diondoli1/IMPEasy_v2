@@ -41,7 +41,8 @@ export function KioskOperationScreen({
 }: KioskOperationScreenProps): JSX.Element {
   const [pendingAction, setPendingAction] = useState<'record' | 'start' | 'pause' | 'complete' | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [goodQuantity, setGoodQuantity] = useState(String(operation.plannedQuantity));
+  const expectedTotal = producedCount > 0 ? producedCount : operation.plannedQuantity;
+  const [goodQuantity, setGoodQuantity] = useState(String(expectedTotal));
   const [scrapQuantity, setScrapQuantity] = useState('0');
   const [error, setError] = useState<string | null>(null);
 
@@ -99,8 +100,16 @@ export function KioskOperationScreen({
         scrapQuantity: Number(scrapQuantity),
       });
       setDialogOpen(false);
-    } catch {
-      setError('Unable to complete the operation.');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      let display = 'Unable to complete the operation.';
+      try {
+        const parsed = JSON.parse(msg);
+        if (typeof parsed?.message === 'string') display = parsed.message;
+      } catch {
+        if (msg && msg.length < 200) display = msg;
+      }
+      setError(display);
     } finally {
       setPendingAction(null);
     }
@@ -168,6 +177,9 @@ export function KioskOperationScreen({
                   tone="primary"
                   disabled={pendingAction !== null}
                   onClick={() => {
+                    const total = producedCount > 0 ? producedCount : operation.plannedQuantity;
+                    setGoodQuantity(String(total));
+                    setScrapQuantity('0');
                     setDialogOpen(true);
                     setError(null);
                   }}
@@ -198,7 +210,11 @@ export function KioskOperationScreen({
           open={dialogOpen}
           onClose={() => setDialogOpen(false)}
           title="Complete Job"
-          description="Enter good parts and scrap parts. Total must equal planned quantity. Good parts are registered as produced."
+          description={
+            producedCount > 0
+              ? `Enter good parts and scrap parts. Total must equal parts produced (${producedCount}). Good parts are registered as produced.`
+              : 'Enter good parts and scrap parts. Total must equal planned quantity. Good parts are registered as produced.'
+          }
           footer={
               <>
                 <Button onClick={() => setDialogOpen(false)} disabled={pendingAction === 'complete'}>

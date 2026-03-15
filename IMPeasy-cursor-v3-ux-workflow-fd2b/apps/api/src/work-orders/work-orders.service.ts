@@ -867,10 +867,18 @@ export class WorkOrdersService {
 
     const goodQuantity = payload.goodQuantity ?? operation.plannedQuantity;
     const scrapQuantity = payload.scrapQuantity ?? 0;
+    const totalEntered = goodQuantity + scrapQuantity;
 
-    if (goodQuantity + scrapQuantity !== operation.plannedQuantity) {
+    const producedCount = await this.getRecordedProductionQuantity(id);
+    const expectedTotal = producedCount > 0 ? producedCount : operation.plannedQuantity;
+
+    if (totalEntered !== expectedTotal) {
+      const hint =
+        producedCount > 0
+          ? `Total must equal parts produced (${producedCount}).`
+          : `Total must equal planned quantity (${operation.plannedQuantity}).`;
       throw new BadRequestException(
-        `Completion quantities must total the planned quantity ${operation.plannedQuantity}.`,
+        `Completion quantities must total ${expectedTotal}. ${hint}`,
       );
     }
 
@@ -1216,12 +1224,12 @@ export class WorkOrdersService {
       throw new NotFoundException(`Operation ${operationId} not found`);
     }
 
-    const aggregate = await this.prisma.productionLog.aggregate({
+    const logs = await this.prisma.productionLog.findMany({
       where: { operationId },
-      _sum: { quantity: true },
+      select: { quantity: true },
     });
 
-    return aggregate._sum.quantity ?? 0;
+    return logs.reduce((sum, log) => sum + log.quantity, 0);
   }
 
   private async getWorkOrderOrThrow(id: number): Promise<WorkOrderRecord> {
