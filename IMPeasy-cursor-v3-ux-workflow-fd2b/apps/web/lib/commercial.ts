@@ -19,6 +19,7 @@ export type CommercialEditableLine = {
   itemId: number;
   itemCode: string;
   itemName: string;
+  itemGroup: string;
   description: string;
   quantity: number;
   unit: string;
@@ -133,6 +134,7 @@ export function createEditableLine(items: Item[], line?: QuoteLine | SalesOrderL
     itemId: line?.itemId ?? items[0]?.id ?? 0,
     itemCode: line?.itemCode ?? (items[0] ? formatItemCode(items[0].id) : ''),
     itemName: line?.itemName ?? items[0]?.name ?? '',
+    itemGroup: item?.itemGroup ?? items[0]?.itemGroup ?? '',
     description: line?.description ?? item?.description ?? item?.name ?? '',
     quantity: line?.quantity ?? 1,
     unit: line?.unit ?? 'pcs',

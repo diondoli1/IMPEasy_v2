@@ -20,6 +20,7 @@ import {
   listAuthUsers,
   listCustomers,
   listItems,
+  listProductGroups,
   listSalesOrderShipments,
   listSettingsEntries,
   packShipment,
@@ -57,6 +58,7 @@ vi.mock('../lib/api', () => ({
   listAuthUsers: vi.fn(),
   listCustomers: vi.fn(),
   listItems: vi.fn(),
+  listProductGroups: vi.fn(),
   listSalesOrderShipments: vi.fn(),
   listSettingsEntries: vi.fn(),
   packShipment: vi.fn(),
@@ -82,6 +84,7 @@ const getShipmentInvoiceMock = vi.mocked(getShipmentInvoice);
 const listAuthUsersMock = vi.mocked(listAuthUsers);
 const listCustomersMock = vi.mocked(listCustomers);
 const listItemsMock = vi.mocked(listItems);
+const listProductGroupsMock = vi.mocked(listProductGroups);
 const listSalesOrderShipmentsMock = vi.mocked(listSalesOrderShipments);
 const listSettingsEntriesMock = vi.mocked(listSettingsEntries);
 const packShipmentMock = vi.mocked(packShipment);
@@ -111,6 +114,7 @@ describe('CustomerOrderWorkspace', () => {
     listAuthUsersMock.mockReset();
     listCustomersMock.mockReset();
     listItemsMock.mockReset();
+    listProductGroupsMock.mockReset();
     listSalesOrderShipmentsMock.mockReset();
     listSettingsEntriesMock.mockReset();
     packShipmentMock.mockReset();
@@ -163,6 +167,8 @@ describe('CustomerOrderWorkspace', () => {
         updatedAt: '2026-03-12T08:00:00.000Z',
       },
     ]);
+
+    listProductGroupsMock.mockResolvedValue([]);
 
     listItemsMock.mockResolvedValue([
       {

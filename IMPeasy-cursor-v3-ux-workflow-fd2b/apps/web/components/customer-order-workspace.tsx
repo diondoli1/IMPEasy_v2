@@ -20,6 +20,7 @@ import {
   listAuthUsers,
   listCustomers,
   listItems,
+  listProductGroups,
   listSalesOrderShipments,
   listSettingsEntries,
   packShipment,
@@ -66,6 +67,7 @@ import IconButton from '@mui/material/IconButton';
 import MuiButton from '@mui/material/Button';
 import { InlineCreateCustomerDialog } from './inline-create-customer-dialog';
 import { InlineCreateItemDialog } from './inline-create-item-dialog';
+import { InlineCreateProductGroupDialog } from './inline-create-product-group-dialog';
 import { SalesOrderProductionHandoff } from './sales-order-production-handoff';
 import { ShipmentCreationPanel } from './shipment-creation-panel';
 import { PageShell } from './ui/page-templates';
@@ -258,6 +260,7 @@ export function CustomerOrderWorkspace({
   const parsedWorkspace = useMemo(() => parseWorkspaceId(workspaceId), [workspaceId]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [productGroups, setProductGroups] = useState<Array<{ id: number; code: string; name: string }>>([]);
   const [salespeople, setSalespeople] = useState<AuthUser[]>([]);
   const [paymentTermOptions, setPaymentTermOptions] = useState<string[]>(PAYMENT_TERM_OPTIONS);
   const [shippingTermOptions, setShippingTermOptions] = useState<string[]>(SHIPPING_TERM_OPTIONS);
@@ -280,6 +283,8 @@ export function CustomerOrderWorkspace({
   const [addCustomerDialogOpen, setAddCustomerDialogOpen] = useState(false);
   const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
   const [addProductLineIndex, setAddProductLineIndex] = useState<number | null>(null);
+  const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
+  const [addProductGroupLineIndex, setAddProductGroupLineIndex] = useState<number | null>(null);
 
   async function loadSalesOrderShippingWorkspace(salesOrderId: number): Promise<void> {
     const [availabilityData, shipmentData] = await Promise.all([
@@ -305,9 +310,10 @@ export function CustomerOrderWorkspace({
 
     void (async () => {
       try {
-        const [customerData, itemData] = await Promise.all([
+        const [customerData, itemData, productGroupData] = await Promise.all([
           listCustomers(),
           listItems(),
+          listProductGroups(),
         ]);
         const [
           usersResult,
@@ -327,6 +333,7 @@ export function CustomerOrderWorkspace({
 
         setCustomers(customerData);
         setItems(itemData);
+        setProductGroups(productGroupData);
 
         const loadedUsers = usersResult.status === 'fulfilled' ? usersResult.value : [];
         const currentUser = currentUserResult.status === 'fulfilled' ? currentUserResult.value : null;
@@ -1058,9 +1065,40 @@ export function CustomerOrderWorkspace({
                       return (
                         <tr key={line.key}>
                         <td>
-                          <span className="muted-copy--small">
-                            {selectedItem?.itemGroup ?? '-'}
-                          </span>
+                          <div className="stack stack--tight">
+                            <select
+                              className="control control--dense"
+                              value={line.itemGroup || ''}
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                if (value === '__add_new__') {
+                                  setAddProductGroupLineIndex(index);
+                                  setAddProductGroupDialogOpen(true);
+                                } else {
+                                  setLineRows((current) =>
+                                    current.map((candidate, candidateIndex) =>
+                                      candidateIndex === index
+                                        ? { ...candidate, itemGroup: value }
+                                        : candidate,
+                                    ),
+                                  );
+                                }
+                              }}
+                            >
+                              <option value="">Select product group</option>
+                              <option value="__add_new__">Add new product group</option>
+                              {Array.from(
+                                new Set([
+                                  ...productGroups.map((g) => g.name),
+                                  ...(line.itemGroup ? [line.itemGroup] : []),
+                                ]),
+                              ).map((name) => (
+                                <option key={name} value={name}>
+                                  {name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </td>
                         <td>
                           <div className="stack stack--tight">
@@ -1084,6 +1122,7 @@ export function CustomerOrderWorkspace({
                                             itemId: item?.id ?? 0,
                                             itemCode: item?.code ?? (item ? `ITEM-${String(item.id).padStart(4, '0')}` : ''),
                                             itemName: item?.name ?? '',
+                                            itemGroup: item?.itemGroup ?? candidate.itemGroup,
                                             description: item?.description ?? item?.name ?? '',
                                             unitPrice: item?.defaultPrice ?? candidate.unitPrice,
                                           }
@@ -1095,11 +1134,17 @@ export function CustomerOrderWorkspace({
                             >
                               <option value="__add_new__">Add new product</option>
                               <option value={0}>Select product</option>
-                              {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                  {item.code ?? `ITEM-${String(item.id).padStart(4, '0')}`} {item.name}
-                                </option>
-                              ))}
+                              {items
+                                .filter(
+                                  (item) =>
+                                    !line.itemGroup ||
+                                    (item.itemGroup ?? '') === line.itemGroup,
+                                )
+                                .map((item) => (
+                                  <option key={item.id} value={item.id}>
+                                    {item.code ?? `ITEM-${String(item.id).padStart(4, '0')}`} {item.name}
+                                  </option>
+                                ))}
                             </select>
                             <span className="muted-copy--small mono">{line.itemCode}</span>
                           </div>
@@ -1451,6 +1496,7 @@ export function CustomerOrderWorkspace({
                     itemId: created.id,
                     itemCode: created.code ?? `ITEM-${String(created.id).padStart(4, '0')}`,
                     itemName: created.name,
+                    itemGroup: created.itemGroup ?? candidate.itemGroup,
                     description: created.description ?? created.name,
                     unitPrice: created.defaultPrice ?? candidate.unitPrice,
                   }
@@ -1460,6 +1506,27 @@ export function CustomerOrderWorkspace({
         }
         setAddProductDialogOpen(false);
         setAddProductLineIndex(null);
+      }}
+    />
+    <InlineCreateProductGroupDialog
+      open={addProductGroupDialogOpen}
+      onClose={() => {
+        setAddProductGroupDialogOpen(false);
+        setAddProductGroupLineIndex(null);
+      }}
+      onCreated={(created) => {
+        setProductGroups((prev) => [...prev, created]);
+        if (addProductGroupLineIndex !== null) {
+          setLineRows((current) =>
+            current.map((candidate, candidateIndex) =>
+              candidateIndex === addProductGroupLineIndex
+                ? { ...candidate, itemGroup: created.name }
+                : candidate,
+            ),
+          );
+        }
+        setAddProductGroupDialogOpen(false);
+        setAddProductGroupLineIndex(null);
       }}
     />
     </>
