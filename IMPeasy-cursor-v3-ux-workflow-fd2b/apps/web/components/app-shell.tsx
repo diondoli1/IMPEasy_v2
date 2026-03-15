@@ -64,11 +64,13 @@ export function AppShell({ children }: AppShellProps): JSX.Element {
         const landingPath = getLandingPath(user.roles);
 
         if (isLoginRoute) {
+          setIsLoading(false);
           router.replace(landingPath);
           return;
         }
 
         if (!canAccessPath(pathname, user.roles)) {
+          setIsLoading(false);
           router.replace(landingPath);
           return;
         }

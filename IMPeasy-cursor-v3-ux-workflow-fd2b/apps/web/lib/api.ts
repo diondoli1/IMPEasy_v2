@@ -197,9 +197,20 @@ export async function loginUser(input: LoginUserInput): Promise<AuthTokenRespons
   return parseJsonOrThrow(response) as Promise<AuthTokenResponse>;
 }
 
+const AUTH_ME_TIMEOUT_MS = 10_000;
+
 export async function getCurrentUser(): Promise<AuthUser> {
-  const response = await apiFetch(`${API_BASE_URL}/auth/me`, { cache: 'no-store' });
-  return parseJsonOrThrow(response) as Promise<AuthUser>;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AUTH_ME_TIMEOUT_MS);
+  try {
+    const response = await apiFetch(`${API_BASE_URL}/auth/me`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    return parseJsonOrThrow(response) as Promise<AuthUser>;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export async function listAuthUsers(): Promise<AuthUser[]> {
