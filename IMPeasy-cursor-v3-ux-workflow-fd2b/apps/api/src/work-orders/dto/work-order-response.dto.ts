@@ -1,0 +1,30 @@
+export class WorkOrderResponseDto {
+  id!: number;
+  documentNumber!: string;
+  salesOrderId!: number;
+  salesOrderNumber!: string;
+  salesOrderLineId!: number;
+  itemId!: number;
+  itemCode!: string;
+  itemName!: string;
+  customerId!: number;
+  customerName!: string;
+  bomId!: number | null;
+  bomName!: string | null;
+  routingId!: number;
+  routingName!: string;
+  quantity!: number;
+  dueDate!: Date | null;
+  status!: string;
+  releaseState!: string;
+  currentOperationId!: number | null;
+  currentOperationName!: string | null;
+  currentWorkstation!: string | null;
+  assignedOperatorId!: number | null;
+  assignedOperatorName!: string | null;
+  assignedWorkstation!: string | null;
+  bookingCompletenessPercent!: number;
+  finishedGoodsLotNumber!: string | null;
+  createdAt!: Date;
+  updatedAt!: Date;
+}
