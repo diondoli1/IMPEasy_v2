@@ -1,32 +1,69 @@
 'use client';
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import MuiButton from '@mui/material/Button';
+import {
+  createProductGroup,
+  getItem,
+  listProductGroups,
+  listUnitOfMeasures,
+  updateItem,
+} from '../../../../lib/api';
+import type { ProductGroup } from '../../../../types/stock-settings';
+import type { UnitOfMeasure } from '../../../../types/stock-settings';
 
-import { PageShell } from '../../../../components/ui/page-templates';
-import { Badge, DataTable, EmptyState, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../../components/ui/primitives';
-import { formatDate } from '../../../../lib/commercial';
-import { getStockItem } from '../../../../lib/api';
-import type { StockItemDetail } from '../../../../types/inventory';
+const FALLBACK_UOM = ['pcs', 'kg', 'm', 'L', 'h', 'box', 'pallet'];
 
-type StockItemTab = 'summary' | 'lots' | 'movements' | 'linked-docs';
-
-export default function StockItemDetailPage(): JSX.Element {
+export default function StockItemEditPage(): JSX.Element {
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
-  const [item, setItem] = useState<StockItemDetail | null>(null);
-  const [activeTab, setActiveTab] = useState<StockItemTab>('summary');
+  const [partNo, setPartNo] = useState('');
+  const [partDesc, setPartDesc] = useState('');
+  const [productGroup, setProductGroup] = useState('');
+  const [unitOfMeasure, setUnitOfMeasure] = useState('pcs');
+  const [isProcured, setIsProcured] = useState(true);
+  const [sellingPrice, setSellingPrice] = useState('');
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
+  const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([]);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [groupSaving, setGroupSaving] = useState(false);
+  const [groupError, setGroupError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
       try {
-        setItem(await getStockItem(id));
+        const [itemData, groups, units] = await Promise.all([
+          getItem(id),
+          listProductGroups(),
+          listUnitOfMeasures(),
+        ]);
+        setPartNo(itemData.code ?? '');
+        setPartDesc(itemData.name ?? '');
+        setProductGroup(itemData.itemGroup ?? '');
+        setUnitOfMeasure(itemData.unitOfMeasure ?? 'pcs');
+        setIsProcured(itemData.itemType === 'procured');
+        setSellingPrice(String(itemData.defaultPrice ?? ''));
+        setProductGroups(groups);
+        setUnitOfMeasures(units);
       } catch {
         setError('Stock item not found.');
       } finally {
@@ -35,125 +72,221 @@ export default function StockItemDetailPage(): JSX.Element {
     })();
   }, [id]);
 
-  if (loading) {
-    return <p>Loading stock item...</p>;
+  const uomOptions =
+    unitOfMeasures.length > 0 ? unitOfMeasures.map((u) => u.name) : FALLBACK_UOM;
+
+  const handleSave = async (): Promise<void> => {
+    if (!partDesc.trim()) {
+      setError('Part description is required.');
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    setSaveMessage(null);
+    try {
+      await updateItem(id, {
+        code: partNo.trim() || undefined,
+        name: partDesc.trim(),
+        description: partDesc.trim(),
+        itemGroup: productGroup.trim() || undefined,
+        unitOfMeasure,
+        itemType: isProcured ? 'procured' : 'produced',
+        defaultPrice: Number(sellingPrice) || 0,
+      });
+      setSaveMessage('Item saved.');
+    } catch {
+      setError('Unable to update item.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateGroup = async (): Promise<void> => {
+    if (!newGroupName.trim()) {
+      setGroupError('Name is required.');
+      return;
+    }
+    setGroupSaving(true);
+    setGroupError(null);
+    try {
+      const created = await createProductGroup({ name: newGroupName.trim() });
+      setProductGroups((prev) => [...prev, created]);
+      setProductGroup(created.name);
+      setNewGroupName('');
+      setShowCreateGroup(false);
+    } catch {
+      setGroupError('Unable to create product group.');
+    } finally {
+      setGroupSaving(false);
+    }
+  };
+
+  if (showCreateGroup) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Create product group
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => {
+              setShowCreateGroup(false);
+              setNewGroupName('');
+              setGroupError(null);
+            }}
+          >
+            Back
+          </Button>
+        </Box>
+        {groupError && (
+          <Typography color="error" sx={{ mb: 2 }} role="alert">
+            {groupError}
+          </Typography>
+        )}
+        <Paper sx={{ p: 2, maxWidth: 520 }}>
+          <TextField
+            fullWidth
+            label="Name"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            onClick={() => void handleCreateGroup()}
+            disabled={groupSaving || !newGroupName.trim()}
+          >
+            {groupSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </Paper>
+      </Box>
+    );
   }
 
-  if (error || !item) {
-    return <p role="alert">{error ?? 'Stock item not found.'}</p>;
+  if (loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography>Loading stock item...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error" role="alert">
+          {error}
+        </Typography>
+        <Button component={Link} href="/stock/items" variant="outlined" sx={{ mt: 2 }}>
+          Back to items
+        </Button>
+      </Box>
+    );
   }
 
   return (
-    <PageShell
-      eyebrow="Inventory"
-      title={item.itemName}
-      description="Summary, lot position, movement history, and linked documents for the selected stock item."
-      leadingActions={
-        <MuiButton component={Link} href="/stock/items" variant="outlined" startIcon={<ArrowBackIcon />}>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Button
+          component={Link}
+          href="/stock/items"
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+        >
           Back
-        </MuiButton>
-      }
-      actions={
-        <>
-          <Badge tone="info">{item.unitOfMeasure}</Badge>
-        </>
-      }
-    >
-      <StatGrid>
-        <StatCard label="On Hand" value={item.onHandQuantity} />
-        <StatCard label="Available" value={item.availableQuantity} />
-        <StatCard label="Booked" value={item.bookedQuantity} />
-        <StatCard label="Reorder Point" value={item.reorderPoint} />
-      </StatGrid>
+        </Button>
+        <Typography variant="h6">Edit Item</Typography>
+        <Button variant="contained" onClick={() => void handleSave()} disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </Button>
+      </Box>
 
-      <Panel title="Stock item detail" description="The item detail groups live stock context into four quick tabs.">
-        <Toolbar>
-          <ToolbarGroup>
-            {([
-              ['summary', 'Summary'],
-              ['lots', 'Lots'],
-              ['movements', 'Movements'],
-              ['linked-docs', 'Linked Docs'],
-            ] as Array<[StockItemTab, string]>).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                className={`workspace-tab${activeTab === value ? ' workspace-tab--active' : ''}`}
-                onClick={() => setActiveTab(value)}
-              >
-                {label}
-              </button>
-            ))}
-          </ToolbarGroup>
-        </Toolbar>
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }} role="alert">
+          {error}
+        </Typography>
+      )}
+      {saveMessage && (
+        <Typography sx={{ mb: 2, color: 'success.main' }}>
+          {saveMessage}
+        </Typography>
+      )}
 
-        {activeTab === 'summary' ? (
-          <DataTable
-            columns={[
-              { header: 'Field', width: '180px', cell: (row) => row.label },
-              { header: 'Value', cell: (row) => row.value },
-            ]}
-            rows={[
-              { id: 'code', label: 'Item Code', value: item.itemCode ?? `Item ${item.itemId}` },
-              { id: 'uom', label: 'Unit of Measure', value: item.unitOfMeasure },
-              { id: 'expected', label: 'Expected', value: item.expectedQuantity },
-              { id: 'wip', label: 'WIP', value: item.wipQuantity },
-            ]}
-            getRowKey={(row) => row.id}
+      <Paper sx={{ p: 2, maxWidth: 520 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Part No"
+            value={partNo}
+            onChange={(e) => setPartNo(e.target.value)}
           />
-        ) : null}
-
-        {activeTab === 'lots' ? (
-          <DataTable
-            columns={[
-              {
-                header: 'Lot',
-                cell: (lot) => (
-                  <div className="stack stack--tight">
-                    <Link href={`/stock/lots/${lot.id}`} className="mono">
-                      {lot.lotNumber}
-                    </Link>
-                    <span className="muted-copy--small">{lot.sourceDocument ?? '-'}</span>
-                  </div>
-                ),
-              },
-              { header: 'Quantity', width: '90px', align: 'right', cell: (lot) => lot.quantityOnHand },
-              { header: 'Available', width: '90px', align: 'right', cell: (lot) => lot.availableQuantity },
-              { header: 'Status', width: '120px', cell: (lot) => <Badge tone="info">{lot.status}</Badge> },
-            ]}
-            rows={item.lots}
-            getRowKey={(lot) => String(lot.id)}
-            emptyState={<EmptyState title="No lots" description="Lots will appear after receipts or Manufacturing Order completion." />}
+          <TextField
+            label="Part Desc"
+            value={partDesc}
+            onChange={(e) => setPartDesc(e.target.value)}
+            required
           />
-        ) : null}
-
-        {activeTab === 'movements' ? (
-          <DataTable
-            columns={[
-              { header: 'Date', width: '130px', cell: (movement) => formatDate(movement.transactionDate) },
-              { header: 'Lot', width: '120px', cell: (movement) => movement.lotNumber ?? '-' },
-              { header: 'Type', width: '140px', cell: (movement) => movement.movementType },
-              { header: 'Quantity', width: '90px', align: 'right', cell: (movement) => movement.quantity },
-              { header: 'Reference', cell: (movement) => movement.reference ?? '-' },
-            ]}
-            rows={item.movements}
-            getRowKey={(movement) => String(movement.id)}
-            emptyState={<EmptyState title="No movements" description="Movement history will appear as this item is received, booked, picked, or shipped." />}
+          <FormControl>
+            <InputLabel>Product group</InputLabel>
+            <Select
+              value={productGroup}
+              label="Product group"
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === '__create__') {
+                  setShowCreateGroup(true);
+                } else {
+                  setProductGroup(v);
+                }
+              }}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value="__create__">
+                <em>Add new group</em>
+              </MenuItem>
+              {productGroups.map((g) => (
+                <MenuItem key={g.id} value={g.name}>
+                  {g.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <InputLabel>Unit of measurement</InputLabel>
+            <Select
+              value={unitOfMeasure}
+              label="Unit of measurement"
+              onChange={(e) => setUnitOfMeasure(e.target.value)}
+            >
+              {uomOptions.map((uom) => (
+                <MenuItem key={uom} value={uom}>
+                  {uom}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isProcured}
+                onChange={(e) => setIsProcured(e.target.checked)}
+              />
+            }
+            label="This is a procured item"
           />
-        ) : null}
-
-        {activeTab === 'linked-docs' ? (
-          <DataTable
-            columns={[
-              { header: 'Kind', width: '140px', cell: (document) => document.kind },
-              { header: 'Reference', cell: (document) => document.reference },
-            ]}
-            rows={item.linkedDocuments}
-            getRowKey={(document) => `${document.kind}-${document.reference}`}
-            emptyState={<EmptyState title="No linked documents" description="Source documents and movement references will show up here as the item is used." />}
+          <TextField
+            label="Selling Price"
+            type="number"
+            inputProps={{ min: 0, step: 0.01 }}
+            value={sellingPrice}
+            onChange={(e) => setSellingPrice(e.target.value)}
           />
-        ) : null}
-      </Panel>
-    </PageShell>
+        </Box>
+      </Paper>
+    </Box>
   );
 }
