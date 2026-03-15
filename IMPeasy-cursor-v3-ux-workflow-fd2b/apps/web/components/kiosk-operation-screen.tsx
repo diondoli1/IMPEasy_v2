@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   formatProductionDateTime,
@@ -24,41 +24,63 @@ import {
 
 type KioskOperationScreenProps = {
   operation: OperationDetail;
-  onStart: () => Promise<void>;
+  producedCount?: number;
+  onRecordPart?: () => Promise<void>;
+  onStart?: () => Promise<void>;
   onPause: () => Promise<void>;
   onComplete: (input: OperationCompletionInput) => Promise<void>;
 };
 
 export function KioskOperationScreen({
   operation,
+  producedCount = 0,
+  onRecordPart,
   onStart,
   onPause,
   onComplete,
 }: KioskOperationScreenProps): JSX.Element {
-  const [pendingAction, setPendingAction] = useState<'start' | 'pause' | 'complete' | null>(null);
+  const [pendingAction, setPendingAction] = useState<'record' | 'start' | 'pause' | 'complete' | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [goodQuantity, setGoodQuantity] = useState(String(operation.plannedQuantity));
   const [scrapQuantity, setScrapQuantity] = useState('0');
   const [error, setError] = useState<string | null>(null);
 
-  async function handleAction(action: 'start' | 'pause'): Promise<void> {
-    setPendingAction(action);
+  async function handleRecordPart(): Promise<void> {
+    if (!onRecordPart) return;
+    setPendingAction('record');
     setError(null);
-
     try {
-      if (action === 'start') {
-        await onStart();
-      } else {
-        await onPause();
-      }
+      await onRecordPart();
     } catch {
-      setError(
-        action === 'start'
-          ? 'Unable to start the operation.'
-          : 'Unable to pause the operation.',
-      );
+      setError('Unable to record part.');
     } finally {
       setPendingAction(null);
+    }
+  }
+
+  async function handleAction(action: 'start' | 'pause'): Promise<void> {
+    if (action === 'pause') {
+      setPendingAction('pause');
+      setError(null);
+      try {
+        await onPause();
+      } catch {
+        setError('Unable to stop the process.');
+      } finally {
+        setPendingAction(null);
+      }
+      return;
+    }
+    if (onStart) {
+      setPendingAction('start');
+      setError(null);
+      try {
+        await onStart();
+      } catch {
+        setError('Unable to start the operation.');
+      } finally {
+        setPendingAction(null);
+      }
     }
   }
 
@@ -88,7 +110,7 @@ export function KioskOperationScreen({
     <PageShell
       eyebrow="Kiosk"
       title={operation.operationName}
-      description="Fixed, touch-friendly execution view for the operator role. It exposes only start, pause, and finish with one completion report."
+      description="Machine view: Start records 1 part, Stop pauses the process, Complete Job submits good and scrap quantities."
       actions={
         <>
           <Badge tone={operationStatusTone(operation.status)}>
@@ -102,7 +124,10 @@ export function KioskOperationScreen({
         <StatCard label="Manufacturing Order" value={operation.workOrderNumber} />
         <StatCard label="Item" value={operation.itemName} hint={operation.itemCode} />
         <StatCard label="Workstation" value={operation.workstation ?? 'Unassigned'} />
-        <StatCard label="Planned Quantity" value={<span className="mono">{operation.plannedQuantity}</span>} />
+        <StatCard label="Quantity" value={<span className="mono">{operation.plannedQuantity}</span>} />
+        {operation.status === 'running' && (
+          <StatCard label="Parts produced" value={<span className="mono">{producedCount}</span>} />
+        )}
       </StatGrid>
 
       {error ? <Notice title="Action failed" tone="warning">{error}</Notice> : null}
@@ -113,36 +138,29 @@ export function KioskOperationScreen({
           description="The kiosk keeps only the fields and actions that matter during execution."
         >
           <div className="kiosk-action-grid">
-            {(operation.status === 'ready' || operation.status === 'paused') ? (
+            {(operation.status === 'ready' || operation.status === 'paused') && onStart ? (
               <Button
                 tone="primary"
                 disabled={pendingAction !== null}
-                onClick={() => {
-                  void handleAction('start');
-                }}
+                onClick={() => void handleAction('start')}
               >
-                {pendingAction === 'start'
-                  ? operation.status === 'paused'
-                    ? 'Starting...'
-                    : 'Starting...'
-                  : 'Start Job'}
+                {pendingAction === 'start' ? 'Starting...' : 'Start Job'}
               </Button>
             ) : null}
             {operation.status === 'running' ? (
               <>
+                {onRecordPart && (
+                  <Button
+                    tone="primary"
+                    disabled={pendingAction !== null}
+                    onClick={() => void handleRecordPart()}
+                  >
+                    {pendingAction === 'record' ? 'Recording...' : 'Start'}
+                  </Button>
+                )}
                 <Button
                   disabled={pendingAction !== null}
-                  onClick={() => {
-                    void handleAction('pause');
-                  }}
-                >
-                  {pendingAction === 'pause' ? 'Setting up...' : 'Set up'}
-                </Button>
-                <Button
-                  disabled={pendingAction !== null}
-                  onClick={() => {
-                    void handleAction('pause');
-                  }}
+                  onClick={() => void handleAction('pause')}
                 >
                   {pendingAction === 'pause' ? 'Stopping...' : 'Stop'}
                 </Button>
@@ -180,7 +198,7 @@ export function KioskOperationScreen({
           open={dialogOpen}
           onClose={() => setDialogOpen(false)}
           title="Complete Job"
-          description="Enter good and scrap quantities."
+          description="Enter good parts and scrap parts. Total must equal planned quantity. Good parts are registered as produced."
           footer={
               <>
                 <Button onClick={() => setDialogOpen(false)} disabled={pendingAction === 'complete'}>
@@ -251,6 +269,10 @@ function DataSummary({ operation }: { operation: OperationDetail }): JSX.Element
       <div className="kiosk-summary__row">
         <dt>Assigned Operator</dt>
         <dd>{operation.assignedOperatorName ?? 'Unassigned'}</dd>
+      </div>
+      <div className="kiosk-summary__row">
+        <dt>Planned Quantity</dt>
+        <dd>{operation.plannedQuantity}</dd>
       </div>
       <div className="kiosk-summary__row">
         <dt>Good Quantity</dt>

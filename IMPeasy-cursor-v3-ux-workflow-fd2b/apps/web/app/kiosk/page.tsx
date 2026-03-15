@@ -4,15 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import Select from '@mui/material/Select';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -21,6 +13,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -28,38 +21,13 @@ import {
   listManufacturingOrders,
   listOperationQueue,
   listWorkstations,
+  startOperation,
 } from '../../lib/api';
 import { formatDate } from '../../lib/commercial';
 import type { AuthUser } from '../../types/auth';
 import type { ManufacturingOrder } from '../../types/manufacturing-order';
 import type { OperationQueueEntry } from '../../types/operation';
 import type { Workstation } from '../../types/workstation';
-
-type WorkstationStatus = 'idle' | 'on_job' | 'setup' | 'alarm';
-
-function workstationStatusFromOperations(
-  ops: OperationQueueEntry[],
-): WorkstationStatus {
-  if (ops.some((o) => o.status === 'running')) return 'on_job';
-  if (ops.some((o) => o.status === 'paused')) return 'setup';
-  if (ops.some((o) => o.status === 'ready')) return 'idle';
-  return 'idle';
-}
-
-function statusColor(status: WorkstationStatus): string {
-  switch (status) {
-    case 'idle':
-      return '#9e9e9e';
-    case 'on_job':
-      return '#4caf50';
-    case 'setup':
-      return '#ffeb3b';
-    case 'alarm':
-      return '#f44336';
-    default:
-      return '#9e9e9e';
-  }
-}
 
 /** Match operation workstation (from routing) to workstation name (from API). */
 function operationMatchesWorkstation(opWorkstation: string | null, wsName: string): boolean {
@@ -71,15 +39,21 @@ function operationMatchesWorkstation(opWorkstation: string | null, wsName: strin
   );
 }
 
-const WORKSTATION_SELECT_KEY = 'kiosk-selected-workstation';
+/** A workstation is idle when it has no running or paused operations. */
+function isWorkstationIdle(wsName: string, operations: OperationQueueEntry[]): boolean {
+  const opsAtStation = operations.filter((o) => operationMatchesWorkstation(o.workstation, wsName));
+  return !opsAtStation.some((o) => o.status === 'running' || o.status === 'paused');
+}
 
 export default function KioskPage(): JSX.Element {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [operations, setOperations] = useState<OperationQueueEntry[]>([]);
   const [manufacturingOrders, setManufacturingOrders] = useState<ManufacturingOrder[]>([]);
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | null>(null);
-  const [workstationDialogOpen, setWorkstationDialogOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [proceeding, setProceeding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,13 +70,10 @@ export default function KioskPage(): JSX.Element {
         setOperations(queue);
         setManufacturingOrders(
           moList.filter(
-            (mo) =>
-              mo.status === 'released' || mo.status === 'in_progress',
+            (mo) => mo.status === 'released' || mo.status === 'in_progress',
           ),
         );
         setWorkstations(wsList);
-        const stored = typeof window !== 'undefined' ? sessionStorage.getItem(WORKSTATION_SELECT_KEY) : null;
-        if (stored) setSelectedWorkstation(stored);
       } catch {
         setError('Unable to load kiosk data.');
       } finally {
@@ -116,33 +87,62 @@ export default function KioskPage(): JSX.Element {
   const visibleOperations = operations.filter((op) => {
     if (!['ready', 'running', 'paused'].includes(op.status)) return false;
     if (isAdmin) return true;
-    return op.assignedOperatorId === currentUser?.id;
+    return op.assignedOperatorId === null || op.assignedOperatorId === currentUser?.id;
   });
 
-  const opsByWorkstation = workstations.reduce<Record<string, OperationQueueEntry[]>>(
-    (acc, ws) => {
-      acc[ws.name] = visibleOperations.filter((o) =>
-        operationMatchesWorkstation(o.workstation, ws.name),
-      );
-      return acc;
-    },
-    {},
+  /** Idle workstations: no running or paused operations at that station. */
+  const idleWorkstations = workstations.filter((ws) =>
+    isWorkstationIdle(ws.name, visibleOperations),
   );
 
-  const handleWorkstationProceed = () => {
-    if (selectedWorkstation) {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(WORKSTATION_SELECT_KEY, selectedWorkstation);
-      }
-      setWorkstationDialogOpen(false);
+  /** Manufacturing orders that have a ready operation for the selected workstation. */
+  const ordersForWorkstation = selectedWorkstation
+    ? manufacturingOrders.filter((mo) => {
+        const readyOp = visibleOperations.find(
+          (o) =>
+            o.workOrderId === mo.id &&
+            o.status === 'ready' &&
+            operationMatchesWorkstation(o.workstation, selectedWorkstation),
+        );
+        return Boolean(readyOp);
+      })
+    : [];
+
+  const handleWorkstationSelect = (wsName: string): void => {
+    setSelectedWorkstation(wsName);
+    setSelectedOrderId(null);
+  };
+
+  const handleProceedToMachine = async (orderId?: number): Promise<void> => {
+    const moId = orderId ?? selectedOrderId;
+    if (!selectedWorkstation || !moId) return;
+    const op = visibleOperations.find(
+      (o) =>
+        o.workOrderId === moId &&
+        o.status === 'ready' &&
+        operationMatchesWorkstation(o.workstation, selectedWorkstation),
+    );
+    if (!op) {
+      setError('No ready operation found for this order at this workstation.');
+      return;
+    }
+    setProceeding(true);
+    setError(null);
+    try {
+      await startOperation(op.id);
+      router.push(`/kiosk/operations/${op.id}`);
+    } catch {
+      setError('Unable to start the job. It may have been taken by another operator.');
+    } finally {
+      setProceeding(false);
     }
   };
 
-  useEffect(() => {
-    if (!loading && !isAdmin && workstations.length > 0 && !selectedWorkstation) {
-      setWorkstationDialogOpen(true);
-    }
-  }, [loading, isAdmin, workstations.length, selectedWorkstation]);
+  const handleBackToWorkstations = (): void => {
+    setSelectedWorkstation(null);
+    setSelectedOrderId(null);
+    setError(null);
+  };
 
   if (loading) {
     return (
@@ -152,7 +152,7 @@ export default function KioskPage(): JSX.Element {
     );
   }
 
-  if (error || !currentUser) {
+  if (error && !proceeding && !currentUser) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography color="error" role="alert">
@@ -162,197 +162,245 @@ export default function KioskPage(): JSX.Element {
     );
   }
 
-  const filteredOps = selectedWorkstation
-    ? visibleOperations.filter((o) =>
-        operationMatchesWorkstation(o.workstation, selectedWorkstation),
-      )
-    : visibleOperations;
+  if (!currentUser) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error" role="alert">
+          Unable to load kiosk.
+        </Typography>
+      </Box>
+    );
+  }
 
-  return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Kiosk</Typography>
-        {isAdmin && (
+  /** Admin view: full kiosk with all workstations and backlog. */
+  if (isAdmin) {
+    const opsByWorkstation = workstations.reduce<Record<string, OperationQueueEntry[]>>(
+      (acc, ws) => {
+        acc[ws.name] = visibleOperations.filter((o) =>
+          operationMatchesWorkstation(o.workstation, ws.name),
+        );
+        return acc;
+      },
+      {},
+    );
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6">Kiosk (Admin)</Typography>
           <Button component={Link} href="/manufacturing-orders" variant="outlined">
             Manufacturing orders
           </Button>
-        )}
-      </Box>
-
-      <Typography variant="subtitle1" sx={{ mb: 2 }}>
-        Workstations
-      </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 3,
-          mb: 3,
-        }}
-      >
-        {workstations.map((ws) => {
-          const ops = opsByWorkstation[ws.name] ?? [];
-          const status = workstationStatusFromOperations(ops);
-          const currentOp = ops.find((o) => o.status === 'running' || o.status === 'paused');
-          const handleBoxClick = () => {
-            if (!isAdmin) {
-              setSelectedWorkstation(ws.name);
-              if (typeof window !== 'undefined') {
-                sessionStorage.setItem(WORKSTATION_SELECT_KEY, ws.name);
-              }
-              setWorkstationDialogOpen(false);
-            }
-          };
-          return (
-            <Card
-              key={ws.id}
-              sx={{
-                minHeight: 180,
-                cursor: isAdmin ? 'default' : 'pointer',
-                '&:hover': isAdmin ? {} : { boxShadow: 4 },
-              }}
-              onClick={handleBoxClick}
-            >
-              <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
-                <Box
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '50%',
-                    bgcolor: statusColor(status),
-                    mb: 2,
-                    boxShadow: 2,
-                  }}
-                  title={status === 'idle' ? 'Idle' : status === 'on_job' ? 'On job' : status === 'setup' ? 'Setup' : 'Alarm'}
-                />
-                <Typography variant="h6" fontWeight={600}>{ws.name}</Typography>
-                {currentOp && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-                    {currentOp.workOrderNumber} – {currentOp.itemName}
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </Box>
-
-      {isAdmin && (
-        <>
-          <Typography variant="subtitle1" sx={{ mb: 2 }}>
-            Manufacturing backlog
-          </Typography>
-          <TableContainer component={Paper} sx={{ mb: 3 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Number</TableCell>
-                  <TableCell>Item</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Due date</TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {manufacturingOrders.slice(0, 20).map((mo) => (
-                  <TableRow key={mo.id} hover>
-                    <TableCell>{mo.documentNumber}</TableCell>
-                    <TableCell>{mo.itemName}</TableCell>
-                    <TableCell>{mo.quantity}</TableCell>
-                    <TableCell>{mo.status}</TableCell>
-                    <TableCell>{formatDate(mo.dueDate)}</TableCell>
-                    <TableCell>
-                      <Button
-                        component={Link}
-                        href={`/manufacturing-orders/${mo.id}`}
-                        size="small"
-                      >
-                        Open
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </>
-      )}
-
-      {!isAdmin && (
-        <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle1">
-              {selectedWorkstation ? `Workstation: ${selectedWorkstation}` : 'Select a workstation'}
-            </Typography>
-            <Button
-              variant="outlined"
-              onClick={() => setWorkstationDialogOpen(true)}
-            >
-              Change workstation
-            </Button>
-          </Box>
-
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            {filteredOps.length === 0 && selectedWorkstation && (
-              <Typography color="text.secondary" sx={{ py: 2 }}>
-                No operations at this workstation.
-              </Typography>
-            )}
-            {filteredOps.map((op) => (
-              <Card key={op.id} sx={{ minWidth: 220 }}>
-                <CardContent>
-                  <Typography fontWeight={600}>{op.operationName}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {op.workOrderNumber} – {op.itemName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Qty {op.plannedQuantity}
-                  </Typography>
-                  <Button
-                    component={Link}
-                    href={`/kiosk/operations/${op.id}`}
-                    variant="contained"
-                    size="small"
-                    sx={{ mt: 1 }}
-                  >
-                    Start job
-                  </Button>
+        </Box>
+        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+          Workstations
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 3,
+            mb: 3,
+          }}
+        >
+          {workstations.map((ws) => {
+            const ops = opsByWorkstation[ws.name] ?? [];
+            const hasJob = ops.some((o) => o.status === 'running' || o.status === 'paused');
+            const currentOp = ops.find((o) => o.status === 'running' || o.status === 'paused');
+            return (
+              <Card key={ws.id} sx={{ minHeight: 180 }}>
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: '50%',
+                      bgcolor: hasJob ? '#4caf50' : '#9e9e9e',
+                      mb: 2,
+                      boxShadow: 2,
+                    }}
+                  />
+                  <Typography variant="h6" fontWeight={600}>{ws.name}</Typography>
+                  {currentOp && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                      {currentOp.workOrderNumber} – {currentOp.itemName}
+                    </Typography>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </Box>
-        </>
+            );
+          })}
+        </Box>
+        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+          Manufacturing backlog
+        </Typography>
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Number</TableCell>
+                <TableCell>Item</TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Due date</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {manufacturingOrders.slice(0, 20).map((mo) => (
+                <TableRow key={mo.id} hover>
+                  <TableCell>{mo.documentNumber}</TableCell>
+                  <TableCell>{mo.itemName}</TableCell>
+                  <TableCell>{mo.quantity}</TableCell>
+                  <TableCell>{mo.status}</TableCell>
+                  <TableCell>{formatDate(mo.dueDate)}</TableCell>
+                  <TableCell>
+                    <Button component={Link} href={`/manufacturing-orders/${mo.id}`} size="small">
+                      Open
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    );
+  }
+
+  /** Operator view: Step 1 – Select idle workstation */
+  if (!selectedWorkstation) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Select workstation
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Choose an available (idle) workstation to begin.
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: 2,
+          }}
+        >
+          {idleWorkstations.length === 0 ? (
+            <Typography color="text.secondary" sx={{ py: 3 }}>
+              No idle workstations. All stations are currently in use.
+            </Typography>
+          ) : (
+            idleWorkstations.map((ws) => (
+              <Card
+                key={ws.id}
+                sx={{
+                  minHeight: 140,
+                  cursor: 'pointer',
+                  '&:hover': { boxShadow: 4 },
+                }}
+                onClick={() => handleWorkstationSelect(ws.name)}
+              >
+                <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      bgcolor: '#9e9e9e',
+                      mb: 1,
+                      boxShadow: 2,
+                    }}
+                  />
+                  <Typography variant="h6" fontWeight={600}>{ws.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">Available</Typography>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Box>
+      </Box>
+    );
+  }
+
+  /** Operator view: Step 2 – Select manufacturing order and Proceed */
+  return (
+    <Box sx={{ p: 3 }}>
+      <Button
+        variant="outlined"
+        onClick={handleBackToWorkstations}
+        sx={{ mb: 2 }}
+      >
+        ← Back to workstations
+      </Button>
+      <Typography variant="h6" sx={{ mb: 1 }}>
+        Workstation: {selectedWorkstation}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Select a manufacturing order and press Proceed to go to the machine.
+      </Typography>
+
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }} role="alert">
+          {error}
+        </Typography>
       )}
 
-      <Dialog open={workstationDialogOpen} onClose={() => setWorkstationDialogOpen(false)}>
-        <DialogTitle>Select a workstation</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth sx={{ mt: 1, minWidth: 200 }}>
-            <InputLabel>Workstation</InputLabel>
-            <Select
-              value={selectedWorkstation ?? ''}
-              label="Workstation"
-              onChange={(e) => setSelectedWorkstation(e.target.value || null)}
-            >
-              <MenuItem value="">
-                <em>Select</em>
-              </MenuItem>
-              {workstations.map((ws) => (
-                <MenuItem key={ws.id} value={ws.name}>
-                  {ws.name}
-                </MenuItem>
+      {ordersForWorkstation.length === 0 ? (
+        <Typography color="text.secondary" sx={{ py: 3 }}>
+          No manufacturing orders with ready operations at this workstation.
+        </Typography>
+      ) : (
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Number</TableCell>
+                <TableCell>Item</TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Due date</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {ordersForWorkstation.map((mo) => (
+                <TableRow
+                  key={mo.id}
+                  hover
+                  selected={selectedOrderId === mo.id}
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => setSelectedOrderId(mo.id)}
+                >
+                  <TableCell>{mo.documentNumber}</TableCell>
+                  <TableCell>{mo.itemName}</TableCell>
+                  <TableCell>{mo.quantity}</TableCell>
+                  <TableCell>{formatDate(mo.dueDate)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      disabled={proceeding}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleProceedToMachine(mo.id);
+                      }}
+                    >
+                      {proceeding ? 'Starting...' : 'Proceed'}
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setWorkstationDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleWorkstationProceed} disabled={!selectedWorkstation}>
-            Proceed
-          </Button>
-        </DialogActions>
-      </Dialog>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      <Button
+        variant="contained"
+        disabled={!selectedOrderId || proceeding}
+        onClick={() => void handleProceedToMachine(selectedOrderId ?? undefined)}
+        sx={{ mt: 1 }}
+      >
+        {proceeding ? 'Starting...' : 'Proceed to machine'}
+      </Button>
     </Box>
   );
 }
