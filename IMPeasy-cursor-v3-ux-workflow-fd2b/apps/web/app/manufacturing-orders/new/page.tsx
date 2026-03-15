@@ -45,6 +45,8 @@ import {
   updateManufacturedItem,
   updateRoutingOperation,
 } from '../../../lib/api';
+import { InlineCreateItemDialog } from '../../../components/inline-create-item-dialog';
+import { InlineCreateProductGroupDialog } from '../../../components/inline-create-product-group-dialog';
 import type { Item } from '../../../types/item';
 import type { SalesOrder } from '../../../types/sales-order';
 
@@ -100,6 +102,9 @@ export default function NewManufacturingOrderPage(): JSX.Element {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+  const [extraProductGroups, setExtraProductGroups] = useState<string[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -189,8 +194,14 @@ export default function NewManufacturingOrderPage(): JSX.Element {
   }, [selectedItemId, loadBomAndRouting]);
 
   const productGroups = useMemo(
-    () => Array.from(new Set(items.map((i) => i.itemGroup).filter(Boolean))).sort() as string[],
-    [items],
+    () =>
+      Array.from(
+        new Set([
+          ...items.map((i) => i.itemGroup).filter(Boolean),
+          ...extraProductGroups,
+        ]),
+      ).sort() as string[],
+    [items, extraProductGroups],
   );
   const itemsInGroup = useMemo(
     () =>
@@ -497,12 +508,21 @@ export default function NewManufacturingOrderPage(): JSX.Element {
                 value={selectedGroup}
                 label="Product group"
                 onChange={(e) => {
-                  setSelectedGroup(e.target.value);
-                  setSelectedItemId('');
+                  const v = e.target.value;
+                  if (v === '__add_new__') {
+                    setAddProductGroupDialogOpen(true);
+                    setSelectedGroup('');
+                  } else {
+                    setSelectedGroup(v);
+                    setSelectedItemId('');
+                  }
                 }}
               >
                 <MenuItem value="">
                   <em>All groups</em>
+                </MenuItem>
+                <MenuItem value="__add_new__">
+                  <em>Add new product group</em>
                 </MenuItem>
                 {productGroups.map((g) => (
                   <MenuItem key={g} value={g}>
@@ -516,10 +536,21 @@ export default function NewManufacturingOrderPage(): JSX.Element {
               <Select
                 value={selectedItemId}
                 label="Product"
-                onChange={(e) => setSelectedItemId(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '__add_new__') {
+                    setAddProductDialogOpen(true);
+                    setSelectedItemId('');
+                  } else {
+                    setSelectedItemId(v);
+                  }
+                }}
               >
                 <MenuItem value="">
                   <em>Select product</em>
+                </MenuItem>
+                <MenuItem value="__add_new__">
+                  <em>Add new product</em>
                 </MenuItem>
                 {itemsInGroup.map((i) => (
                   <MenuItem key={i.id} value={i.id}>
@@ -844,6 +875,30 @@ export default function NewManufacturingOrderPage(): JSX.Element {
           </Button>
         </Paper>
       )}
+      <InlineCreateProductGroupDialog
+        open={addProductGroupDialogOpen}
+        onClose={() => setAddProductGroupDialogOpen(false)}
+        onCreated={(g) => {
+          setExtraProductGroups((prev) => (prev.includes(g.name) ? prev : [...prev, g.name]));
+          setSelectedGroup(g.name);
+          setAddProductGroupDialogOpen(false);
+        }}
+      />
+      <InlineCreateItemDialog
+        open={addProductDialogOpen}
+        onClose={() => setAddProductDialogOpen(false)}
+        onCreated={(created) => {
+          setItems((prev) => [...prev, created]);
+          setSelectedItemId(String(created.id));
+          if (created.itemGroup) {
+            setExtraProductGroups((prev) =>
+              prev.includes(created.itemGroup!) ? prev : [...prev, created.itemGroup!],
+            );
+          }
+          setAddProductDialogOpen(false);
+        }}
+        asManufactured
+      />
     </Box>
   );
 }

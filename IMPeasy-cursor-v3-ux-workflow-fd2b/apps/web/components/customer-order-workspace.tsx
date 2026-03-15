@@ -64,6 +64,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MuiButton from '@mui/material/Button';
+import { InlineCreateCustomerDialog } from './inline-create-customer-dialog';
+import { InlineCreateItemDialog } from './inline-create-item-dialog';
 import { SalesOrderProductionHandoff } from './sales-order-production-handoff';
 import { ShipmentCreationPanel } from './shipment-creation-panel';
 import { PageShell } from './ui/page-templates';
@@ -275,6 +277,9 @@ export function CustomerOrderWorkspace({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [addCustomerDialogOpen, setAddCustomerDialogOpen] = useState(false);
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+  const [addProductLineIndex, setAddProductLineIndex] = useState<number | null>(null);
 
   async function loadSalesOrderShippingWorkspace(salesOrderId: number): Promise<void> {
     const [availabilityData, shipmentData] = await Promise.all([
@@ -780,7 +785,7 @@ export function CustomerOrderWorkspace({
                     onChange={(event) => {
                       const value = event.target.value;
                       if (value === '__add_new__') {
-                        router.push(`/customers/new?returnTo=${encodeURIComponent(`/customer-orders/${workspaceId}`)}`);
+                        setAddCustomerDialogOpen(true);
                       } else {
                         applyCustomerSnapshots(Number(value));
                       }
@@ -1065,7 +1070,8 @@ export function CustomerOrderWorkspace({
                               onChange={(event) => {
                                 const value = event.target.value;
                                 if (value === '__add_new__') {
-                                  router.push(`/stock/items/new?returnTo=${encodeURIComponent(`/customer-orders/${workspaceId}`)}`);
+                                  setAddProductLineIndex(index);
+                                  setAddProductDialogOpen(true);
                                 } else {
                                   const item = items.find(
                                     (candidate) => candidate.id === Number(value),
@@ -1419,6 +1425,43 @@ export function CustomerOrderWorkspace({
         ) : null}
       </Panel>
     </PageShell>
+    <InlineCreateCustomerDialog
+      open={addCustomerDialogOpen}
+      onClose={() => setAddCustomerDialogOpen(false)}
+      onCreated={(created) => {
+        setCustomers((prev) => [...prev, created]);
+        applyCustomerSnapshots(created.id);
+        setAddCustomerDialogOpen(false);
+      }}
+    />
+    <InlineCreateItemDialog
+      open={addProductDialogOpen}
+      onClose={() => {
+        setAddProductDialogOpen(false);
+        setAddProductLineIndex(null);
+      }}
+      onCreated={(created) => {
+        setItems((prev) => [...prev, created]);
+        if (addProductLineIndex !== null) {
+          setLineRows((current) =>
+            current.map((candidate, candidateIndex) =>
+              candidateIndex === addProductLineIndex
+                ? {
+                    ...candidate,
+                    itemId: created.id,
+                    itemCode: created.code ?? `ITEM-${String(created.id).padStart(4, '0')}`,
+                    itemName: created.name,
+                    description: created.description ?? created.name,
+                    unitPrice: created.defaultPrice ?? candidate.unitPrice,
+                  }
+                : candidate,
+            ),
+          );
+        }
+        setAddProductDialogOpen(false);
+        setAddProductLineIndex(null);
+      }}
+    />
     </>
   );
 }
