@@ -12,11 +12,13 @@ export class WorkstationsController {
   constructor(private readonly service: WorkstationsService) {}
 
   @Get()
+  @Roles('admin', 'planner', 'operator')
   findAll(): Promise<WorkstationResponseDto[]> {
     return this.service.findAll();
   }
 
   @Get(':id')
+  @Roles('admin', 'planner', 'operator')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<WorkstationResponseDto> {
     return this.service.findOne(id);
   }

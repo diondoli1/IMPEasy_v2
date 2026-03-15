@@ -76,6 +76,11 @@ export class RolesGuard implements CanActivate {
       ? [...userRoleNames, 'admin']
       : userRoleNames;
 
+    // Operator: allow access when route requires operator (kiosk needs workstations, manufacturing-orders)
+    if (userRoleNames.includes('operator') && requiredRoles.some((r) => r === 'operator')) {
+      return true;
+    }
+
     const hasRequiredRole = requiredRoles.some((requiredRole) =>
       effectiveRoles.includes(requiredRole),
     );

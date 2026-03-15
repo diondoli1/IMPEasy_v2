@@ -15,6 +15,7 @@ export class ManufacturingOrdersController {
   constructor(private readonly workOrdersService: WorkOrdersService) {}
 
   @Get()
+  @Roles('admin', 'planner', 'operator')
   listAll(): Promise<WorkOrderResponseDto[]> {
     return this.workOrdersService.listAll();
   }
@@ -32,6 +33,7 @@ export class ManufacturingOrdersController {
   }
 
   @Get(':id')
+  @Roles('admin', 'planner', 'operator')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<WorkOrderDetailResponseDto> {
     return this.workOrdersService.findOne(id);
   }
