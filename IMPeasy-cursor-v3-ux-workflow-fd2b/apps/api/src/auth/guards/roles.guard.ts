@@ -72,19 +72,19 @@ export class RolesGuard implements CanActivate {
     }
 
     // Operator: allow access when route requires operator (kiosk needs workstations, manufacturing-orders)
-    // Check both metadata and path as fallback (metadata can be undefined in some NestJS setups)
-    const path = ((request as { path?: string }).path ?? String(request.url ?? '').split('?')[0]) || '';
+    // Use path-based check as primary for operator - metadata can vary by NestJS route resolution
+    const req = request as { path?: string; url?: string; originalUrl?: string; route?: { path?: string } };
+    const pathRaw = req.path ?? req.url ?? req.originalUrl ?? req.route?.path ?? '';
+    const path = String(pathRaw).split('?')[0].trim() || '';
+    const pathNorm = path.startsWith('/') ? path : `/${path}`;
     const method = (request.method ?? 'GET').toUpperCase();
     const isKioskRoute =
-      (path === '/manufacturing-orders' ||
-        path === '/workstations' ||
-        path.startsWith('/manufacturing-orders/') ||
-        path.startsWith('/workstations/') ||
-        path === '/operations/queue' ||
-        path.startsWith('/operations/')) &&
-      (method === 'GET' || (path.startsWith('/operations/') && ['POST', 'PATCH'].includes(method)));
+      (/\/manufacturing-orders(\/|$)/.test(pathNorm) ||
+        /\/workstations(\/|$)/.test(pathNorm) ||
+        /\/operations(\/|$)/.test(pathNorm)) &&
+      (method === 'GET' || (/\/operations\//.test(pathNorm) && ['POST', 'PATCH'].includes(method)));
     const routeRequiresOperator =
-      (requiredRoles && requiredRoles.some((r) => r === 'operator')) || isKioskRoute;
+      (requiredRoles && requiredRoles.some((r) => String(r).toLowerCase() === 'operator')) || isKioskRoute;
     if (userRoleNames.includes('operator') && routeRequiresOperator) {
       return true;
     }

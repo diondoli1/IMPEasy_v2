@@ -32,7 +32,8 @@ async function bootstrap(): Promise<void> {
   );
   app.useGlobalGuards(app.get(AuthGuard), app.get(RolesGuard));
 
-  await app.listen(3000);
+  const port = Number(process.env.PORT) || 3000;
+  await app.listen(port);
 }
 
 void bootstrap();
