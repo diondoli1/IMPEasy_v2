@@ -33,6 +33,7 @@ import {
   createRouting,
   createRoutingOperation,
   generateManufacturingOrdersForSalesOrder,
+  type GenerateManufacturingOrdersError,
   listBomItems,
   listBomsByItem,
   listItems,
@@ -448,7 +449,14 @@ export default function NewManufacturingOrderPage(): JSX.Element {
           'No manufacturing orders were generated. Ensure the order has lines with BOM and routing.',
         );
       }
-    } catch {
+    } catch (err) {
+      const apiErr = err as GenerateManufacturingOrdersError;
+      if (apiErr.itemId != null) {
+        router.push(
+          `/boms-routing/new?itemId=${apiErr.itemId}&salesOrderId=${selectedOrderId}`,
+        );
+        return;
+      }
       setError(
         'Unable to generate manufacturing orders. Confirm each line item has a default BOM and routing.',
       );

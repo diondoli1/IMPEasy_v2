@@ -14,15 +14,18 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { listManufacturingOrders } from '../../lib/api';
+import { listManufacturingOrders, listManufacturingOrdersBySalesOrder } from '../../lib/api';
 import { formatProductionDate } from '../../lib/production';
 import type { ManufacturingOrder } from '../../types/manufacturing-order';
 
 export default function ManufacturingOrdersPage(): JSX.Element {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const salesOrderIdParam = searchParams.get('salesOrderId');
+  const salesOrderId = salesOrderIdParam != null && salesOrderIdParam !== '' ? Number(salesOrderIdParam) : null;
   const [orders, setOrders] = useState<ManufacturingOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,14 +33,18 @@ export default function ManufacturingOrdersPage(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        setOrders(await listManufacturingOrders());
+        if (salesOrderId != null && !Number.isNaN(salesOrderId)) {
+          setOrders(await listManufacturingOrdersBySalesOrder(salesOrderId));
+        } else {
+          setOrders(await listManufacturingOrders());
+        }
       } catch {
         setError('Unable to load manufacturing orders.');
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [salesOrderId]);
 
   if (loading) {
     return (
@@ -57,6 +64,11 @@ export default function ManufacturingOrdersPage(): JSX.Element {
 
   return (
     <Box sx={{ p: 3 }}>
+      {salesOrderId != null && !Number.isNaN(salesOrderId) ? (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Showing manufacturing orders for this sales order.
+        </Typography>
+      ) : null}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">Manufacturing Orders</Typography>
         <Button

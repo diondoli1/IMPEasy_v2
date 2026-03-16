@@ -29,9 +29,11 @@ export type BomItem = {
   itemId: number;
   itemCode: string;
   itemName: string;
+  itemGroup: string | null;
   unitOfMeasure: string;
   quantity: number;
   notes: string | null;
+  approximateCost: number | null;
   defaultPrice: number;
   lineCost: number;
   createdAt: string;
@@ -43,6 +45,7 @@ export type BomItemInput = {
   quantity: number;
   rowOrder?: number;
   notes?: string;
+  approximateCost?: number;
 };
 
 export type BomUpdateInput = Partial<Omit<BomInput, 'itemId'>>;

@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import {
   generateManufacturingOrdersForSalesOrder,
+  type GenerateManufacturingOrdersError,
   listManufacturingOrdersBySalesOrder,
 } from '../lib/api';
 import {
@@ -36,6 +38,7 @@ export function SalesOrderProductionHandoff({
   salesOrder,
   items,
 }: SalesOrderProductionHandoffProps): JSX.Element {
+  const router = useRouter();
   const [orders, setOrders] = useState<ManufacturingOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +100,15 @@ export function SalesOrderProductionHandoff({
                 disabled={generating}
                 onClick={() => {
                   void (async () => {
+                    const firstMissing = manufacturableLines.find(
+                      (line) => !line.hasBom || !line.hasRouting,
+                    );
+                    if (firstMissing) {
+                      router.push(
+                        `/boms-routing/new?itemId=${firstMissing.itemId}&salesOrderId=${salesOrder.id}`,
+                      );
+                      return;
+                    }
                     setGenerating(true);
                     setError(null);
                     setMessage(null);
@@ -108,7 +120,14 @@ export function SalesOrderProductionHandoff({
                           ? 'Manufacturing Orders generated or refreshed for this sales order.'
                           : 'No Manufacturing Orders were generated.',
                       );
-                    } catch {
+                    } catch (err) {
+                      const apiErr = err as GenerateManufacturingOrdersError;
+                      if (apiErr.itemId != null) {
+                        router.push(
+                          `/boms-routing/new?itemId=${apiErr.itemId}&salesOrderId=${salesOrder.id}`,
+                        );
+                        return;
+                      }
                       setError(
                         'Unable to generate Manufacturing Orders. Confirm the sales order is released and each item has a default BOM and routing.',
                       );
@@ -239,7 +258,7 @@ export function SalesOrderProductionHandoff({
             title="Planner route"
             description="Once created, the planner continues the flow from the Manufacturing Orders list and detail workspace."
           >
-            <ButtonLink href="/manufacturing-orders">Open Manufacturing Orders</ButtonLink>
+            <ButtonLink href={`/manufacturing-orders?salesOrderId=${salesOrder.id}`}>Open Manufacturing Orders</ButtonLink>
           </Panel>
         </div>
       </div>

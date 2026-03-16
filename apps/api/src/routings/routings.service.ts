@@ -97,6 +97,7 @@ export class RoutingsService {
 
     const operations = await this.prisma.routingOperation.findMany({
       where: { routingId },
+      include: { workstationGroup: { select: { name: true } } },
       orderBy: [{ sequence: 'asc' }, { id: 'asc' }],
     });
 
@@ -116,11 +117,14 @@ export class RoutingsService {
         name: payload.name.trim(),
         description: payload.description?.trim() || null,
         workstation: payload.workstation?.trim() || null,
+        workstationGroupId: payload.workstationGroupId ?? null,
         setupTimeMinutes: payload.setupTimeMinutes ?? 0,
         runTimeMinutes: payload.runTimeMinutes ?? 0,
+        cost: payload.cost ?? null,
         queueNotes: payload.queueNotes?.trim() || null,
         moveNotes: payload.moveNotes?.trim() || null,
       },
+      include: { workstationGroup: { select: { name: true } } },
     });
 
     return this.toRoutingOperationResponse(created);
@@ -150,11 +154,14 @@ export class RoutingsService {
         name: payload.name?.trim(),
         description: payload.description !== undefined ? payload.description.trim() || null : undefined,
         workstation: payload.workstation !== undefined ? payload.workstation.trim() || null : undefined,
+        workstationGroupId: payload.workstationGroupId !== undefined ? payload.workstationGroupId : undefined,
         setupTimeMinutes: payload.setupTimeMinutes,
         runTimeMinutes: payload.runTimeMinutes,
+        cost: payload.cost !== undefined ? payload.cost : undefined,
         queueNotes: payload.queueNotes !== undefined ? payload.queueNotes.trim() || null : undefined,
         moveNotes: payload.moveNotes !== undefined ? payload.moveNotes.trim() || null : undefined,
       },
+      include: { workstationGroup: { select: { name: true } } },
     });
 
     return this.toRoutingOperationResponse(updated);
@@ -210,12 +217,15 @@ export class RoutingsService {
       name: string;
       description: string | null;
       workstation: string | null;
+      workstationGroupId: number | null;
       setupTimeMinutes: number;
       runTimeMinutes: number;
+      cost: number | null;
       queueNotes: string | null;
       moveNotes: string | null;
       createdAt: Date;
       updatedAt: Date;
+      workstationGroup?: { name: string } | null;
     },
   ): RoutingOperationResponseDto {
     return {
@@ -225,8 +235,11 @@ export class RoutingsService {
       name: operation.name,
       description: operation.description ?? null,
       workstation: operation.workstation ?? null,
+      workstationGroupId: operation.workstationGroupId ?? null,
+      workstationGroupName: operation.workstationGroup?.name ?? null,
       setupTimeMinutes: operation.setupTimeMinutes,
       runTimeMinutes: operation.runTimeMinutes,
+      cost: operation.cost ?? null,
       queueNotes: operation.queueNotes ?? null,
       moveNotes: operation.moveNotes ?? null,
       createdAt: operation.createdAt,

@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateRoutingOperationDto {
   @IsInt()
@@ -18,6 +18,10 @@ export class CreateRoutingOperationDto {
 
   @IsOptional()
   @IsInt()
+  workstationGroupId?: number;
+
+  @IsOptional()
+  @IsInt()
   @Min(0)
   setupTimeMinutes?: number;
 
@@ -25,6 +29,11 @@ export class CreateRoutingOperationDto {
   @IsInt()
   @Min(0)
   runTimeMinutes?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  cost?: number;
 
   @IsOptional()
   @IsString()

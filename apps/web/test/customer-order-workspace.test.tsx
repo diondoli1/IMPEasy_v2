@@ -1,10 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { vi } from 'vitest';
 
 import { CustomerOrderWorkspace } from '../components/customer-order-workspace';
 import {
   createCustomer,
+  createItem,
   createQuote,
   createShipment,
   createShipmentInvoice,
@@ -23,6 +24,7 @@ import {
   listProductGroups,
   listSalesOrderShipments,
   listSettingsEntries,
+  listUnitOfMeasures,
   packShipment,
   payShipmentInvoice,
   shipShipment,
@@ -61,6 +63,7 @@ vi.mock('../lib/api', () => ({
   listProductGroups: vi.fn(),
   listSalesOrderShipments: vi.fn(),
   listSettingsEntries: vi.fn(),
+  listUnitOfMeasures: vi.fn(),
   packShipment: vi.fn(),
   payShipmentInvoice: vi.fn(),
   shipShipment: vi.fn(),
@@ -70,6 +73,8 @@ vi.mock('../lib/api', () => ({
   updateSalesOrderStatus: vi.fn(),
 }));
 
+const createCustomerMock = vi.mocked(createCustomer);
+const createItemMock = vi.mocked(createItem);
 const createQuoteMock = vi.mocked(createQuote);
 const createShipmentMock = vi.mocked(createShipment);
 const createShipmentInvoiceMock = vi.mocked(createShipmentInvoice);
@@ -87,6 +92,7 @@ const listItemsMock = vi.mocked(listItems);
 const listProductGroupsMock = vi.mocked(listProductGroups);
 const listSalesOrderShipmentsMock = vi.mocked(listSalesOrderShipments);
 const listSettingsEntriesMock = vi.mocked(listSettingsEntries);
+const listUnitOfMeasuresMock = vi.mocked(listUnitOfMeasures);
 const packShipmentMock = vi.mocked(packShipment);
 const payShipmentInvoiceMock = vi.mocked(payShipmentInvoice);
 const shipShipmentMock = vi.mocked(shipShipment);
@@ -99,6 +105,7 @@ describe('CustomerOrderWorkspace', () => {
   beforeEach(() => {
     routerMock.push.mockReset();
     vi.mocked(createCustomer).mockReset();
+    createItemMock.mockReset();
     createQuoteMock.mockReset();
     vi.mocked(deleteQuote).mockReset();
     createShipmentMock.mockReset();
@@ -117,6 +124,7 @@ describe('CustomerOrderWorkspace', () => {
     listProductGroupsMock.mockReset();
     listSalesOrderShipmentsMock.mockReset();
     listSettingsEntriesMock.mockReset();
+    listUnitOfMeasuresMock.mockReset();
     packShipmentMock.mockReset();
     payShipmentInvoiceMock.mockReset();
     shipShipmentMock.mockReset();
@@ -290,10 +298,6 @@ describe('CustomerOrderWorkspace', () => {
       screen.queryByText('Unable to load the customer-order workspace.'),
     ).not.toBeInTheDocument();
 
-    const salespersonSelect = screen.getByLabelText('Salesperson') as HTMLSelectElement;
-    const salespersonOptions = Array.from(salespersonSelect.options).map((option) => option.text);
-    expect(salespersonOptions).toContain('Office User');
-
     const shippingMethodSelect = screen.getByLabelText('Shipping Method') as HTMLSelectElement;
     const shippingMethodOptions = Array.from(shippingMethodSelect.options).map(
       (option) => option.text,
@@ -302,5 +306,256 @@ describe('CustomerOrderWorkspace', () => {
     expect(shippingMethodOptions).toContain('Bike courier');
     expect(shippingMethodOptions).not.toContain('Courier');
     expect(shippingMethodOptions).not.toContain('Freight');
+
+    const statusSelect = screen.getByLabelText('Status') as HTMLSelectElement;
+    expect(statusSelect).toBeInTheDocument();
+    const statusOptions = Array.from(statusSelect.options).map((option) => ({
+      value: option.value,
+      text: option.text,
+    }));
+    expect(statusOptions).toContainEqual({ value: 'draft', text: 'Quotation' });
+    expect(statusOptions).toContainEqual({ value: 'sent', text: 'Waiting for confirmation' });
+    expect(statusOptions).toContainEqual({ value: 'approved', text: 'Confirmed' });
+    expect(statusOptions).toHaveLength(3);
+
+    // Ticket 4: salesperson/contact/reference fields removed from header
+    expect(screen.queryByLabelText('Salesperson')).not.toBeInTheDocument();
+  });
+
+  it('selects the newly created customer in the form after saving from the inline Create Customer dialog', async () => {
+    const existingCustomer = {
+      id: 1,
+      code: 'CUS-0001',
+      name: 'Existing Customer',
+      status: 'interested',
+      regNo: null,
+      email: null,
+      phone: null,
+      vatNumber: null,
+      contactStarted: null,
+      nextContact: null,
+      website: null,
+      billingAddress: { street: null, city: null, postcode: null, stateRegion: null, country: null },
+      shippingAddress: { street: null, city: null, postcode: null, stateRegion: null, country: null },
+      defaultPaymentTerm: null,
+      defaultShippingTerm: null,
+      defaultShippingMethod: null,
+      defaultDocumentDiscountPercent: 0,
+      defaultTaxRate: 19,
+      internalNotes: null,
+      isActive: true,
+      contacts: [],
+      documents: [],
+      createdAt: '2026-03-12T08:00:00.000Z',
+      updatedAt: '2026-03-12T08:00:00.000Z',
+    };
+    const newCustomer = {
+      id: 2,
+      code: 'CUS-0002',
+      name: 'New Co',
+      status: 'permanent_buyer',
+      regNo: null,
+      email: null,
+      phone: null,
+      vatNumber: null,
+      contactStarted: null,
+      nextContact: null,
+      website: null,
+      billingAddress: { street: null, city: null, postcode: null, stateRegion: null, country: null },
+      shippingAddress: { street: null, city: null, postcode: null, stateRegion: null, country: null },
+      defaultPaymentTerm: 'Net 30',
+      defaultShippingTerm: 'DAP',
+      defaultShippingMethod: 'Freight',
+      defaultDocumentDiscountPercent: 5,
+      defaultTaxRate: 19,
+      internalNotes: null,
+      isActive: true,
+      contacts: [],
+      documents: [],
+      createdAt: '2026-03-16T10:00:00.000Z',
+      updatedAt: '2026-03-16T10:00:00.000Z',
+    };
+
+    listCustomersMock.mockResolvedValue([existingCustomer]);
+    listItemsMock.mockResolvedValue([]);
+    listProductGroupsMock.mockResolvedValue([]);
+    listAuthUsersMock.mockResolvedValue([]);
+    getCurrentUserMock.mockResolvedValue({
+      id: 7,
+      name: 'Office User',
+      email: 'office@impeasy.local',
+      isActive: true,
+      roles: ['office'],
+      createdAt: '2026-03-12T08:00:00.000Z',
+      updatedAt: '2026-03-12T08:00:00.000Z',
+    });
+    listSettingsEntriesMock.mockResolvedValue([]);
+    createCustomerMock.mockResolvedValue(newCustomer);
+
+    render(<CustomerOrderWorkspace workspaceId="new" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Create a new customer order' })).toBeInTheDocument();
+    });
+
+    const customerSelect = screen.getByLabelText('Customer') as HTMLSelectElement;
+    fireEvent.change(customerSelect, { target: { value: '__add_new__' } });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Create Customer' })).toBeInTheDocument();
+    });
+
+    const nameInput = screen.getByLabelText('Name');
+    fireEvent.change(nameInput, { target: { value: 'New Co' } });
+    const saveButton = screen.getByRole('button', { name: 'Save' });
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(createCustomerMock).toHaveBeenCalled();
+    });
+
+    // Ticket 2: customer code is not sent when creating from popup (server assigns code)
+    const createPayload = createCustomerMock.mock.calls[0][0];
+    expect(createPayload).not.toHaveProperty('code');
+
+    await waitFor(() => {
+      const customerSelectAfter = screen.getByLabelText('Customer') as HTMLSelectElement;
+      expect(customerSelectAfter.value).toBe(String(newCustomer.id));
+    });
+  });
+
+  it('opens Create Product dialog when selecting Add new product in order lines and applies new item on save', async () => {
+    listCustomersMock.mockResolvedValue([
+      {
+        id: 1,
+        code: 'CUS-0001',
+        name: 'Test Customer',
+        status: 'interested',
+        regNo: null,
+        email: null,
+        phone: null,
+        vatNumber: null,
+        contactStarted: null,
+        nextContact: null,
+        website: null,
+        billingAddress: { street: '', city: '', postcode: '', stateRegion: '', country: '' },
+        shippingAddress: { street: '', city: '', postcode: '', stateRegion: '', country: '' },
+        defaultPaymentTerm: null,
+        defaultShippingTerm: null,
+        defaultShippingMethod: null,
+        defaultDocumentDiscountPercent: 0,
+        defaultTaxRate: 0,
+        internalNotes: null,
+        isActive: true,
+        contacts: [],
+        documents: [],
+        createdAt: '2026-03-12T08:00:00.000Z',
+        updatedAt: '2026-03-12T08:00:00.000Z',
+      },
+    ]);
+    listProductGroupsMock.mockResolvedValue([]);
+    listItemsMock.mockResolvedValue([
+      {
+        id: 11,
+        code: 'FG-0011',
+        name: 'Servo Bracket',
+        description: 'Finished assembly',
+        isActive: true,
+        itemGroup: null,
+        unitOfMeasure: 'pcs',
+        itemType: 'produced',
+        defaultBomId: null,
+        defaultBomName: null,
+        defaultRoutingId: null,
+        defaultRoutingName: null,
+        defaultPrice: 120,
+        reorderPoint: 0,
+        safetyStock: 0,
+        preferredVendorId: null,
+        preferredVendorName: null,
+        notes: null,
+        createdAt: '2026-03-12T08:00:00.000Z',
+        updatedAt: '2026-03-12T08:00:00.000Z',
+      },
+    ]);
+    listUnitOfMeasuresMock.mockResolvedValue([
+      { id: 1, name: 'pcs', baseUnit: null, conversionRate: 1, createdAt: '', updatedAt: '' },
+    ]);
+    listAuthUsersMock.mockRejectedValue(new Error('Forbidden'));
+    getCurrentUserMock.mockResolvedValue({
+      id: 7,
+      name: 'Office User',
+      email: 'office@impeasy.local',
+      isActive: true,
+      roles: ['office'],
+      createdAt: '2026-03-12T08:00:00.000Z',
+      updatedAt: '2026-03-12T08:00:00.000Z',
+    });
+    listSettingsEntriesMock.mockResolvedValue([]);
+
+    const newItem = {
+      id: 99,
+      code: 'NEW-99',
+      name: 'New Widget',
+      description: 'New product',
+      isActive: true,
+      itemGroup: null,
+      unitOfMeasure: 'pcs',
+      itemType: 'procured',
+      defaultBomId: null,
+      defaultBomName: null,
+      defaultRoutingId: null,
+      defaultRoutingName: null,
+      defaultPrice: 10,
+      reorderPoint: 0,
+      safetyStock: 0,
+      preferredVendorId: null,
+      preferredVendorName: null,
+      notes: null,
+      createdAt: '2026-03-12T08:00:00.000Z',
+      updatedAt: '2026-03-12T08:00:00.000Z',
+    };
+    createItemMock.mockResolvedValue(newItem);
+
+    render(<CustomerOrderWorkspace workspaceId="new" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Create a new customer order' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Lines' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Add new product' })).toBeInTheDocument();
+    });
+
+    const productSelect = screen.getAllByRole('combobox').find((el) => {
+      const options = Array.from((el as HTMLSelectElement).options).map((o) => o.textContent?.trim());
+      return options.some((t) => t === 'Add new product');
+    });
+    expect(productSelect).toBeDefined();
+    fireEvent.change(productSelect!, { target: { value: '__add_new__' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Create Product')).toBeInTheDocument();
+    });
+
+    const createProductHeading = screen.getByText('Create Product');
+    const dialog = createProductHeading.closest('[role="dialog"]') ?? createProductHeading.parentElement ?? document.body;
+    const partDescInput = within(dialog as HTMLElement).getByRole('textbox', { name: /Part Desc/i });
+    fireEvent.change(partDescInput, { target: { value: 'New Widget' } });
+    fireEvent.click(within(dialog as HTMLElement).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(createItemMock).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Create Product')).not.toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/New Widget/)).toBeInTheDocument();
+    });
   });
 });

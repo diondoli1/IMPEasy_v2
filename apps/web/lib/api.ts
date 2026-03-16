@@ -1148,6 +1148,13 @@ export async function listManufacturingOrdersBySalesOrder(
   return parseJsonOrThrow(response) as Promise<ManufacturingOrder[]>;
 }
 
+export type GenerateManufacturingOrdersError = Error & {
+  status?: number;
+  itemId?: number;
+  needsBom?: boolean;
+  needsRouting?: boolean;
+};
+
 export async function generateManufacturingOrdersForSalesOrder(
   salesOrderId: number,
 ): Promise<ManufacturingOrder[]> {
@@ -1158,7 +1165,23 @@ export async function generateManufacturingOrdersForSalesOrder(
     },
   );
 
-  return parseJsonOrThrow(response) as Promise<ManufacturingOrder[]>;
+  if (!response.ok) {
+    const text = await response.text();
+    let body: { message?: string; itemId?: number; needsBom?: boolean; needsRouting?: boolean } = {};
+    try {
+      body = JSON.parse(text) as typeof body;
+    } catch {
+      // ignore
+    }
+    const err = new Error(body.message ?? text ?? `Request failed with ${response.status}`) as GenerateManufacturingOrdersError;
+    err.status = response.status;
+    if (body.itemId != null) err.itemId = body.itemId;
+    if (body.needsBom != null) err.needsBom = body.needsBom;
+    if (body.needsRouting != null) err.needsRouting = body.needsRouting;
+    throw err;
+  }
+
+  return response.json() as Promise<ManufacturingOrder[]>;
 }
 
 export type CreateManufacturingOrderInput = {

@@ -87,6 +87,10 @@ export class CreateQuoteDto {
   contactPhone?: string;
 
   @IsOptional()
+  @IsIn(['draft', 'sent', 'approved'])
+  status?: 'draft' | 'sent' | 'approved';
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => CustomerAddressDto)
   billingAddress?: CustomerAddressDto;

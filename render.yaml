@@ -1,0 +1,37 @@
+# Render Blueprint - IMPEasy v2
+# Deploy: Connect this repo in Render Dashboard → New → Blueprint
+# Or update existing IMPEasy_v2 service build command to: yarn && yarn build
+
+databases:
+  - name: impeasy-db
+    plan: free
+    region: frankfurt
+
+services:
+  # Backend API (NestJS + Prisma)
+  - type: web
+    name: IMPEasy_v2
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: yarn && yarn build
+    startCommand: npm start
+    envVars:
+      - key: AUTH_TOKEN_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: impeasy-db
+          property: connectionString
+
+  # Frontend (Next.js)
+  - type: web
+    name: IMPEasy_v2-Web
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npm run build --workspace=@impeasy/web
+    startCommand: npm run start --workspace=@impeasy/web
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://impeasy-v2.onrender.com

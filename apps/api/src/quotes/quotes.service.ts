@@ -106,10 +106,16 @@ export class QuotesService {
     });
     const primaryContact = (customer.contacts ?? [])[0] ?? null;
 
+    const allowedCreateStatuses = ['draft', 'sent', 'approved'] as const;
+    const createStatus =
+      payload.status && allowedCreateStatuses.includes(payload.status)
+        ? payload.status
+        : 'draft';
+
     const created = await this.prisma.quote.create({
       data: {
         customerId: customer.id,
-        status: 'draft',
+        status: createStatus,
         quoteDate: payload.quoteDate ? new Date(payload.quoteDate) : new Date(),
         validityDate: payload.validityDate ? new Date(payload.validityDate) : null,
         promisedDate: payload.promisedDate ? new Date(payload.promisedDate) : null,

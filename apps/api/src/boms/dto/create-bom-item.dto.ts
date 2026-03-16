@@ -1,5 +1,5 @@
 import { IsInt, Min } from 'class-validator';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateBomItemDto {
   @IsInt()
@@ -18,4 +18,9 @@ export class CreateBomItemDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  approximateCost?: number;
 }

@@ -26,8 +26,11 @@ export type RoutingOperation = {
   name: string;
   description: string | null;
   workstation: string | null;
+  workstationGroupId: number | null;
+  workstationGroupName: string | null;
   setupTimeMinutes: number;
   runTimeMinutes: number;
+  cost: number | null;
   queueNotes: string | null;
   moveNotes: string | null;
   createdAt: string;
@@ -39,8 +42,10 @@ export type RoutingOperationInput = {
   name: string;
   description?: string;
   workstation?: string;
+  workstationGroupId?: number;
   setupTimeMinutes?: number;
   runTimeMinutes?: number;
+  cost?: number;
   queueNotes?: string;
   moveNotes?: string;
 };

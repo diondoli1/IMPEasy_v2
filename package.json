@@ -6,6 +6,8 @@
     "apps/web"
   ],
   "scripts": {
+    "build": "npx prisma generate && npx prisma migrate deploy && npm run build --workspace=@impeasy/api",
+    "start": "npm run start --workspace=@impeasy/api",
     "seed:admin": "node scripts/seed-admin-operator.mjs",
     "seed:mvp-010-users": "node scripts/seed-mvp-010-users.mjs",
     "seed:mvp-020-demo": "node scripts/seed-mvp-020-demo.mjs",

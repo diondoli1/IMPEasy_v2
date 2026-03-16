@@ -328,6 +328,7 @@ model BomItem {
   quantity         Int
   rowOrder         Int               @default(10)
   notes            String?
+  approximateCost  Float?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   bom              Bom               @relation(fields: [bomId], references: [id])
@@ -397,6 +398,7 @@ model RoutingOperation {
   workstationGroupId  Int?
   setupTimeMinutes    Int                  @default(0)
   runTimeMinutes      Int                  @default(0)
+  cost                Float?
   queueNotes          String?
   moveNotes           String?
   createdAt           DateTime             @default(now())

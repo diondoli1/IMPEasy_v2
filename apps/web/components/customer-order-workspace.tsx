@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   createShipment,
@@ -11,13 +11,11 @@ import {
   deliverShipment,
   createQuote,
   deleteQuote,
-  getCurrentUser,
   getQuote,
   getSalesOrder,
   getSalesOrderAuditTrail,
   getSalesOrderShippingAvailability,
   getShipmentInvoice,
-  listAuthUsers,
   listCustomers,
   listItems,
   listProductGroups,
@@ -33,7 +31,6 @@ import {
 } from '../lib/api';
 import {
   buildDraftQuote,
-  buildSalespersonOptions,
   calculateCommercialDocument,
   createBlankCustomerInput,
   createEditableLine,
@@ -48,11 +45,10 @@ import {
   TAX_RATE_OPTIONS,
   workspaceIdForDocument,
 } from '../lib/commercial';
-import type { AuthUser } from '../types/auth';
 import type { Customer, CustomerAddress } from '../types/customer';
 import type { Invoice } from '../types/invoice';
 import type { Item } from '../types/item';
-import type { Quote, QuoteInput, QuoteStatusTransition } from '../types/quote';
+import type { Quote, QuoteInput, QuoteStatusForCreate, QuoteStatusTransition } from '../types/quote';
 import type {
   SalesOrderAudit,
   SalesOrderDetail,
@@ -89,12 +85,20 @@ import {
 
 type CustomerOrderWorkspaceProps = {
   workspaceId: string;
+  initialTab?: WorkspaceTab;
 };
 
 type WorkspaceTab = 'header' | 'lines' | 'production' | 'shipments' | 'invoices' | 'history';
 
+const QUOTE_STATUS_DROPDOWN_OPTIONS: Array<{ value: QuoteStatusForCreate; label: string }> = [
+  { value: 'draft', label: 'Quotation' },
+  { value: 'sent', label: 'Waiting for confirmation' },
+  { value: 'approved', label: 'Confirmed' },
+];
+
 type WorkspaceFormState = {
   customerId: number;
+  quoteStatus: QuoteStatusForCreate;
   primaryDate: string;
   validityDate: string;
   promisedDate: string;
@@ -129,6 +133,7 @@ function createEmptyFormState(): WorkspaceFormState {
 
   return {
     customerId: draft.customerId,
+    quoteStatus: 'draft',
     primaryDate: draft.quoteDate,
     validityDate: draft.validityDate,
     promisedDate: draft.promisedDate,
@@ -151,8 +156,13 @@ function createEmptyFormState(): WorkspaceFormState {
 }
 
 function toWorkspaceFormFromQuote(quote: Quote): WorkspaceFormState {
+  const quoteStatus: QuoteStatusForCreate =
+    quote.status === 'draft' || quote.status === 'sent' || quote.status === 'approved'
+      ? quote.status
+      : 'draft';
   return {
     customerId: quote.customerId,
+    quoteStatus,
     primaryDate: quote.quoteDate.slice(0, 10),
     validityDate: quote.validityDate?.slice(0, 10) ?? '',
     promisedDate: quote.promisedDate?.slice(0, 10) ?? '',
@@ -177,6 +187,7 @@ function toWorkspaceFormFromQuote(quote: Quote): WorkspaceFormState {
 function toWorkspaceFormFromSalesOrder(salesOrder: SalesOrderDetail): WorkspaceFormState {
   return {
     customerId: salesOrder.customerId,
+    quoteStatus: 'draft',
     primaryDate: salesOrder.orderDate.slice(0, 10),
     validityDate: '',
     promisedDate: salesOrder.promisedDate?.slice(0, 10) ?? '',
@@ -255,13 +266,13 @@ function toActiveTaxRateOptions(entries: SettingsListEntry[], fallback: number[]
 
 export function CustomerOrderWorkspace({
   workspaceId,
+  initialTab,
 }: CustomerOrderWorkspaceProps): JSX.Element {
   const router = useRouter();
   const parsedWorkspace = useMemo(() => parseWorkspaceId(workspaceId), [workspaceId]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [productGroups, setProductGroups] = useState<Array<{ id: number; code: string; name: string }>>([]);
-  const [salespeople, setSalespeople] = useState<AuthUser[]>([]);
   const [paymentTermOptions, setPaymentTermOptions] = useState<string[]>(PAYMENT_TERM_OPTIONS);
   const [shippingTermOptions, setShippingTermOptions] = useState<string[]>(SHIPPING_TERM_OPTIONS);
   const [shippingMethodOptions, setShippingMethodOptions] =
@@ -275,7 +286,7 @@ export function CustomerOrderWorkspace({
   const [shippingAvailability, setShippingAvailability] = useState<ShippingAvailabilityLine[]>([]);
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [invoicesByShipmentId, setInvoicesByShipmentId] = useState<Record<number, Invoice | undefined>>({});
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('header');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>(initialTab ?? 'header');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -285,6 +296,14 @@ export function CustomerOrderWorkspace({
   const [addProductLineIndex, setAddProductLineIndex] = useState<number | null>(null);
   const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
   const [addProductGroupLineIndex, setAddProductGroupLineIndex] = useState<number | null>(null);
+  const addProductLineIndexRef = useRef<number | null>(null);
+  const [customerJustCreated, setCustomerJustCreated] = useState<Customer | null>(null);
+
+  useEffect(() => {
+    if (customerJustCreated && customers.some((c) => c.id === customerJustCreated.id)) {
+      setCustomerJustCreated(null);
+    }
+  }, [customers, customerJustCreated]);
 
   async function loadSalesOrderShippingWorkspace(salesOrderId: number): Promise<void> {
     const [availabilityData, shipmentData] = await Promise.all([
@@ -316,15 +335,11 @@ export function CustomerOrderWorkspace({
           listProductGroups(),
         ]);
         const [
-          usersResult,
-          currentUserResult,
           paymentTermsResult,
           shippingTermsResult,
           shippingMethodsResult,
           taxRatesResult,
         ] = await Promise.allSettled([
-          listAuthUsers(),
-          getCurrentUser(),
           listSettingsEntries('payment_terms'),
           listSettingsEntries('shipping_terms'),
           listSettingsEntries('shipping_methods'),
@@ -334,18 +349,6 @@ export function CustomerOrderWorkspace({
         setCustomers(customerData);
         setItems(itemData);
         setProductGroups(productGroupData);
-
-        const loadedUsers = usersResult.status === 'fulfilled' ? usersResult.value : [];
-        const currentUser = currentUserResult.status === 'fulfilled' ? currentUserResult.value : null;
-        setSalespeople(() => {
-          if (!currentUser) {
-            return loadedUsers;
-          }
-
-          return loadedUsers.some((user) => user.id === currentUser.id)
-            ? loadedUsers
-            : [...loadedUsers, currentUser];
-        });
 
         if (paymentTermsResult.status === 'fulfilled') {
           setPaymentTermOptions(
@@ -410,27 +413,6 @@ export function CustomerOrderWorkspace({
       ? 'Create a new customer order'
       : `Customer Order ${currentDocumentNumber}`;
   const customer = customers.find((candidate) => candidate.id === form.customerId) ?? null;
-  const salespersonOptions = useMemo(() => {
-    const options = buildSalespersonOptions(salespeople);
-    if (!form.salespersonEmail.trim()) {
-      return options;
-    }
-
-    const hasCurrentSalesperson = options.some(
-      (option) => option.email === form.salespersonEmail,
-    );
-    if (hasCurrentSalesperson) {
-      return options;
-    }
-
-    return [
-      {
-        label: form.salespersonName.trim() || form.salespersonEmail,
-        email: form.salespersonEmail,
-      },
-      ...options,
-    ];
-  }, [form.salespersonEmail, form.salespersonName, salespeople]);
   const availablePaymentTerms = useMemo(
     () => includeStringOption(paymentTermOptions, form.paymentTerm),
     [form.paymentTerm, paymentTermOptions],
@@ -443,6 +425,15 @@ export function CustomerOrderWorkspace({
     () => includeStringOption(shippingMethodOptions, form.shippingMethod),
     [form.shippingMethod, shippingMethodOptions],
   );
+  const customerOptionsForSelect = useMemo(() => {
+    if (
+      customerJustCreated &&
+      !customers.some((c) => c.id === customerJustCreated.id)
+    ) {
+      return [customerJustCreated, ...customers];
+    }
+    return customers;
+  }, [customers, customerJustCreated]);
   const documentTotals = useMemo(
     () =>
       calculateCommercialDocument({
@@ -458,6 +449,7 @@ export function CustomerOrderWorkspace({
 
     return {
       customerId: draft.customerId,
+      quoteStatus: 'draft',
       primaryDate: draft.quoteDate,
       validityDate: draft.validityDate,
       promisedDate: draft.promisedDate,
@@ -499,9 +491,28 @@ export function CustomerOrderWorkspace({
     }));
   }
 
+  function applyFormStateFromCustomer(created: Customer): void {
+    const primaryContact = getPrimaryContact(created);
+    setForm((current) => ({
+      ...current,
+      customerId: created.id,
+      paymentTerm: created.defaultPaymentTerm ?? current.paymentTerm,
+      shippingTerm: created.defaultShippingTerm ?? current.shippingTerm,
+      shippingMethod: created.defaultShippingMethod ?? current.shippingMethod,
+      documentDiscountPercent:
+        created.defaultDocumentDiscountPercent ?? current.documentDiscountPercent,
+      contactName: primaryContact?.name ?? '',
+      contactEmail: primaryContact?.email ?? '',
+      contactPhone: primaryContact?.phone ?? '',
+      billingAddress: created.billingAddress ?? current.billingAddress,
+      shippingAddress: created.shippingAddress ?? current.shippingAddress,
+    }));
+  }
+
   function buildQuotePayload(): QuoteInput {
     return {
       customerId: form.customerId,
+      status: form.quoteStatus,
       quoteDate: form.primaryDate,
       validityDate: form.validityDate || undefined,
       promisedDate: form.promisedDate || undefined,
@@ -577,7 +588,20 @@ export function CustomerOrderWorkspace({
 
     try {
       if (currentKind === 'quote' && quote) {
-        const updated = await updateQuote(quote.id, buildQuotePayload());
+        const payload = buildQuotePayload();
+        let updated = await updateQuote(quote.id, payload);
+        const targetStatus = form.quoteStatus;
+        const statusOrder: QuoteStatusForCreate[] = ['draft', 'sent', 'approved'];
+        let currentStatus = updated.status;
+        const targetIndex = statusOrder.indexOf(targetStatus);
+        const currentIndex = statusOrder.indexOf(currentStatus as QuoteStatusForCreate);
+        if (targetIndex > currentIndex && targetIndex >= 0) {
+          for (let i = currentIndex; i < targetIndex; i++) {
+            const nextStatus = statusOrder[i + 1] as QuoteStatusTransition;
+            updated = await updateQuoteStatus(quote.id, { status: nextStatus });
+            currentStatus = updated.status;
+          }
+        }
         setQuote(updated);
         setSaveMessage('Quote saved.');
       } else if (currentKind === 'quote') {
@@ -756,9 +780,32 @@ export function CustomerOrderWorkspace({
                 <Field label="Document Type">
                   <input className="control" value={currentKind === 'quote' ? 'Quote' : 'Sales Order'} disabled />
                 </Field>
-                <Field label="Status">
-                  <input className="control" value={getStatusDisplayLabel(currentStatus, currentKind ?? 'quote')} disabled />
-                </Field>
+                {currentKind === 'quote' ? (
+                  <Field label="Status">
+                    <select
+                      className="control"
+                      value={form.quoteStatus}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          quoteStatus: event.target.value as QuoteStatusForCreate,
+                        }))
+                      }
+                      aria-label="Status"
+                      disabled={Boolean(quote && (quote.status === 'converted' || quote.status === 'rejected'))}
+                    >
+                      {QUOTE_STATUS_DROPDOWN_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                ) : (
+                  <Field label="Status">
+                    <input className="control" value={getStatusDisplayLabel(currentStatus, 'sales-order')} disabled />
+                  </Field>
+                )}
                 <Field label={currentKind === 'quote' ? 'Quote Date' : 'Order Date'}>
                   <input
                     className="control"
@@ -800,20 +847,13 @@ export function CustomerOrderWorkspace({
                   >
                     <option value="__add_new__">Add new customer</option>
                     <option value={0}>Select customer</option>
-                    {customers.map((customerOption) => (
+                    {customerOptionsForSelect.map((customerOption) => (
                       <option key={customerOption.id} value={customerOption.id}>
                         {customerOption.code ? `${customerOption.code} ` : ''}
                         {customerOption.name}
                       </option>
                     ))}
                   </select>
-                </Field>
-                <Field label="Selected Contact">
-                  <input
-                    className="control"
-                    value={form.contactName}
-                    onChange={(event) => setForm((current) => ({ ...current, contactName: event.target.value }))}
-                  />
                 </Field>
                 <Field label="Contact Email">
                   <input
@@ -828,36 +868,6 @@ export function CustomerOrderWorkspace({
                     value={form.contactPhone}
                     onChange={(event) => setForm((current) => ({ ...current, contactPhone: event.target.value }))}
                   />
-                </Field>
-                <Field label="Customer Reference">
-                  <input
-                    className="control"
-                    value={form.customerReference}
-                    onChange={(event) => setForm((current) => ({ ...current, customerReference: event.target.value }))}
-                  />
-                </Field>
-                <Field label="Salesperson">
-                  <select
-                    className="control"
-                    value={form.salespersonEmail}
-                    onChange={(event) => {
-                      const selectedSalesperson =
-                        salespersonOptions.find((option) => option.email === event.target.value) ??
-                        null;
-                      setForm((current) => ({
-                        ...current,
-                        salespersonEmail: selectedSalesperson?.email ?? '',
-                        salespersonName: selectedSalesperson?.label ?? '',
-                      }));
-                    }}
-                  >
-                    <option value="">Select salesperson</option>
-                    {salespersonOptions.map((option) => (
-                      <option key={option.email} value={option.email}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
                 </Field>
                 <Field label="Payment Term">
                   <select
@@ -1111,6 +1121,7 @@ export function CustomerOrderWorkspace({
                               onChange={(event) => {
                                 const value = event.target.value;
                                 if (value === '__add_new__') {
+                                  addProductLineIndexRef.current = index;
                                   setAddProductLineIndex(index);
                                   setAddProductDialogOpen(true);
                                 } else {
@@ -1478,22 +1489,26 @@ export function CustomerOrderWorkspace({
       onClose={() => setAddCustomerDialogOpen(false)}
       onCreated={(created) => {
         setCustomers((prev) => [...prev, created]);
-        applyCustomerSnapshots(created.id);
+        applyFormStateFromCustomer(created);
+        setCustomerJustCreated(created);
         setAddCustomerDialogOpen(false);
       }}
     />
     <InlineCreateItemDialog
       open={addProductDialogOpen}
+      asManufactured={false}
       onClose={() => {
         setAddProductDialogOpen(false);
         setAddProductLineIndex(null);
+        addProductLineIndexRef.current = null;
       }}
       onCreated={(created) => {
         setItems((prev) => [...prev, created]);
-        if (addProductLineIndex !== null) {
+        const lineIndex = addProductLineIndexRef.current;
+        if (lineIndex !== null) {
           setLineRows((current) =>
             current.map((candidate, candidateIndex) =>
-              candidateIndex === addProductLineIndex
+              candidateIndex === lineIndex
                 ? {
                     ...candidate,
                     itemId: created.id,
@@ -1501,6 +1516,7 @@ export function CustomerOrderWorkspace({
                     itemName: created.name,
                     itemGroup: created.itemGroup ?? candidate.itemGroup,
                     description: created.description ?? created.name,
+                    unit: created.unitOfMeasure ?? candidate.unit,
                     unitPrice: created.defaultPrice ?? candidate.unitPrice,
                   }
                 : candidate,
@@ -1509,6 +1525,7 @@ export function CustomerOrderWorkspace({
         }
         setAddProductDialogOpen(false);
         setAddProductLineIndex(null);
+        addProductLineIndexRef.current = null;
       }}
     />
     <InlineCreateProductGroupDialog

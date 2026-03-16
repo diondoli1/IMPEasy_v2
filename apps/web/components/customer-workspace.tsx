@@ -156,7 +156,8 @@ export function CustomerWorkspace({ customerId, returnTo }: CustomerWorkspacePro
         setCustomer(updated);
         setForm(mapCustomerToInput(updated));
       } else {
-        const created = await createCustomer(payload);
+        const { code: _omitCode, ...createPayload } = payload;
+        const created = await createCustomer(createPayload);
         if (returnTo) {
           router.replace(returnTo);
         } else {
@@ -225,13 +226,17 @@ export function CustomerWorkspace({ customerId, returnTo }: CustomerWorkspacePro
 
         {activeTab === 'general' ? (
           <FormGrid columns={2}>
-            <Field label="Customer Code">
-              <input
-                className="control"
-                value={form.code ?? ''}
-                onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))}
-              />
-            </Field>
+            {customerId ? (
+              <Field label="Customer Code">
+                <input
+                  className="control"
+                  value={form.code ?? ''}
+                  disabled
+                  readOnly
+                  aria-label="Customer Code"
+                />
+              </Field>
+            ) : null}
             <Field label="Name">
               <input
                 className="control"

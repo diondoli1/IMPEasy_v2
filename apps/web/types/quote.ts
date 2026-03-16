@@ -38,8 +38,11 @@ export type Quote = {
   updatedAt: string;
 };
 
+export type QuoteStatusForCreate = 'draft' | 'sent' | 'approved';
+
 export type QuoteInput = {
   customerId: number;
+  status?: QuoteStatusForCreate;
   quoteDate?: string;
   validityDate?: string;
   promisedDate?: string;

@@ -46,10 +46,10 @@ export function InlineCreateCustomerDialog({
     setSaving(true);
     setError(null);
     try {
+      const { code: _omitCode, ...formWithoutCode } = form;
       const payload: CustomerInput = {
-        ...form,
+        ...formWithoutCode,
         name: form.name.trim(),
-        code: form.code?.trim() || undefined,
         status: form.status || undefined,
         regNo: form.regNo?.trim() || undefined,
         email: form.email?.trim() || undefined,
@@ -93,13 +93,6 @@ export function InlineCreateCustomerDialog({
       <DialogContent>
         {error ? <p role="alert" style={{ color: 'var(--color-error)' }}>{error}</p> : null}
         <FormGrid columns={2}>
-          <Field label="Customer Code">
-            <input
-              className="control"
-              value={form.code ?? ''}
-              onChange={(e) => setForm((c) => ({ ...c, code: e.target.value }))}
-            />
-          </Field>
           <Field label="Name">
             <input
               className="control"

@@ -251,9 +251,12 @@ export class WorkOrdersService {
         }
 
         if (!item.defaultRoutingId) {
-          throw new BadRequestException(
-            `Item ${item.id} must have a default routing before creating manufacturing orders`,
-          );
+          throw new BadRequestException({
+            message: `Item ${item.id} must have a default routing before creating manufacturing orders`,
+            itemId: item.id,
+            needsRouting: true,
+            needsBom: !item.defaultBomId,
+          });
         }
 
         const [bom, routing, routingOperations] = await Promise.all([

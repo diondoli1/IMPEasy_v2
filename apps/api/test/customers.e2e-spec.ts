@@ -113,6 +113,9 @@ describe('CustomersController (e2e)', () => {
     expect(createResponse.status).toBe(201);
     expect(createResponse.body.name).toBe('Acme Industries');
     expect(createResponse.body.isActive).toBe(true);
+    expect(createResponse.body.code).toBeDefined();
+    expect(typeof createResponse.body.code).toBe('string');
+    expect(createResponse.body.code.length).toBeGreaterThan(0);
 
     const listResponse = await request(app.getHttpServer()).get('/customers');
     expect(listResponse.status).toBe(200);

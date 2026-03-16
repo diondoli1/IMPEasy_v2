@@ -27,6 +27,7 @@ const BOM_DETAIL_INCLUDE = {
           id: true,
           code: true,
           name: true,
+          itemGroup: true,
           unitOfMeasure: true,
           defaultPrice: true,
         },
@@ -155,6 +156,7 @@ export class BomsService {
         quantity: payload.quantity,
         rowOrder: payload.rowOrder ?? maxRow + 10,
         notes: payload.notes?.trim() || null,
+        approximateCost: payload.approximateCost ?? null,
       },
       include: {
         item: {
@@ -162,6 +164,7 @@ export class BomsService {
             id: true,
             code: true,
             name: true,
+            itemGroup: true,
             unitOfMeasure: true,
             defaultPrice: true,
           },
@@ -187,6 +190,7 @@ export class BomsService {
             id: true,
             code: true,
             name: true,
+            itemGroup: true,
             unitOfMeasure: true,
             defaultPrice: true,
           },
@@ -209,6 +213,7 @@ export class BomsService {
         quantity: payload.quantity,
         rowOrder: payload.rowOrder,
         notes: payload.notes !== undefined ? payload.notes.trim() || null : undefined,
+        approximateCost: payload.approximateCost !== undefined ? payload.approximateCost : undefined,
       },
       include: {
         item: {
@@ -216,6 +221,7 @@ export class BomsService {
             id: true,
             code: true,
             name: true,
+            itemGroup: true,
             unitOfMeasure: true,
             defaultPrice: true,
           },
@@ -275,6 +281,7 @@ export class BomsService {
     const itemCode = bomItem.item?.code ?? buildItemCode(bomItem.itemId);
     const itemName = bomItem.item?.name ?? `Item ${bomItem.itemId}`;
     const unitOfMeasure = bomItem.item?.unitOfMeasure ?? 'pcs';
+    const itemGroup = bomItem.item?.itemGroup ?? null;
 
     return {
       id: bomItem.id,
@@ -283,9 +290,11 @@ export class BomsService {
       itemId: bomItem.itemId,
       itemCode,
       itemName,
+      itemGroup,
       unitOfMeasure,
       quantity: bomItem.quantity,
       notes: bomItem.notes ?? null,
+      approximateCost: bomItem.approximateCost ?? null,
       defaultPrice,
       lineCost: defaultPrice * bomItem.quantity,
       createdAt: bomItem.createdAt,
