@@ -126,6 +126,7 @@ export class BomsService {
             id: true,
             code: true,
             name: true,
+            itemGroup: true,
             unitOfMeasure: true,
             defaultPrice: true,
           },
