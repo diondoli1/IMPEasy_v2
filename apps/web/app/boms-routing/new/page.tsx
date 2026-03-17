@@ -34,6 +34,7 @@ import {
   listRoutingOperations,
   listRoutingsByItem,
   listWorkstationGroups,
+  listWorkstations,
   setBomAsDefault,
   setRoutingAsDefault,
   updateBomItem,
@@ -43,7 +44,7 @@ import { formatCurrency } from '../../../lib/commercial';
 import type { Bom, BomItem } from '../../../types/bom';
 import type { Item } from '../../../types/item';
 import type { Routing, RoutingOperation } from '../../../types/routing';
-import type { WorkstationGroup } from '../../../types/workstation';
+import type { Workstation, WorkstationGroup } from '../../../types/workstation';
 
 type TabValue = 'bom' | 'routing';
 
@@ -107,6 +108,7 @@ export default function SetupBomRoutingPage(): JSX.Element {
   const [operations, setOperations] = useState<RoutingOperation[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [workstationGroups, setWorkstationGroups] = useState<WorkstationGroup[]>([]);
+  const [workstations, setWorkstations] = useState<Workstation[]>([]);
 
   const [bomItemEditor, setBomItemEditor] = useState<BomItemEditorState>(() =>
     createBomItemEditorState([]),
@@ -131,17 +133,19 @@ export default function SetupBomRoutingPage(): JSX.Element {
   const loadPage = useCallback(async () => {
     if (itemId == null || Number.isNaN(itemId)) return;
 
-    const [itemData, bomsData, routingsData, itemsData, groupsData] = await Promise.all([
+    const [itemData, bomsData, routingsData, itemsData, groupsData, workstationsData] = await Promise.all([
       getItem(itemId),
       listBomsByItem(itemId),
       listRoutingsByItem(itemId),
       listItems(),
       listWorkstationGroups(),
+      listWorkstations(),
     ]);
 
     setItem(itemData);
     setItems(itemsData);
     setWorkstationGroups(groupsData);
+    setWorkstations(workstationsData);
 
     let bomToUse = bomsData[0] ?? null;
     if (bomsData.length === 0) {
@@ -570,11 +574,18 @@ export default function SetupBomRoutingPage(): JSX.Element {
                   />
                 </Field>
                 <Field label="Workstation">
-                  <input
+                  <select
                     className="control"
                     value={routingOpEditor.workstation}
                     onChange={(e) => setRoutingOpEditor((c) => ({ ...c, workstation: e.target.value }))}
-                  />
+                  >
+                    <option value="">—</option>
+                    {workstations.map((ws) => (
+                      <option key={ws.id} value={ws.name}>
+                        {ws.code ? `${ws.code} – ` : ''}{ws.name}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
                 <FormGrid columns={3}>
                   <Field label="Setup (min)">

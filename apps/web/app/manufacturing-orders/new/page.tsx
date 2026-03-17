@@ -41,6 +41,7 @@ import {
   listRoutingOperations,
   listRoutingsByItem,
   listSalesOrders,
+  listWorkstations,
   setBomAsDefault,
   setRoutingAsDefault,
   updateManufacturedItem,
@@ -51,6 +52,7 @@ import { InlineCreateProductGroupDialog } from '../../../components/inline-creat
 import { SCROLLABLE_SELECT_MENU_PROPS } from '../../../lib/select-utils';
 import type { Item } from '../../../types/item';
 import type { SalesOrder } from '../../../types/sales-order';
+import type { Workstation } from '../../../types/workstation';
 
 type CreateMode = 'direct' | 'from-order';
 
@@ -108,16 +110,19 @@ export default function NewManufacturingOrderPage(): JSX.Element {
   const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
   const [addComponentDialogOpen, setAddComponentDialogOpen] = useState(false);
   const [extraProductGroups, setExtraProductGroups] = useState<string[]>([]);
+  const [workstations, setWorkstations] = useState<Workstation[]>([]);
 
   useEffect(() => {
     void (async () => {
       try {
-        const [itemsRes, ordersRes] = await Promise.all([
+        const [itemsRes, ordersRes, workstationsRes] = await Promise.all([
           listManufacturedItems(),
           listSalesOrders(),
+          listWorkstations(),
         ]);
         setItems(itemsRes);
         setSalesOrders(ordersRes.filter((o) => ['released', 'in_production'].includes(o.status)));
+        setWorkstations(workstationsRes);
       } catch {
         setError('Unable to load data.');
       } finally {
@@ -773,14 +778,23 @@ export default function NewManufacturingOrderPage(): JSX.Element {
                         placeholder="Operation name"
                         sx={{ width: 180 }}
                       />
-                      <TextField
-                        size="small"
-                        label="Workstation"
-                        value={newRoutingWorkstation}
-                        onChange={(e) => setNewRoutingWorkstation(e.target.value)}
-                        placeholder="Optional"
-                        sx={{ width: 130 }}
-                      />
+                      <FormControl size="small" sx={{ width: 180 }}>
+                        <InputLabel id="new-routing-workstation-label">Workstation</InputLabel>
+                        <Select
+                          labelId="new-routing-workstation-label"
+                          label="Workstation"
+                          value={newRoutingWorkstation}
+                          onChange={(e) => setNewRoutingWorkstation(e.target.value)}
+                          MenuProps={SCROLLABLE_SELECT_MENU_PROPS}
+                        >
+                          <MenuItem value="">—</MenuItem>
+                          {workstations.map((ws) => (
+                            <MenuItem key={ws.id} value={ws.name}>
+                              {ws.code ? `${ws.code} – ` : ''}{ws.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                       <TextField
                         size="small"
                         label="Setup (min)"

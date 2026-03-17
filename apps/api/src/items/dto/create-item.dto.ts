@@ -74,4 +74,9 @@ export class CreateItemDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  initialQuantityOnHand?: number;
 }

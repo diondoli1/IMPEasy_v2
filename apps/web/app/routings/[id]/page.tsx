@@ -23,10 +23,12 @@ import {
   createRoutingOperation,
   getRouting,
   listRoutingOperations,
+  listWorkstations,
   updateRouting,
   updateRoutingOperation,
 } from '../../../lib/api';
 import type { Routing, RoutingOperation } from '../../../types/routing';
+import type { Workstation } from '../../../types/workstation';
 
 type RoutingHeaderState = {
   code: string;
@@ -88,15 +90,18 @@ export default function RoutingDetailPage(): JSX.Element {
   const [operationError, setOperationError] = useState<string | null>(null);
   const [savingHeader, setSavingHeader] = useState(false);
   const [savingOperation, setSavingOperation] = useState(false);
+  const [workstations, setWorkstations] = useState<Workstation[]>([]);
 
   const loadPage = useCallback(async () => {
-    const [routingData, operationData] = await Promise.all([
+    const [routingData, operationData, workstationsData] = await Promise.all([
       getRouting(id),
       listRoutingOperations(id),
+      listWorkstations(),
     ]);
 
     setRouting(routingData);
     setOperations(operationData);
+    setWorkstations(workstationsData);
     setHeaderForm(createHeaderState(routingData));
   }, [id]);
 
@@ -390,7 +395,7 @@ export default function RoutingDetailPage(): JSX.Element {
                   />
                 </Field>
                 <Field label="Workstation">
-                  <input
+                  <select
                     className="control"
                     value={operationEditor.workstation}
                     onChange={(event) =>
@@ -399,7 +404,14 @@ export default function RoutingDetailPage(): JSX.Element {
                         workstation: event.target.value,
                       }))
                     }
-                  />
+                  >
+                    <option value="">—</option>
+                    {workstations.map((ws) => (
+                      <option key={ws.id} value={ws.name}>
+                        {ws.code ? `${ws.code} – ` : ''}{ws.name}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
               </FormGrid>
               <Field label="Operation Name">

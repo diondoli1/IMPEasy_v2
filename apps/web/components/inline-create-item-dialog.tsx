@@ -19,6 +19,7 @@ import React, { useEffect, useState } from 'react';
 import {
   createItem,
   createManufacturedItem,
+  getNextItemCode,
   listProductGroups,
   listUnitOfMeasures,
 } from '../lib/api';
@@ -49,6 +50,7 @@ export function InlineCreateItemDialog({
   const [unitOfMeasure, setUnitOfMeasure] = useState('pcs');
   const [isProcured, setIsProcured] = useState(true);
   const [sellingPrice, setSellingPrice] = useState('');
+  const [initialQuantityOnHand, setInitialQuantityOnHand] = useState('');
   const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
   const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([]);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -59,12 +61,14 @@ export function InlineCreateItemDialog({
     if (!open) return;
     void (async () => {
       try {
-        const [groups, units] = await Promise.all([
+        const [groups, units, nextCode] = await Promise.all([
           listProductGroups(),
           listUnitOfMeasures(),
+          getNextItemCode(),
         ]);
         setProductGroups(groups);
         setUnitOfMeasures(units);
+        setPartNo(nextCode);
       } catch {
         // ignore
       }
@@ -82,6 +86,7 @@ export function InlineCreateItemDialog({
     setUnitOfMeasure('pcs');
     setIsProcured(true);
     setSellingPrice('');
+    setInitialQuantityOnHand('');
     setShowCreateGroup(false);
     setError(null);
     onClose();
@@ -95,6 +100,7 @@ export function InlineCreateItemDialog({
     setSaving(true);
     setError(null);
     try {
+      const qty = initialQuantityOnHand.trim() === '' ? undefined : Number(initialQuantityOnHand);
       const input: ItemInput = {
         code: partNo.trim() || undefined,
         name: partDesc.trim(),
@@ -103,6 +109,7 @@ export function InlineCreateItemDialog({
         unitOfMeasure,
         itemType: isProcured ? 'procured' : 'produced',
         defaultPrice: Number(sellingPrice) || 0,
+        initialQuantityOnHand: qty != null && !Number.isNaN(qty) && qty >= 0 ? qty : undefined,
       };
       const created = asManufactured
         ? await createManufacturedItem(input)
@@ -113,6 +120,7 @@ export function InlineCreateItemDialog({
       setUnitOfMeasure('pcs');
       setIsProcured(true);
       setSellingPrice('');
+      setInitialQuantityOnHand('');
       onCreated(created);
       onClose();
     } catch {
@@ -124,8 +132,15 @@ export function InlineCreateItemDialog({
 
   return (
     <>
-      <Dialog open={open} onClose={handleBack} maxWidth="sm" fullWidth>
-        <DialogTitle>Create Product</DialogTitle>
+      <Dialog
+        open={open}
+        onClose={handleBack}
+        maxWidth="sm"
+        fullWidth
+        data-testid="create-product-dialog"
+        slotProps={{ backdrop: { sx: { zIndex: 1300 } } }}
+      >
+        <DialogTitle id="create-product-dialog-title">Create Product</DialogTitle>
         <DialogContent>
           {error ? <p role="alert" style={{ color: 'var(--color-error)' }}>{error}</p> : null}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -196,6 +211,14 @@ export function InlineCreateItemDialog({
               inputProps={{ min: 0, step: 0.01 }}
               value={sellingPrice}
               onChange={(e) => setSellingPrice(e.target.value)}
+            />
+            <TextField
+              label="Initial quantity on hand"
+              type="number"
+              inputProps={{ min: 0, step: 1 }}
+              value={initialQuantityOnHand}
+              onChange={(e) => setInitialQuantityOnHand(e.target.value)}
+              placeholder="Optional"
             />
           </Box>
         </DialogContent>

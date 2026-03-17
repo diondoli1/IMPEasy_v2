@@ -15,6 +15,7 @@ import {
   listRoutingOperations,
   listRoutingsByItem,
   listWorkstationGroups,
+  listWorkstations,
   setBomAsDefault,
   setRoutingAsDefault,
   updateBomItem,
@@ -33,6 +34,7 @@ vi.mock('../lib/api', () => ({
   listRoutingOperations: vi.fn(),
   listRoutingsByItem: vi.fn(),
   listWorkstationGroups: vi.fn(),
+  listWorkstations: vi.fn(),
   setBomAsDefault: vi.fn(),
   setRoutingAsDefault: vi.fn(),
   updateBomItem: vi.fn(),
@@ -46,6 +48,7 @@ const listBomItemsMock = vi.mocked(listBomItems);
 const listRoutingOperationsMock = vi.mocked(listRoutingOperations);
 const listItemsMock = vi.mocked(listItems);
 const listWorkstationGroupsMock = vi.mocked(listWorkstationGroups);
+const listWorkstationsMock = vi.mocked(listWorkstations);
 const createBomMock = vi.mocked(createBom);
 const createRoutingMock = vi.mocked(createRouting);
 
@@ -122,6 +125,7 @@ describe('SetupBomRoutingPage', () => {
     listRoutingOperationsMock.mockResolvedValue([]);
     listItemsMock.mockResolvedValue([]);
     listWorkstationGroupsMock.mockResolvedValue([]);
+    listWorkstationsMock.mockResolvedValue([]);
   });
 
   it('renders setup page with BOM and Routing tabs when itemId is provided', async () => {

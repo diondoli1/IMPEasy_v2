@@ -17,6 +17,12 @@ export class ItemsController {
     return this.itemsService.findAll();
   }
 
+  @Get('next-code')
+  @Roles('admin', 'office', 'planner')
+  getNextCode(): Promise<string> {
+    return this.itemsService.getNextCode();
+  }
+
   @Get(':id')
   @Roles('admin', 'office', 'planner')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ItemResponseDto> {

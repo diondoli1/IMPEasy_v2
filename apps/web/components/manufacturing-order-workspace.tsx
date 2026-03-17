@@ -180,6 +180,21 @@ export function ManufacturingOrderWorkspace({
     })();
   }, [manufacturingOrderId]);
 
+  useEffect(() => {
+    if (activeTab !== 'materials' || !order) return;
+    void loadWorkspace();
+  }, [activeTab]);
+
+  useEffect(() => {
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'visible' && order) {
+        void loadWorkspace();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [manufacturingOrderId, order?.id]);
+
   if (loading) {
     return <p>Loading Manufacturing Order...</p>;
   }

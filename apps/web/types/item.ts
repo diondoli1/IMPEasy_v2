@@ -36,4 +36,5 @@ export type ItemInput = {
   safetyStock?: number;
   preferredVendorId?: number;
   notes?: string;
+  initialQuantityOnHand?: number;
 };

@@ -36,6 +36,14 @@ type ItemRecord = Prisma.ItemGetPayload<{
 export class ItemsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getNextCode(): Promise<string> {
+    const result = await this.prisma.item.aggregate({
+      _max: { id: true },
+    });
+    const nextId = (result._max.id ?? 0) + 1;
+    return buildItemCode(nextId);
+  }
+
   async findAll(): Promise<ItemResponseDto[]> {
     const items = await this.prisma.item.findMany({
       include: ITEM_INCLUDE,
@@ -84,6 +92,28 @@ export class ItemsService {
       },
       include: ITEM_INCLUDE,
     });
+
+    const quantityOnHand = payload.initialQuantityOnHand ?? 0;
+    const inventoryItem = await this.prisma.inventoryItem.create({
+      data: {
+        itemId: created.id,
+        quantityOnHand,
+      },
+    });
+
+    if (quantityOnHand > 0) {
+      await this.prisma.inventoryTransaction.create({
+        data: {
+          inventoryItemId: inventoryItem.id,
+          itemId: created.id,
+          stockLotId: null,
+          purchaseOrderLineId: null,
+          transactionType: 'adjustment',
+          quantity: quantityOnHand,
+          notes: 'Initial quantity on item create',
+        },
+      });
+    }
 
     return this.toItemResponse(created);
   }

@@ -173,6 +173,30 @@ export class InventoryService {
       },
     });
 
+    const defaultLotNumber = `ADJ-${inventoryItem.itemId}`;
+    const existingLot = await this.prisma.stockLot.findFirst({
+      where: { itemId: inventoryItem.itemId, lotNumber: defaultLotNumber },
+    });
+
+    if (existingLot) {
+      const nextLotQty = Math.max(0, existingLot.quantityOnHand + payload.delta);
+      await this.prisma.stockLot.update({
+        where: { id: existingLot.id },
+        data: { quantityOnHand: nextLotQty },
+      });
+    } else {
+      const lotQty = Math.max(0, payload.delta);
+      await this.prisma.stockLot.create({
+        data: {
+          itemId: inventoryItem.itemId,
+          lotNumber: defaultLotNumber,
+          quantityOnHand: lotQty,
+          sourceType: 'adjustment',
+          status: 'available',
+        },
+      });
+    }
+
     return this.prisma.inventoryTransaction.create({
       data: {
         inventoryItemId,

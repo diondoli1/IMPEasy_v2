@@ -316,6 +316,11 @@ export async function getItem(id: number): Promise<Item> {
   return parseJsonOrThrow(response) as Promise<Item>;
 }
 
+export async function getNextItemCode(): Promise<string> {
+  const response = await apiFetch(`${API_BASE_URL}/items/next-code`, { cache: 'no-store' });
+  return parseJsonOrThrow(response) as Promise<string>;
+}
+
 export async function createItem(input: ItemInput): Promise<Item> {
   const response = await apiFetch(`${API_BASE_URL}/items`, {
     method: 'POST',

@@ -1117,7 +1117,11 @@ export function CustomerOrderWorkspace({
                           <div className="stack stack--tight">
                             <select
                               className="control control--dense"
-                              value={line.itemId}
+                              value={
+                                addProductDialogOpen && addProductLineIndex === index
+                                  ? '__add_new__'
+                                  : line.itemId
+                              }
                               onChange={(event) => {
                                 const value = event.target.value;
                                 if (value === '__add_new__') {

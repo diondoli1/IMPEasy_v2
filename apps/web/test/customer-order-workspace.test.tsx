@@ -537,6 +537,7 @@ describe('CustomerOrderWorkspace', () => {
     fireEvent.change(productSelect!, { target: { value: '__add_new__' } });
 
     await waitFor(() => {
+      expect(screen.getByTestId('create-product-dialog')).toBeInTheDocument();
       expect(screen.getByText('Create Product')).toBeInTheDocument();
     });
 

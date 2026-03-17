@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 
 import {
   createItem,
+  getNextItemCode,
   listProductGroups,
   listUnitOfMeasures,
 } from '../../../../lib/api';
@@ -38,6 +39,7 @@ export default function NewStockItemPage(): JSX.Element {
   const [unitOfMeasure, setUnitOfMeasure] = useState('pcs');
   const [isProcured, setIsProcured] = useState(true);
   const [sellingPrice, setSellingPrice] = useState('');
+  const [initialQuantityOnHand, setInitialQuantityOnHand] = useState('');
   const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
   const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([]);
   const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
@@ -48,12 +50,14 @@ export default function NewStockItemPage(): JSX.Element {
   useEffect(() => {
     void (async () => {
       try {
-        const [groups, units] = await Promise.all([
+        const [groups, units, nextCode] = await Promise.all([
           listProductGroups(),
           listUnitOfMeasures(),
+          getNextItemCode(),
         ]);
         setProductGroups(groups);
         setUnitOfMeasures(units);
+        setPartNo(nextCode);
       } finally {
         setLoading(false);
       }
@@ -73,6 +77,7 @@ export default function NewStockItemPage(): JSX.Element {
     setSaving(true);
     setError(null);
     try {
+      const qty = initialQuantityOnHand.trim() === '' ? undefined : Number(initialQuantityOnHand);
       const item = await createItem({
         code: partNo.trim() || undefined,
         name: partDesc.trim(),
@@ -81,6 +86,7 @@ export default function NewStockItemPage(): JSX.Element {
         unitOfMeasure,
         itemType: isProcured ? 'procured' : 'produced',
         defaultPrice: Number(sellingPrice) || 0,
+        initialQuantityOnHand: qty != null && !Number.isNaN(qty) && qty >= 0 ? qty : undefined,
       });
       if (returnTo) {
         router.replace(returnTo);
@@ -184,6 +190,14 @@ export default function NewStockItemPage(): JSX.Element {
             inputProps={{ min: 0, step: 0.01 }}
             value={sellingPrice}
             onChange={(e) => setSellingPrice(e.target.value)}
+          />
+          <TextField
+            label="Initial quantity on hand"
+            type="number"
+            inputProps={{ min: 0, step: 1 }}
+            value={initialQuantityOnHand}
+            onChange={(e) => setInitialQuantityOnHand(e.target.value)}
+            placeholder="Optional"
           />
         </Box>
       </Paper>
