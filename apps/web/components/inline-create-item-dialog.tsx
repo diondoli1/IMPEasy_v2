@@ -36,6 +36,11 @@ type InlineCreateItemDialogProps = {
   onCreated: (item: Item) => void;
   /** Use manufactured item API (for manufacturing orders). Default: createItem (stock items for orders). */
   asManufactured?: boolean;
+  /**
+   * Optional default product group (e.g. inherited from the active order line).
+   * Helps ensure the created item shows up immediately in filtered dropdowns.
+   */
+  defaultProductGroup?: string;
 };
 
 export function InlineCreateItemDialog({
@@ -43,6 +48,7 @@ export function InlineCreateItemDialog({
   onClose,
   onCreated,
   asManufactured = false,
+  defaultProductGroup,
 }: InlineCreateItemDialogProps): JSX.Element {
   const [partNo, setPartNo] = useState('');
   const [partDesc, setPartDesc] = useState('');
@@ -75,6 +81,16 @@ export function InlineCreateItemDialog({
     })();
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const fallbackGroup = defaultProductGroup?.trim() ?? '';
+    if (fallbackGroup && !productGroup.trim()) {
+      setProductGroup(fallbackGroup);
+    }
+    // Intentionally only runs when opening; avoids overwriting user input mid-edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultProductGroup]);
+
   const uomOptions = unitOfMeasures.length > 0
     ? unitOfMeasures.map((u) => u.name)
     : FALLBACK_UOM;
@@ -101,11 +117,13 @@ export function InlineCreateItemDialog({
     setError(null);
     try {
       const qty = initialQuantityOnHand.trim() === '' ? undefined : Number(initialQuantityOnHand);
+      const resolvedGroup =
+        productGroup.trim() || defaultProductGroup?.trim() || undefined;
       const input: ItemInput = {
         code: partNo.trim() || undefined,
         name: partDesc.trim(),
         description: partDesc.trim(),
-        itemGroup: productGroup.trim() || undefined,
+        itemGroup: resolvedGroup,
         unitOfMeasure,
         itemType: isProcured ? 'procured' : 'produced',
         defaultPrice: Number(sellingPrice) || 0,

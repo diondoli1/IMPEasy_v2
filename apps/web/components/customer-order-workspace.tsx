@@ -294,6 +294,7 @@ export function CustomerOrderWorkspace({
   const [addCustomerDialogOpen, setAddCustomerDialogOpen] = useState(false);
   const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
   const [addProductLineIndex, setAddProductLineIndex] = useState<number | null>(null);
+  const [addProductDefaultGroup, setAddProductDefaultGroup] = useState<string>('');
   const [addProductGroupDialogOpen, setAddProductGroupDialogOpen] = useState(false);
   const [addProductGroupLineIndex, setAddProductGroupLineIndex] = useState<number | null>(null);
   const addProductLineIndexRef = useRef<number | null>(null);
@@ -1127,6 +1128,7 @@ export function CustomerOrderWorkspace({
                                 if (value === '__add_new__') {
                                   addProductLineIndexRef.current = index;
                                   setAddProductLineIndex(index);
+                                  setAddProductDefaultGroup(line.itemGroup || '');
                                   setAddProductDialogOpen(true);
                                 } else {
                                   const item = items.find(
@@ -1501,10 +1503,12 @@ export function CustomerOrderWorkspace({
     <InlineCreateItemDialog
       open={addProductDialogOpen}
       asManufactured={false}
+      defaultProductGroup={addProductDefaultGroup}
       onClose={() => {
         setAddProductDialogOpen(false);
         setAddProductLineIndex(null);
         addProductLineIndexRef.current = null;
+        setAddProductDefaultGroup('');
       }}
       onCreated={(created) => {
         setItems((prev) => [...prev, created]);
@@ -1530,6 +1534,7 @@ export function CustomerOrderWorkspace({
         setAddProductDialogOpen(false);
         setAddProductLineIndex(null);
         addProductLineIndexRef.current = null;
+        setAddProductDefaultGroup('');
       }}
     />
     <InlineCreateProductGroupDialog

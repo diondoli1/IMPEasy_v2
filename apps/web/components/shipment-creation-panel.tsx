@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Badge, Button, DataTable, Field, Notice, Panel } from './ui/primitives';
 import type { Invoice } from '../types/invoice';
 import type {
   Shipment,
@@ -212,42 +213,59 @@ export function ShipmentCreationPanel({
   };
 
   return (
-    <section>
-      <h2>Shipments</h2>
-      {!shipmentCreationAllowed ? (
-        <p>Shipment creation requires a released or in_production sales order.</p>
-      ) : null}
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">Line ID</th>
-              <th align="left">Item</th>
-              <th align="left">Ordered</th>
-              <th align="left">Shipped</th>
-              <th align="left">Remaining</th>
-              <th align="left">Stock Available</th>
-              <th align="left">Status</th>
-              <th align="left">Ship Qty</th>
-            </tr>
-          </thead>
-          <tbody>
-            {availability.map((line) => (
-              <tr key={line.salesOrderLineId}>
-                <td>{line.salesOrderLineId}</td>
-                <td>
-                  <div style={{ display: 'grid', gap: 2 }}>
+    <div className="page-stack">
+      <Panel
+        title="Create shipment"
+        description="Enter ship quantities per line and generate a shipment record. Quantities are validated against available-to-ship."
+      >
+        {!shipmentCreationAllowed ? (
+          <Notice title="Shipment creation disabled" tone="warning">
+            Shipment creation requires a released or in_production sales order.
+          </Notice>
+        ) : null}
+        {error ? (
+          <Notice title="Unable to complete action" tone="warning">
+            {error}
+          </Notice>
+        ) : null}
+        {success ? <Notice title="Success">{success}</Notice> : null}
+
+        <form onSubmit={handleSubmit} className="page-stack">
+          <DataTable
+            caption="Shipping availability"
+            columns={[
+              { header: 'Line', width: '90px', cell: (line) => <span className="mono">{line.salesOrderLineId}</span> },
+              {
+                header: 'Item',
+                cell: (line) => (
+                  <div className="stack stack--tight">
                     <strong>{line.itemName}</strong>
-                    <span>{line.itemCode ?? `Item ${line.itemId}`}</span>
+                    <span className="muted-copy--small mono">
+                      {line.itemCode ?? `Item ${line.itemId}`}
+                    </span>
                   </div>
-                </td>
-                <td>{line.orderedQuantity}</td>
-                <td>{line.shippedQuantity}</td>
-                <td>{line.remainingQuantity}</td>
-                <td>{line.availableStockQuantity}</td>
-                <td>{line.blockedReason ?? 'Ready'}</td>
-                <td>
+                ),
+              },
+              { header: 'Ordered', width: '90px', cell: (line) => <span className="mono">{line.orderedQuantity}</span> },
+              { header: 'Shipped', width: '90px', cell: (line) => <span className="mono">{line.shippedQuantity}</span> },
+              { header: 'Remaining', width: '110px', cell: (line) => <span className="mono">{line.remainingQuantity}</span> },
+              { header: 'Stock', width: '90px', cell: (line) => <span className="mono">{line.availableStockQuantity}</span> },
+              {
+                header: 'Status',
+                width: '160px',
+                cell: (line) =>
+                  line.blockedReason ? (
+                    <Badge tone="warning">{line.blockedReason}</Badge>
+                  ) : (
+                    <Badge tone="success">Ready</Badge>
+                  ),
+              },
+              {
+                header: 'Ship qty',
+                width: '120px',
+                cell: (line) => (
                   <input
+                    className="control control--dense"
                     type="number"
                     min={0}
                     value={quantities[line.salesOrderLineId] ?? ''}
@@ -260,164 +278,177 @@ export function ShipmentCreationPanel({
                       }))
                     }
                   />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <label>
-          Shipment notes
-          <textarea
-            aria-label="Shipment notes"
-            rows={4}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+                ),
+              },
+            ]}
+            rows={availability}
+            getRowKey={(line) => String(line.salesOrderLineId)}
           />
-        </label>
-        <button type="submit" disabled={loading || !shipmentCreationAllowed}>
-          {loading ? 'Creating...' : 'Create shipment'}
-        </button>
-        {error ? <p role="alert">{error}</p> : null}
-        {success ? <p>{success}</p> : null}
-      </form>
-      {shipments.length === 0 ? (
-        <p>No shipments created.</p>
-      ) : (
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">Shipment</th>
-              <th align="left">Status</th>
-              <th align="left">Notes</th>
-              <th align="left">Lines</th>
-              <th align="left">Invoice</th>
-              <th align="left">Workspace</th>
-              <th align="left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {shipments.map((shipment) => {
-              const invoice = invoicesByShipmentId[shipment.id];
 
-              return (
-                <tr key={shipment.id}>
-                  <td>{formatShipmentLabel(shipment)}</td>
-                  <td>{shipment.status}</td>
-                  <td>{shipment.notes ?? 'No notes'}</td>
-                  <td>
-                    {shipment.shipmentLines
-                      .map(
-                        (line) =>
-                          `${line.itemName || line.itemCode || `Item ${line.itemId}`} (${line.quantity}, picked ${line.pickedQuantity ?? 0})`,
-                      )
-                      .join(', ')}
-                  </td>
-                  <td>
-                    {invoice
-                      ? formatInvoiceSummary(invoice)
-                      : shipment.status === 'delivered'
-                        ? 'Ready to invoice'
-                        : 'Not generated'}
-                  </td>
-                  <td>
-                    <Link href={`/shipments/${shipment.id}`}>Open shipment</Link>
-                  </td>
-                  <td>
-                    {shipment.status === 'draft' ? (
-                      <button
-                        type="button"
-                        aria-label={`Pick shipment ${shipment.id}`}
-                        disabled={
-                          transitioningShipment?.shipmentId === shipment.id &&
-                          transitioningShipment.action === 'pack'
-                        }
-                        onClick={() => {
-                          void handlePack(shipment.id);
-                        }}
-                      >
-                        {transitioningShipment?.shipmentId === shipment.id &&
+          <Field label="Shipment notes">
+            <textarea
+              className="control"
+              aria-label="Shipment notes"
+              rows={4}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+            />
+          </Field>
+
+          <div>
+            <Button type="submit" tone="primary" disabled={loading || !shipmentCreationAllowed}>
+              {loading ? 'Creating...' : 'Create shipment'}
+            </Button>
+          </div>
+        </form>
+      </Panel>
+
+      <Panel
+        title="Shipments"
+        description="Existing shipments created from this sales order."
+      >
+        <DataTable
+          columns={[
+            {
+              header: 'Shipment',
+              width: '170px',
+              cell: (shipment) => <span className="mono">{formatShipmentLabel(shipment)}</span>,
+            },
+            {
+              header: 'Status',
+              width: '120px',
+              cell: (shipment) => <Badge tone={shipment.status === 'delivered' ? 'success' : 'info'}>{shipment.status}</Badge>,
+            },
+            { header: 'Notes', cell: (shipment) => shipment.notes ?? <span className="muted-copy">No notes</span> },
+            {
+              header: 'Lines',
+              cell: (shipment) => (
+                <span className="muted-copy--small">
+                  {shipment.shipmentLines
+                    .map(
+                      (line) =>
+                        `${line.itemName || line.itemCode || `Item ${line.itemId}`} (${line.quantity}, picked ${line.pickedQuantity ?? 0})`,
+                    )
+                    .join(', ')}
+                </span>
+              ),
+            },
+            {
+              header: 'Invoice',
+              cell: (shipment) => {
+                const invoice = invoicesByShipmentId[shipment.id];
+                return invoice ? (
+                  <span className="muted-copy--small">{formatInvoiceSummary(invoice)}</span>
+                ) : shipment.status === 'delivered' ? (
+                  <span className="muted-copy--small">Ready to invoice</span>
+                ) : (
+                  <span className="muted-copy--small">Not generated</span>
+                );
+              },
+            },
+            {
+              header: 'Workspace',
+              width: '140px',
+              cell: (shipment) => <Link href={`/shipments/${shipment.id}`}>Open shipment</Link>,
+            },
+            {
+              header: 'Actions',
+              width: '220px',
+              cell: (shipment) => {
+                const invoice = invoicesByShipmentId[shipment.id];
+                if (shipment.status === 'draft') {
+                  return (
+                    <Button
+                      onClick={() => void handlePack(shipment.id)}
+                      disabled={
+                        transitioningShipment?.shipmentId === shipment.id &&
                         transitioningShipment.action === 'pack'
-                          ? 'Picking...'
-                          : 'Pick shipment'}
-                      </button>
-                    ) : shipment.status === 'picked' ? (
-                      <button
-                        type="button"
-                        aria-label={`Ship shipment ${shipment.id}`}
-                        disabled={
-                          transitioningShipment?.shipmentId === shipment.id &&
-                          transitioningShipment.action === 'ship'
-                        }
-                        onClick={() => {
-                          void handleShip(shipment.id);
-                        }}
-                      >
-                        {transitioningShipment?.shipmentId === shipment.id &&
+                      }
+                    >
+                      {transitioningShipment?.shipmentId === shipment.id &&
+                      transitioningShipment.action === 'pack'
+                        ? 'Picking...'
+                        : 'Pick shipment'}
+                    </Button>
+                  );
+                }
+                if (shipment.status === 'picked') {
+                  return (
+                    <Button
+                      onClick={() => void handleShip(shipment.id)}
+                      disabled={
+                        transitioningShipment?.shipmentId === shipment.id &&
                         transitioningShipment.action === 'ship'
-                          ? 'Shipping...'
-                          : 'Ship shipment'}
-                      </button>
-                    ) : shipment.status === 'shipped' ? (
-                      <button
-                        type="button"
-                        aria-label={`Deliver shipment ${shipment.id}`}
-                        disabled={
-                          transitioningShipment?.shipmentId === shipment.id &&
-                          transitioningShipment.action === 'deliver'
-                        }
-                        onClick={() => {
-                          void handleDeliver(shipment.id);
-                        }}
-                      >
-                        {transitioningShipment?.shipmentId === shipment.id &&
+                      }
+                    >
+                      {transitioningShipment?.shipmentId === shipment.id &&
+                      transitioningShipment.action === 'ship'
+                        ? 'Shipping...'
+                        : 'Ship shipment'}
+                    </Button>
+                  );
+                }
+                if (shipment.status === 'shipped') {
+                  return (
+                    <Button
+                      onClick={() => void handleDeliver(shipment.id)}
+                      disabled={
+                        transitioningShipment?.shipmentId === shipment.id &&
                         transitioningShipment.action === 'deliver'
-                          ? 'Delivering...'
-                          : 'Deliver shipment'}
-                      </button>
-                    ) : shipment.status === 'delivered' && !invoice ? (
-                      <button
-                        type="button"
-                        aria-label={`Generate invoice for shipment ${shipment.id}`}
-                        disabled={
-                          transitioningShipment?.shipmentId === shipment.id &&
-                          transitioningShipment.action === 'invoice'
-                        }
-                        onClick={() => {
-                          void handleGenerateInvoice(shipment.id);
-                        }}
-                      >
-                        {transitioningShipment?.shipmentId === shipment.id &&
+                      }
+                    >
+                      {transitioningShipment?.shipmentId === shipment.id &&
+                      transitioningShipment.action === 'deliver'
+                        ? 'Delivering...'
+                        : 'Deliver shipment'}
+                    </Button>
+                  );
+                }
+                if (shipment.status === 'delivered' && !invoice) {
+                  return (
+                    <Button
+                      onClick={() => void handleGenerateInvoice(shipment.id)}
+                      disabled={
+                        transitioningShipment?.shipmentId === shipment.id &&
                         transitioningShipment.action === 'invoice'
-                          ? 'Generating...'
-                          : 'Generate invoice'}
-                      </button>
-                    ) : invoice?.status === 'issued' ? (
-                      <button
-                        type="button"
-                        aria-label={`Mark invoice paid for shipment ${shipment.id}`}
-                        disabled={
-                          transitioningShipment?.shipmentId === shipment.id &&
-                          transitioningShipment.action === 'pay'
-                        }
-                        onClick={() => {
-                          void handleMarkInvoicePaid(shipment.id);
-                        }}
-                      >
-                        {transitioningShipment?.shipmentId === shipment.id &&
+                      }
+                    >
+                      {transitioningShipment?.shipmentId === shipment.id &&
+                      transitioningShipment.action === 'invoice'
+                        ? 'Generating...'
+                        : 'Generate invoice'}
+                    </Button>
+                  );
+                }
+                if (invoice?.status === 'issued') {
+                  return (
+                    <Button
+                      onClick={() => void handleMarkInvoicePaid(shipment.id)}
+                      disabled={
+                        transitioningShipment?.shipmentId === shipment.id &&
                         transitioningShipment.action === 'pay'
-                          ? 'Recording payment...'
-                          : 'Mark invoice paid'}
-                      </button>
-                    ) : (
-                      'No action'
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </section>
+                      }
+                    >
+                      {transitioningShipment?.shipmentId === shipment.id &&
+                      transitioningShipment.action === 'pay'
+                        ? 'Recording payment...'
+                        : 'Mark invoice paid'}
+                    </Button>
+                  );
+                }
+                return <span className="muted-copy--small">No action</span>;
+              },
+            },
+          ]}
+          rows={shipments}
+          getRowKey={(shipment) => String(shipment.id)}
+          emptyState={
+            <div className="page-stack">
+              <Notice title="No shipments yet">No shipments created.</Notice>
+            </div>
+          }
+        />
+      </Panel>
+    </div>
   );
 }
