@@ -1511,7 +1511,12 @@ export function CustomerOrderWorkspace({
         setAddProductDefaultGroup('');
       }}
       onCreated={(created) => {
-        setItems((prev) => [...prev, created]);
+        const resolvedCreated: Item = {
+          ...created,
+          itemGroup:
+            created.itemGroup ?? (addProductDefaultGroup.trim() ? addProductDefaultGroup.trim() : null),
+        };
+        setItems((prev) => [...prev, resolvedCreated]);
         const lineIndex = addProductLineIndexRef.current;
         if (lineIndex !== null) {
           setLineRows((current) =>
@@ -1519,13 +1524,15 @@ export function CustomerOrderWorkspace({
               candidateIndex === lineIndex
                 ? {
                     ...candidate,
-                    itemId: created.id,
-                    itemCode: created.code ?? `ITEM-${String(created.id).padStart(4, '0')}`,
-                    itemName: created.name,
-                    itemGroup: created.itemGroup ?? candidate.itemGroup,
-                    description: created.description ?? created.name,
-                    unit: created.unitOfMeasure ?? candidate.unit,
-                    unitPrice: created.defaultPrice ?? candidate.unitPrice,
+                    itemId: resolvedCreated.id,
+                    itemCode:
+                      resolvedCreated.code ??
+                      `ITEM-${String(resolvedCreated.id).padStart(4, '0')}`,
+                    itemName: resolvedCreated.name,
+                    itemGroup: resolvedCreated.itemGroup ?? candidate.itemGroup,
+                    description: resolvedCreated.description ?? resolvedCreated.name,
+                    unit: resolvedCreated.unitOfMeasure ?? candidate.unit,
+                    unitPrice: resolvedCreated.defaultPrice ?? candidate.unitPrice,
                   }
                 : candidate,
             ),

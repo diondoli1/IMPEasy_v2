@@ -15,6 +15,7 @@ import MuiButton from '@mui/material/Button';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
+import type { DialogProps } from '@mui/material/Dialog';
 
 import {
   createItem,
@@ -95,6 +96,11 @@ export function InlineCreateItemDialog({
     ? unitOfMeasures.map((u) => u.name)
     : FALLBACK_UOM;
 
+  const productGroupNames = productGroups.map((g) => g.name);
+  const resolvedProductGroupValue = productGroup.trim();
+  const needsEphemeralProductGroupOption =
+    resolvedProductGroupValue.length > 0 && !productGroupNames.includes(resolvedProductGroupValue);
+
   const handleBack = (): void => {
     setPartNo('');
     setPartDesc('');
@@ -106,6 +112,15 @@ export function InlineCreateItemDialog({
     setShowCreateGroup(false);
     setError(null);
     onClose();
+  };
+
+  const handleDialogClose: DialogProps['onClose'] = (_event, reason) => {
+    // Prevent accidental close when clicking the grey backdrop or pressing ESC.
+    // Users frequently click outside while filling forms; closing would lose progress.
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+    handleBack();
   };
 
   const handleSave = async (): Promise<void> => {
@@ -152,7 +167,7 @@ export function InlineCreateItemDialog({
     <>
       <Dialog
         open={open}
-        onClose={handleBack}
+        onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
         data-testid="create-product-dialog"
@@ -194,6 +209,11 @@ export function InlineCreateItemDialog({
                 <MenuItem value="__add_new__">
                   <em>Add new product group</em>
                 </MenuItem>
+                {needsEphemeralProductGroupOption ? (
+                  <MenuItem value={resolvedProductGroupValue}>
+                    {resolvedProductGroupValue}
+                  </MenuItem>
+                ) : null}
                 {productGroups.map((g) => (
                   <MenuItem key={g.id} value={g.name}>
                     {g.name}

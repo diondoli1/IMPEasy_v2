@@ -559,4 +559,156 @@ describe('CustomerOrderWorkspace', () => {
       expect(screen.getByText(/New Widget/)).toBeInTheDocument();
     });
   });
+
+  it('auto-selects newly created product even when API returns null itemGroup for grouped lines', async () => {
+    listCustomersMock.mockResolvedValue([
+      {
+        id: 1,
+        code: 'CUS-0001',
+        name: 'Test Customer',
+        status: 'interested',
+        regNo: null,
+        email: null,
+        phone: null,
+        vatNumber: null,
+        contactStarted: null,
+        nextContact: null,
+        website: null,
+        billingAddress: { street: '', city: '', postcode: '', stateRegion: '', country: '' },
+        shippingAddress: { street: '', city: '', postcode: '', stateRegion: '', country: '' },
+        defaultPaymentTerm: null,
+        defaultShippingTerm: null,
+        defaultShippingMethod: null,
+        defaultDocumentDiscountPercent: 0,
+        defaultTaxRate: 0,
+        internalNotes: null,
+        isActive: true,
+        contacts: [],
+        documents: [],
+        createdAt: '2026-03-12T08:00:00.000Z',
+        updatedAt: '2026-03-12T08:00:00.000Z',
+      },
+    ]);
+
+    listProductGroupsMock.mockResolvedValue([
+      { id: 1, code: 'PG-001', name: 'Group A', createdAt: '', updatedAt: '' },
+    ]);
+
+    listItemsMock.mockResolvedValue([
+      {
+        id: 11,
+        code: 'FG-0011',
+        name: 'Servo Bracket',
+        description: 'Finished assembly',
+        isActive: true,
+        itemGroup: 'Group A',
+        unitOfMeasure: 'pcs',
+        itemType: 'produced',
+        defaultBomId: null,
+        defaultBomName: null,
+        defaultRoutingId: null,
+        defaultRoutingName: null,
+        defaultPrice: 120,
+        reorderPoint: 0,
+        safetyStock: 0,
+        preferredVendorId: null,
+        preferredVendorName: null,
+        notes: null,
+        createdAt: '2026-03-12T08:00:00.000Z',
+        updatedAt: '2026-03-12T08:00:00.000Z',
+      },
+    ]);
+
+    listUnitOfMeasuresMock.mockResolvedValue([
+      { id: 1, name: 'pcs', baseUnit: null, conversionRate: 1, createdAt: '', updatedAt: '' },
+    ]);
+    listAuthUsersMock.mockRejectedValue(new Error('Forbidden'));
+    getCurrentUserMock.mockResolvedValue({
+      id: 7,
+      name: 'Office User',
+      email: 'office@impeasy.local',
+      isActive: true,
+      roles: ['office'],
+      createdAt: '2026-03-12T08:00:00.000Z',
+      updatedAt: '2026-03-12T08:00:00.000Z',
+    });
+    listSettingsEntriesMock.mockResolvedValue([]);
+
+    const newItem = {
+      id: 99,
+      code: 'NEW-99',
+      name: 'New Widget Grouped',
+      description: 'New product',
+      isActive: true,
+      itemGroup: null, // simulate API returning null even though we created from a grouped line
+      unitOfMeasure: 'pcs',
+      itemType: 'procured',
+      defaultBomId: null,
+      defaultBomName: null,
+      defaultRoutingId: null,
+      defaultRoutingName: null,
+      defaultPrice: 10,
+      reorderPoint: 0,
+      safetyStock: 0,
+      preferredVendorId: null,
+      preferredVendorName: null,
+      notes: null,
+      createdAt: '2026-03-12T08:00:00.000Z',
+      updatedAt: '2026-03-12T08:00:00.000Z',
+    };
+    createItemMock.mockResolvedValue(newItem);
+
+    render(<CustomerOrderWorkspace workspaceId="new" />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Create a new customer order' }),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Lines' }));
+
+    // set product group to activate filtered dropdown state
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Add new product group' })).toBeInTheDocument();
+    });
+
+    const groupSelect = screen.getAllByRole('combobox').find((el) => {
+      if (!(el instanceof HTMLSelectElement)) return false;
+      const options = Array.from(el.options).map((o) => o.textContent?.trim());
+      return options.some((t) => t === 'Select product group') && options.some((t) => t === 'Add new product group');
+    });
+    expect(groupSelect).toBeDefined();
+    fireEvent.change(groupSelect!, { target: { value: 'Group A' } });
+
+    const productSelect = screen.getAllByRole('combobox').find((el) => {
+      const options = Array.from((el as HTMLSelectElement).options).map((o) => o.textContent?.trim());
+      return options.some((t) => t === 'Add new product');
+    });
+    expect(productSelect).toBeDefined();
+    fireEvent.change(productSelect!, { target: { value: '__add_new__' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-product-dialog')).toBeInTheDocument();
+      expect(screen.getByText('Create Product')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByRole('textbox', { name: /Part Desc/i }), {
+      target: { value: 'New Widget Grouped' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(createItemMock).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Create Product')).not.toBeInTheDocument();
+    });
+
+    // Newly created product should still be visible/selected in the filtered dropdown
+    await waitFor(() => {
+      expect(screen.getByText(/New Widget Grouped/)).toBeInTheDocument();
+    });
+  });
 });
