@@ -1,6 +1,7 @@
 'use client';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
@@ -9,6 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import MuiButton from '@mui/material/Button';
@@ -117,7 +119,7 @@ export function InlineCreateItemDialog({
   const handleDialogClose: DialogProps['onClose'] = (_event, reason) => {
     // Prevent accidental close when clicking the grey backdrop or pressing ESC.
     // Users frequently click outside while filling forms; closing would lose progress.
-    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+    if (reason === 'backdropClick') {
       return;
     }
     handleBack();
@@ -171,9 +173,15 @@ export function InlineCreateItemDialog({
         maxWidth="sm"
         fullWidth
         data-testid="create-product-dialog"
-        slotProps={{ backdrop: { sx: { zIndex: 1300 } } }}
       >
-        <DialogTitle id="create-product-dialog-title">Create Product</DialogTitle>
+        <DialogTitle id="create-product-dialog-title">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+            <span>Create Product</span>
+            <IconButton aria-label="Close" onClick={handleBack} size="small">
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
         <DialogContent>
           {error ? <p role="alert" style={{ color: 'var(--color-error)' }}>{error}</p> : null}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
