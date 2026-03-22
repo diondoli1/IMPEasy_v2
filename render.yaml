@@ -24,14 +24,14 @@ services:
           name: impeasy-db
           property: connectionString
 
-  # Frontend (Next.js)
+  # Frontend (Next.js) — Root Directory must be repo root (empty), not apps/web
   - type: web
     name: IMPEasy_v2-Web
     runtime: node
     region: frankfurt
     plan: free
-    buildCommand: npm install && npm run build --workspace=@impeasy/web
-    startCommand: npm run start --workspace=@impeasy/web
+    buildCommand: npm install && npm run build:web
+    startCommand: npm run start:web
     envVars:
       - key: NEXT_PUBLIC_API_BASE_URL
         value: https://impeasy-v2.onrender.com

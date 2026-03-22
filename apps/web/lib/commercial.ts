@@ -254,8 +254,13 @@ export function getPrimaryContact(customer: Customer | null | undefined) {
 }
 
 export function hydrateQuoteInput(quote: Quote): Required<QuoteInput> {
+  const status: QuoteInput['status'] =
+    quote.status === 'draft' || quote.status === 'sent' || quote.status === 'approved'
+      ? quote.status
+      : 'draft';
   return {
     customerId: quote.customerId,
+    status,
     quoteDate: toDateInputValue(quote.quoteDate),
     validityDate: toDateInputValue(quote.validityDate),
     promisedDate: toDateInputValue(quote.promisedDate),
@@ -326,6 +331,7 @@ export function buildDraftQuote(customer: Customer | null): Required<QuoteInput>
 
   return {
     customerId: customer?.id ?? 0,
+    status: 'draft',
     quoteDate: toDateInputValue(new Date().toISOString()),
     validityDate: '',
     promisedDate: '',

@@ -227,13 +227,19 @@ export function FormGrid({
   columns = 1,
 }: {
   children: ReactNode;
-  columns?: 1 | 2;
+  columns?: 1 | 2 | 3;
 }): JSX.Element {
+  const gridTemplateColumns =
+    columns === 3
+      ? { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }
+      : columns === 2
+        ? { xs: '1fr', sm: '1fr 1fr' }
+        : '1fr';
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: columns === 2 ? { xs: '1fr', sm: '1fr 1fr' } : '1fr',
+        gridTemplateColumns,
         gap: 2,
       }}
     >

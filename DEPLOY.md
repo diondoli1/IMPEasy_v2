@@ -25,13 +25,37 @@
 3. **Trigger a deploy**  
    After saving, use **Manual Deploy** → **Deploy latest commit** so the API builds and runs with the new build command and `DATABASE_URL`.
 
-## Frontend
+## Frontend (Next.js) on Render
 
-The **IMPEasy_v2-Web** service is already configured with:
+The **IMPEasy_v2-Web** service needs a **production build** before `next start`. If you see *Could not find a production build in the '.next' directory*, the build step did not run in the same tree as the start command (wrong **Root Directory** or build command).
+
+1. **Root Directory**  
+   Leave **blank** (repository root — the folder that contains the root `package.json` and `package-lock.json`).  
+   Do **not** set Root Directory to `apps/web` unless you use the alternate commands below.
+
+2. **Build Command**
+   ```bash
+   npm install && npm run build:web
+   ```
+   (`build:web` runs `next build` for `apps/web` and creates `apps/web/.next`.)
+
+3. **Start Command**
+   ```bash
+   npm run start:web
+   ```
+
+**If Root Directory is `apps/web`** (not recommended for this monorepo), use instead:
+```bash
+npm install && npm run build
+```
+and
+```bash
+npm run start
+```
+
+Environment (already expected):
 
 - `NEXT_PUBLIC_API_BASE_URL=https://impeasy-v2.onrender.com`
-
-So the app talks to the API at that URL. No extra steps unless you change the API URL.
 
 ## Summary
 
