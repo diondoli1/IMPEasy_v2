@@ -14,7 +14,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    buildCommand: yarn && yarn build
+    buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
       - key: AUTH_TOKEN_SECRET

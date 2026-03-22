@@ -11,7 +11,7 @@
 1. **Set build command**  
    In [IMPEasy_v2](https://dashboard.render.com/web/srv-d6rivsvfte5s73eo47ng) → **Settings** → **Build & Deploy** → **Build Command**, set:
    ```bash
-   yarn && yarn build
+   npm install && npm run build
    ```
    (This installs deps, runs Prisma generate + migrate, and builds the API.)
 
