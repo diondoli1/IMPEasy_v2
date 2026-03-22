@@ -8,7 +8,20 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MuiButton from '@mui/material/Button';
 
 import { PageShell } from '../../../components/ui/page-templates';
-import { Badge, Button, DataTable, EmptyState, Notice, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../components/ui/primitives';
+import {
+  Badge,
+  Button,
+  DataTable,
+  EmptyState,
+  Field,
+  FormGrid,
+  Notice,
+  Panel,
+  StatCard,
+  StatGrid,
+  Toolbar,
+  ToolbarGroup,
+} from '../../../components/ui/primitives';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
 import {
   createShipmentInvoice,
@@ -199,51 +212,57 @@ export default function ShipmentDetailPage(): JSX.Element {
                   })();
                 }}
               >
-                <label>
-                  Ship Date
-                  <input
-                    type="date"
-                    value={headerForm.shipDate}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({ ...current, shipDate: event.target.value }))
-                    }
-                  />
-                </label>
-                <label>
-                  Carrier / Method
-                  <input
-                    value={headerForm.carrierMethod}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({
-                        ...current,
-                        carrierMethod: event.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label>
-                  Tracking
-                  <input
-                    value={headerForm.trackingNumber}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({
-                        ...current,
-                        trackingNumber: event.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label>
-                  Notes
+                <FormGrid columns={2}>
+                  <Field label="Ship date">
+                    <input
+                      className="control"
+                      type="date"
+                      value={headerForm.shipDate}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({ ...current, shipDate: event.target.value }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Carrier / method">
+                    <input
+                      className="control"
+                      value={headerForm.carrierMethod}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({
+                          ...current,
+                          carrierMethod: event.target.value,
+                        }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Tracking">
+                    <input
+                      className="control"
+                      value={headerForm.trackingNumber}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({
+                          ...current,
+                          trackingNumber: event.target.value,
+                        }))
+                      }
+                    />
+                  </Field>
+                </FormGrid>
+                <Field label="Notes">
                   <textarea
+                    className="control"
                     rows={4}
                     value={headerForm.notes}
                     onChange={(event) =>
                       setHeaderForm((current) => ({ ...current, notes: event.target.value }))
                     }
                   />
-                </label>
-                <Button type="submit">Save header</Button>
+                </Field>
+                <div>
+                  <Button type="submit" tone="primary">
+                    Save header
+                  </Button>
+                </div>
               </form>
             </Panel>
 
@@ -340,57 +359,71 @@ export default function ShipmentDetailPage(): JSX.Element {
                           })();
                         }}
                       >
-                        <select
-                          value={allocationForms[line.id]?.stockLotId ?? ''}
-                          onChange={(event) =>
-                            setAllocationForms((forms) => ({
-                              ...forms,
-                              [line.id]: {
-                                stockLotId: event.target.value,
-                                quantity: forms[line.id]?.quantity ?? '',
-                                notes: forms[line.id]?.notes ?? '',
-                              },
-                            }))
-                          }
-                        >
-                          <option value="">Select lot</option>
-                          {line.availableLots.map((lot) => (
-                            <option key={lot.id} value={String(lot.id)}>
-                              {lot.lotNumber} ({lot.availableQuantity})
-                            </option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          min={1}
-                          value={allocationForms[line.id]?.quantity ?? ''}
-                          onChange={(event) =>
-                            setAllocationForms((forms) => ({
-                              ...forms,
-                              [line.id]: {
-                                stockLotId: forms[line.id]?.stockLotId ?? '',
-                                quantity: event.target.value,
-                                notes: forms[line.id]?.notes ?? '',
-                              },
-                            }))
-                          }
-                          placeholder="Pick quantity"
-                        />
-                        <input
-                          value={allocationForms[line.id]?.notes ?? ''}
-                          onChange={(event) =>
-                            setAllocationForms((forms) => ({
-                              ...forms,
-                              [line.id]: {
-                                stockLotId: forms[line.id]?.stockLotId ?? '',
-                                quantity: forms[line.id]?.quantity ?? '',
-                                notes: event.target.value,
-                              },
-                            }))
-                          }
-                          placeholder="Allocation notes"
-                        />
-                        <Button type="submit">Allocate lot</Button>
+                        <FormGrid columns={2}>
+                          <Field label="Lot">
+                            <select
+                              className="control"
+                              value={allocationForms[line.id]?.stockLotId ?? ''}
+                              onChange={(event) =>
+                                setAllocationForms((forms) => ({
+                                  ...forms,
+                                  [line.id]: {
+                                    stockLotId: event.target.value,
+                                    quantity: forms[line.id]?.quantity ?? '',
+                                    notes: forms[line.id]?.notes ?? '',
+                                  },
+                                }))
+                              }
+                            >
+                              <option value="">Select lot</option>
+                              {line.availableLots.map((lot) => (
+                                <option key={lot.id} value={String(lot.id)}>
+                                  {lot.lotNumber} ({lot.availableQuantity})
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field label="Quantity">
+                            <input
+                              className="control"
+                              type="number"
+                              min={1}
+                              value={allocationForms[line.id]?.quantity ?? ''}
+                              onChange={(event) =>
+                                setAllocationForms((forms) => ({
+                                  ...forms,
+                                  [line.id]: {
+                                    stockLotId: forms[line.id]?.stockLotId ?? '',
+                                    quantity: event.target.value,
+                                    notes: forms[line.id]?.notes ?? '',
+                                  },
+                                }))
+                              }
+                              placeholder="Pick quantity"
+                            />
+                          </Field>
+                        </FormGrid>
+                        <Field label="Allocation notes">
+                          <input
+                            className="control"
+                            value={allocationForms[line.id]?.notes ?? ''}
+                            onChange={(event) =>
+                              setAllocationForms((forms) => ({
+                                ...forms,
+                                [line.id]: {
+                                  stockLotId: forms[line.id]?.stockLotId ?? '',
+                                  quantity: forms[line.id]?.quantity ?? '',
+                                  notes: event.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        </Field>
+                        <div>
+                          <Button type="submit" tone="primary">
+                            Allocate lot
+                          </Button>
+                        </div>
                       </form>
                     ) : null}
                   </div>

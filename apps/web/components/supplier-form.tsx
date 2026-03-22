@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import type { Supplier, SupplierInput } from '../types/supplier';
+import { Button, FormGrid, Notice } from './ui/primitives';
 
 type SupplierFormProps = {
   initial?: Partial<Supplier>;
@@ -78,44 +79,87 @@ export function SupplierForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Name
-        <input value={name} onChange={(event) => setName(event.target.value)} name="name" />
-      </label>
-      <label>
-        Email
-        <input value={email} onChange={(event) => setEmail(event.target.value)} name="email" />
-      </label>
-      <label>
-        Phone
-        <input value={phone} onChange={(event) => setPhone(event.target.value)} name="phone" />
-      </label>
-      <label>
-        Payment Period
-        <input
-          value={paymentTerm}
-          onChange={(event) => setPaymentTerm(event.target.value)}
-          name="paymentTerm"
-          placeholder="e.g. Net 30"
-        />
-      </label>
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <div className="field">
+          <label className="field__label" htmlFor="supplier-name">
+            Name
+          </label>
+          <input
+            id="supplier-name"
+            className="control"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            name="name"
+          />
+        </div>
+        <div className="field">
+          <label className="field__label" htmlFor="supplier-email">
+            Email
+          </label>
+          <input
+            id="supplier-email"
+            className="control"
+            type="text"
+            inputMode="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            name="email"
+          />
+        </div>
+        <div className="field">
+          <label className="field__label" htmlFor="supplier-phone">
+            Phone
+          </label>
+          <input
+            id="supplier-phone"
+            className="control"
+            type="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            name="phone"
+          />
+        </div>
+        <div className="field">
+          <label className="field__label" htmlFor="supplier-payment-term">
+            Payment period
+          </label>
+          <input
+            id="supplier-payment-term"
+            className="control"
+            value={paymentTerm}
+            onChange={(event) => setPaymentTerm(event.target.value)}
+            name="paymentTerm"
+            placeholder="e.g. Net 30"
+          />
+        </div>
+      </FormGrid>
       {allowStatusChange ? (
-        <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <label className="field" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 0 }}>
           <input
             type="checkbox"
             checked={isActive}
             onChange={(event) => setIsActive(event.target.checked)}
             name="isActive"
+            aria-label="Active supplier"
           />
-          Active supplier
+          <span className="field__label" style={{ marginBottom: 0 }}>
+            Active supplier
+          </span>
         </label>
       ) : null}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+        {error ? (
+          <Notice title="Unable to save" tone="warning">
+            {error}
+          </Notice>
+        ) : null}
+        {success ? <Notice title="Success">{success}</Notice> : null}
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
-import { Badge, Button, DataTable, Field, Notice, Panel } from './ui/primitives';
+import { Badge, Button, ButtonLink, DataTable, Field, Notice, Panel } from './ui/primitives';
 import type { Invoice } from '../types/invoice';
 import type {
   Shipment,
@@ -20,7 +19,6 @@ type ShipmentCreationPanelProps = {
   shipments: Shipment[];
   invoicesByShipmentId: Record<number, Invoice | undefined>;
   onCreate: (input: ShipmentInput) => Promise<Shipment>;
-  onPack: (shipmentId: number) => Promise<Shipment>;
   onShip: (shipmentId: number) => Promise<Shipment>;
   onDeliver: (shipmentId: number) => Promise<Shipment>;
   onGenerateInvoice: (shipmentId: number) => Promise<Invoice>;
@@ -46,7 +44,6 @@ export function ShipmentCreationPanel({
   shipments,
   invoicesByShipmentId,
   onCreate,
-  onPack,
   onShip,
   onDeliver,
   onGenerateInvoice,
@@ -56,7 +53,7 @@ export function ShipmentCreationPanel({
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [transitioningShipment, setTransitioningShipment] = useState<{
-    action: 'pack' | 'ship' | 'deliver' | 'invoice' | 'pay';
+    action: 'ship' | 'deliver' | 'invoice' | 'pay';
     shipmentId: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -126,21 +123,6 @@ export function ShipmentCreationPanel({
       setError('Unable to create shipment.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePack = async (shipmentId: number): Promise<void> => {
-    setTransitioningShipment({ action: 'pack', shipmentId });
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const packed = await onPack(shipmentId);
-      setSuccess(`${formatShipmentLabel(packed)} picked.`);
-    } catch {
-      setError('Unable to pick shipment.');
-    } finally {
-      setTransitioningShipment(null);
     }
   };
 
@@ -347,9 +329,17 @@ export function ShipmentCreationPanel({
               },
             },
             {
-              header: 'Workspace',
-              width: '140px',
-              cell: (shipment) => <Link href={`/shipments/${shipment.id}`}>Open shipment</Link>,
+              header: 'Shipment',
+              width: '200px',
+              cell: (shipment) => (
+                <ButtonLink
+                  href={`/shipments/${shipment.id}`}
+                  tone="primary"
+                  aria-label={`Open shipment ${shipment.id}`}
+                >
+                  Open shipment
+                </ButtonLink>
+              ),
             },
             {
               header: 'Actions',
@@ -357,24 +347,12 @@ export function ShipmentCreationPanel({
               cell: (shipment) => {
                 const invoice = invoicesByShipmentId[shipment.id];
                 if (shipment.status === 'draft') {
-                  return (
-                    <Button
-                      onClick={() => void handlePack(shipment.id)}
-                      disabled={
-                        transitioningShipment?.shipmentId === shipment.id &&
-                        transitioningShipment.action === 'pack'
-                      }
-                    >
-                      {transitioningShipment?.shipmentId === shipment.id &&
-                      transitioningShipment.action === 'pack'
-                        ? 'Picking...'
-                        : 'Pick shipment'}
-                    </Button>
-                  );
+                  return <span className="muted-copy--small">Use shipment workspace to pick.</span>;
                 }
                 if (shipment.status === 'picked') {
                   return (
                     <Button
+                      aria-label={`Ship shipment ${shipment.id}`}
                       onClick={() => void handleShip(shipment.id)}
                       disabled={
                         transitioningShipment?.shipmentId === shipment.id &&
@@ -391,6 +369,7 @@ export function ShipmentCreationPanel({
                 if (shipment.status === 'shipped') {
                   return (
                     <Button
+                      aria-label={`Deliver shipment ${shipment.id}`}
                       onClick={() => void handleDeliver(shipment.id)}
                       disabled={
                         transitioningShipment?.shipmentId === shipment.id &&
@@ -407,6 +386,7 @@ export function ShipmentCreationPanel({
                 if (shipment.status === 'delivered' && !invoice) {
                   return (
                     <Button
+                      aria-label={`Generate invoice for shipment ${shipment.id}`}
                       onClick={() => void handleGenerateInvoice(shipment.id)}
                       disabled={
                         transitioningShipment?.shipmentId === shipment.id &&
@@ -423,6 +403,7 @@ export function ShipmentCreationPanel({
                 if (invoice?.status === 'issued') {
                   return (
                     <Button
+                      aria-label={`Mark invoice paid for shipment ${shipment.id}`}
                       onClick={() => void handleMarkInvoicePaid(shipment.id)}
                       disabled={
                         transitioningShipment?.shipmentId === shipment.id &&

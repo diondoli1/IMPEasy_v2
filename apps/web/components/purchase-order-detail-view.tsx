@@ -126,11 +126,18 @@ export function PurchaseOrderDetailView({
 
         {activeTab === 'lines' ? (
           <div className="page-stack">
-            <PurchaseOrderLineForm
-              items={items.map((item) => ({ id: item.id, name: item.name }))}
-              submitLabel="Add purchase order line"
-              onSubmit={onAddLine}
-            />
+            <Panel
+              title="Add purchase order line"
+              description="Select an item, quantity, and unit price, then add the line to this order."
+              muted
+              compactHeader
+            >
+              <PurchaseOrderLineForm
+                items={items.map((item) => ({ id: item.id, name: item.name }))}
+                submitLabel="Add purchase order line"
+                onSubmit={onAddLine}
+              />
+            </Panel>
             <DataTable
               columns={[
                 {

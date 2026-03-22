@@ -27,6 +27,7 @@ export type ButtonLinkProps = {
   children: ReactNode;
   href: string;
   tone?: ButtonTone;
+  'aria-label'?: string;
 };
 
 export type ButtonProps = {
@@ -35,6 +36,7 @@ export type ButtonProps = {
   tone?: ButtonTone;
   disabled?: boolean;
   onClick?: () => void;
+  'aria-label'?: string;
 };
 
 export type BadgeProps = {
@@ -114,9 +116,20 @@ function badgeToneToMuiColor(tone: BadgeTone): 'default' | 'primary' | 'secondar
   return 'default';
 }
 
-export function ButtonLink({ children, href, tone = 'secondary' }: ButtonLinkProps): JSX.Element {
+export function ButtonLink({
+  children,
+  href,
+  tone = 'secondary',
+  'aria-label': ariaLabel,
+}: ButtonLinkProps): JSX.Element {
   return (
-    <MuiButton component={Link} href={href} color={toneToMuiColor(tone)} variant={tone === 'primary' ? 'contained' : 'outlined'}>
+    <MuiButton
+      component={Link}
+      href={href}
+      color={toneToMuiColor(tone)}
+      variant={tone === 'primary' ? 'contained' : 'outlined'}
+      aria-label={ariaLabel}
+    >
       {children}
     </MuiButton>
   );
@@ -128,6 +141,7 @@ export function Button({
   tone = 'secondary',
   disabled,
   onClick,
+  'aria-label': ariaLabel,
 }: ButtonProps): JSX.Element {
   return (
     <MuiButton
@@ -136,6 +150,7 @@ export function Button({
       onClick={onClick}
       color={toneToMuiColor(tone)}
       variant={tone === 'primary' ? 'contained' : 'outlined'}
+      aria-label={ariaLabel}
     >
       {children}
     </MuiButton>
@@ -192,6 +207,7 @@ export function ToolbarGroup({ children }: { children: ReactNode }): JSX.Element
 export function Notice({ title, children, tone = 'default' }: NoticeProps): JSX.Element {
   return (
     <Paper
+      role={tone === 'warning' ? 'alert' : undefined}
       sx={{
         p: 2,
         mb: 2,

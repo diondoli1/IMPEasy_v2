@@ -25,7 +25,6 @@ import {
   listSalesOrderShipments,
   listSettingsEntries,
   listUnitOfMeasures,
-  packShipment,
   payShipmentInvoice,
   shipShipment,
   updateQuote,
@@ -64,7 +63,6 @@ vi.mock('../lib/api', () => ({
   listSalesOrderShipments: vi.fn(),
   listSettingsEntries: vi.fn(),
   listUnitOfMeasures: vi.fn(),
-  packShipment: vi.fn(),
   payShipmentInvoice: vi.fn(),
   shipShipment: vi.fn(),
   updateQuote: vi.fn(),
@@ -93,7 +91,6 @@ const listProductGroupsMock = vi.mocked(listProductGroups);
 const listSalesOrderShipmentsMock = vi.mocked(listSalesOrderShipments);
 const listSettingsEntriesMock = vi.mocked(listSettingsEntries);
 const listUnitOfMeasuresMock = vi.mocked(listUnitOfMeasures);
-const packShipmentMock = vi.mocked(packShipment);
 const payShipmentInvoiceMock = vi.mocked(payShipmentInvoice);
 const shipShipmentMock = vi.mocked(shipShipment);
 const updateQuoteMock = vi.mocked(updateQuote);
@@ -125,7 +122,6 @@ describe('CustomerOrderWorkspace', () => {
     listSalesOrderShipmentsMock.mockReset();
     listSettingsEntriesMock.mockReset();
     listUnitOfMeasuresMock.mockReset();
-    packShipmentMock.mockReset();
     payShipmentInvoiceMock.mockReset();
     shipShipmentMock.mockReset();
     updateQuoteMock.mockReset();

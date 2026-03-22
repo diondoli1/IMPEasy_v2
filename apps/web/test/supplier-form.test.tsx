@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { SupplierForm } from '../components/supplier-form';
 
@@ -17,12 +18,9 @@ describe('SupplierForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Name is required.');
 
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
-      target: { value: 'Nova Metals' },
-    });
-    fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), {
-      target: { value: 'invalid-email' },
-    });
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Name'), 'Nova Metals');
+    await user.type(screen.getByLabelText('Email'), 'invalid-email');
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Email must be valid.');
