@@ -1,6 +1,6 @@
 # Render Blueprint - IMPEasy v2
 # Deploy: Connect this repo in Render Dashboard → New → Blueprint
-# Or update existing IMPEasy_v2 service build command to: yarn && yarn build
+# Or update existing IMPEasy_v2 service build command to: yarn && yarn build (includes seed)
 
 databases:
   - name: impeasy-db

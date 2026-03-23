@@ -6,7 +6,7 @@
     "apps/web"
   ],
   "scripts": {
-    "build": "npx prisma generate && npx prisma migrate deploy && npm run build --workspace=@impeasy/api",
+    "build": "npx prisma generate && npx prisma migrate deploy && npm run seed:admin && npm run build --workspace=@impeasy/api",
     "build:web": "npm run build --workspace=@impeasy/web",
     "start": "npm run start --workspace=@impeasy/api",
     "start:web": "npm run start --workspace=@impeasy/web",

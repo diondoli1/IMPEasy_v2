@@ -13,7 +13,7 @@
    ```bash
    npm install && npm run build
    ```
-   (This installs deps, runs Prisma generate + migrate, and builds the API.)
+   (This installs deps, runs Prisma generate + migrate, seeds admin/operator users, and builds the API.)
 
 2. **Connect the database**  
    - Open [impeasy-db](https://dashboard.render.com/d/dpg-d6rjbei4d50c73b6psn0-a) → **Connect** → copy **Internal Database URL**.  
@@ -66,3 +66,10 @@ Environment (already expected):
 | Database  | Render Postgres `impeasy-db` (link via `DATABASE_URL` on the API service) |
 
 After the API deploy succeeds (and DB is linked), open https://impeasy-v2-web.onrender.com to use the app.
+
+## Default login credentials
+
+The deploy build now runs `npm run seed:admin`, so these users are available after each successful API deploy:
+
+- `admin@impeasy.local` / `Admin123!`
+- `operator@impeasy.local` / `Operator123!`
