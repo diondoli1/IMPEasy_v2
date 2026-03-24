@@ -1,0 +1,55 @@
+name: Seed Production Demo Data
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  seed-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      IMPEASY_API_URL: https://impeasy-v2.onrender.com
+      IMPEASY_WEB_URL: https://impeasy-v2-web.onrender.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for API and run seeds with retries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          run_with_retry() {
+            local command="$1"
+            local attempts=20
+            local delay=30
+            local count=1
+
+            until eval "$command"; do
+              if [ "$count" -ge "$attempts" ]; then
+                echo "Command failed after ${attempts} attempts: $command"
+                return 1
+              fi
+              echo "Attempt ${count}/${attempts} failed. Retrying in ${delay}s..."
+              sleep "$delay"
+              count=$((count + 1))
+            done
+          }
+
+          run_with_retry "npm run seed:mvp-010-users"
+          run_with_retry "npm run seed:mvp-020-demo"
+          run_with_retry "npm run seed:mvp-030-demo"
+          run_with_retry "npm run seed:kiosk-ready"
+          run_with_retry "npm run seed:mvp-040-demo"
