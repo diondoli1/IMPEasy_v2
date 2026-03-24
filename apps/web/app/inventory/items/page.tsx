@@ -49,6 +49,7 @@ export default function InventoryItemsPage(): JSX.Element {
     <PageShell
       eyebrow="Inventory"
       title="Inventory items"
+      description="Track and review inventory-item records with current on-hand quantities."
       actions={<ButtonLink href="/inventory/items/new">Track inventory item</ButtonLink>}
     >
       {inventoryItems.length === 0 ? (

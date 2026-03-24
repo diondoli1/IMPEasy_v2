@@ -53,6 +53,7 @@ export default function ItemDetailPage(): JSX.Element {
     <PageShell
       eyebrow="Stock"
       title={`Item #${item.id}`}
+      description="Manage the item record and its default routing linkage."
       actions={<ButtonLink href="/items">Back to items</ButtonLink>}
     >
       <Panel title="Item details">

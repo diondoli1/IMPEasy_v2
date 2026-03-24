@@ -38,6 +38,7 @@ export default function ItemsPage(): JSX.Element {
     <PageShell
       eyebrow="Stock"
       title="Items"
+      description="Browse and manage item master records used across sales, purchasing, and production."
       actions={<ButtonLink href="/items/new">Create item</ButtonLink>}
     >
       {items.length === 0 ? (
