@@ -224,13 +224,6 @@ where "itemId" in (
   where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
 );
 
-delete from inventory_items
-where "itemId" in (
-  select id
-  from items
-  where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
-);
-
 delete from item_vendor_terms
 where "supplierId" in (
     select id
@@ -242,6 +235,29 @@ where "supplierId" in (
     from items
     where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
   );
+
+delete from bom_items
+where "bomId" in (
+    select id
+    from boms
+    where "itemId" in (
+      select id
+      from items
+      where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
+    )
+  )
+  or "itemId" in (
+    select id
+    from items
+    where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
+  );
+
+delete from boms
+where "itemId" in (
+  select id
+  from items
+  where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
+);
 
 update items
 set "defaultRoutingId" = null,
@@ -271,9 +287,6 @@ where "itemId" in (
   from items
   where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT')
 );
-
-delete from items
-where code in ('RM-MVP040-ALU', 'FG-MVP040-KIT');
 
 delete from customers
 where code = 'CUS-MVP040';
