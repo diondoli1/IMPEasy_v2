@@ -118,6 +118,19 @@ where "stockLotId" in (
   )
 );
 
+delete from material_bookings
+where "stockLotId" in (
+  select id
+  from stock_lots
+  where "sourceWorkOrderId" in (
+    select wo.id
+    from work_orders wo
+    join sales_order_lines sol on sol.id = wo."salesOrderLineId"
+    join sales_orders so on so.id = sol."salesOrderId"
+    where so."customerReference" = 'MVP040-SHIP-DEMO'
+  )
+);
+
 delete from stock_lots
 where "sourceWorkOrderId" in (
   select wo.id
@@ -188,6 +201,13 @@ where "stockLotId" in (
 );
 
 delete from inventory_transactions
+where "stockLotId" in (
+  select id
+  from stock_lots
+  where "lotNumber" like 'LOT-MVP040-%'
+);
+
+delete from material_bookings
 where "stockLotId" in (
   select id
   from stock_lots
