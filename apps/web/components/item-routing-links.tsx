@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
+import { Button, ButtonLink, DataTable, EmptyState, Notice, Panel } from './ui/primitives';
 import type { Routing } from '../types/routing';
 
 type ItemRoutingLinksProps = {
@@ -23,69 +24,59 @@ export function ItemRoutingLinks({
 
   if (routings.length === 0) {
     return (
-      <div>
-        <p>No routings linked to this item.</p>
-        <p>
-          <Link href="/routings/new">Create routing</Link>
-        </p>
-      </div>
+      <EmptyState
+        title="No routings linked to this item"
+        description="Create a routing and set one as default for this item."
+        action={<ButtonLink href="/routings/new">Create routing</ButtonLink>}
+      />
     );
   }
 
   return (
-    <div>
-      <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th align="left">ID</th>
-            <th align="left">Name</th>
-            <th align="left">Status</th>
-            <th align="left">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {routings.map((routing) => {
-            const isDefault = routing.id === defaultRoutingId;
-            const isLoading = loadingRoutingId === routing.id;
-
-            return (
-              <tr key={routing.id}>
-                <td>{routing.id}</td>
-                <td>
-                  <Link href={`/routings/${routing.id}`}>{routing.name}</Link>
-                </td>
-                <td>{routing.status}</td>
-                <td>
-                  <button
-                    type="button"
-                    disabled={isDefault || isLoading}
-                    onClick={() => {
-                      void (async () => {
-                        setLoadingRoutingId(routing.id);
-                        setError(null);
-                        try {
-                          await onSetDefault(routing.id);
-                        } catch {
-                          setError('Unable to set default routing.');
-                        } finally {
-                          setLoadingRoutingId(null);
-                        }
-                      })();
-                    }}
-                  >
-                    {isDefault ? 'Default' : isLoading ? 'Saving...' : 'Set default'}
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {error ? <p role="alert">{error}</p> : null}
-      <p>
-        <Link href="/routings/new">Create routing</Link>
-      </p>
-      <p>Item #{itemId} can have one default routing.</p>
-    </div>
+    <Panel title="Routings" description={`Item #${itemId} can have one default routing.`}>
+      <DataTable
+        columns={[
+          { header: 'ID', cell: (routing) => routing.id },
+          { header: 'Name', cell: (routing) => <Link href={`/routings/${routing.id}`}>{routing.name}</Link> },
+          { header: 'Status', cell: (routing) => routing.status },
+          {
+            header: 'Action',
+            cell: (routing) => {
+              const isDefault = routing.id === defaultRoutingId;
+              const isLoading = loadingRoutingId === routing.id;
+              return (
+                <Button
+                  type="button"
+                  disabled={isDefault || isLoading}
+                  onClick={() => {
+                    void (async () => {
+                      setLoadingRoutingId(routing.id);
+                      setError(null);
+                      try {
+                        await onSetDefault(routing.id);
+                      } catch {
+                        setError('Unable to set default routing.');
+                      } finally {
+                        setLoadingRoutingId(null);
+                      }
+                    })();
+                  }}
+                >
+                  {isDefault ? 'Default' : isLoading ? 'Saving...' : 'Set default'}
+                </Button>
+              );
+            },
+          },
+        ]}
+        rows={routings}
+        getRowKey={(routing) => String(routing.id)}
+      />
+      {error ? (
+        <Notice title="Unable to set default routing" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      <ButtonLink href="/routings/new">Create routing</ButtonLink>
+    </Panel>
   );
 }

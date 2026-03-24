@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, FormGrid, Notice } from './ui/primitives';
 import type { RoutingOperationInput } from '../types/routing';
 
 type RoutingOperationFormProps = {
@@ -63,35 +64,42 @@ export function RoutingOperationForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Sequence
-        <input
-          type="number"
-          min={1}
-          value={sequence}
-          onChange={(event) => setSequence(event.target.value)}
-          name="sequence"
-        />
-      </label>
-      <label>
-        Name
-        <input value={name} onChange={(event) => setName(event.target.value)} name="name" />
-      </label>
-      <label>
-        Description
-        <textarea
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          name="description"
-          rows={3}
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Sequence">
+          <input
+            className="control"
+            type="number"
+            min={1}
+            value={sequence}
+            onChange={(event) => setSequence(event.target.value)}
+            name="sequence"
+          />
+        </Field>
+        <Field label="Name">
+          <input className="control" value={name} onChange={(event) => setName(event.target.value)} name="name" />
+        </Field>
+        <Field label="Description">
+          <textarea
+            className="control"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            name="description"
+            rows={3}
+          />
+        </Field>
+      </FormGrid>
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to save routing operation" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

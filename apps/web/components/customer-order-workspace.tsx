@@ -21,7 +21,6 @@ import {
   listProductGroups,
   listSalesOrderShipments,
   listSettingsEntries,
-  packShipment,
   payShipmentInvoice,
   shipShipment,
   updateQuote,
@@ -1358,14 +1357,6 @@ export function CustomerOrderWorkspace({
                   getSalesOrder(salesOrder.id).then((data) => setSalesOrder(data)),
                 ]);
                 return created;
-              }}
-              onPack={async (shipmentId) => {
-                const updated = await packShipment(shipmentId);
-                await Promise.all([
-                  loadSalesOrderShippingWorkspace(salesOrder.id),
-                  getSalesOrder(salesOrder.id).then((data) => setSalesOrder(data)),
-                ]);
-                return updated;
               }}
               onShip={async (shipmentId) => {
                 const updated = await shipShipment(shipmentId);

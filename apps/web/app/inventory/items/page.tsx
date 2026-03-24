@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
+import { PageShell } from '../../../components/ui/page-templates';
+import { ButtonLink, DataTable, EmptyState, Panel } from '../../../components/ui/primitives';
 import { listInventoryItems, listItems } from '../../../lib/api';
 import type { InventoryItem } from '../../../types/inventory';
 import type { Item } from '../../../types/item';
@@ -44,37 +46,32 @@ export default function InventoryItemsPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <h1>Inventory Items</h1>
-      <p>
-        <Link href="/inventory/items/new">Track inventory item</Link>
-      </p>
+    <PageShell
+      eyebrow="Inventory"
+      title="Inventory items"
+      actions={<ButtonLink href="/inventory/items/new">Track inventory item</ButtonLink>}
+    >
       {inventoryItems.length === 0 ? (
-        <p>No inventory items found.</p>
+        <EmptyState title="No inventory items found" description="Track an inventory item to begin stock control." />
       ) : (
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">ID</th>
-              <th align="left">Item</th>
-              <th align="left">Item ID</th>
-              <th align="left">Quantity On Hand</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventoryItems.map((inventoryItem) => (
-              <tr key={inventoryItem.id}>
-                <td>
+        <Panel title="Tracked items">
+          <DataTable
+            columns={[
+              {
+                header: 'ID',
+                cell: (inventoryItem) => (
                   <Link href={`/inventory/items/${inventoryItem.id}`}>{inventoryItem.id}</Link>
-                </td>
-                <td>{itemNameMap.get(inventoryItem.itemId) ?? '-'}</td>
-                <td>{inventoryItem.itemId}</td>
-                <td>{inventoryItem.quantityOnHand}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                ),
+              },
+              { header: 'Item', cell: (inventoryItem) => itemNameMap.get(inventoryItem.itemId) ?? '-' },
+              { header: 'Item ID', cell: (inventoryItem) => inventoryItem.itemId },
+              { header: 'Quantity On Hand', cell: (inventoryItem) => inventoryItem.quantityOnHand },
+            ]}
+            rows={inventoryItems}
+            getRowKey={(inventoryItem) => String(inventoryItem.id)}
+          />
+        </Panel>
       )}
-    </section>
+    </PageShell>
   );
 }

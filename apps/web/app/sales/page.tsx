@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
+import { PageShell } from '../../components/ui/page-templates';
+import { DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../components/ui/primitives';
 import { getSalesReport } from '../../lib/api';
 import type { SalesReportResponse } from '../../types/sales-order';
 
@@ -58,92 +60,52 @@ export default function SalesPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <h1>Sales Report</h1>
-      <p>
-        Read-only commercial dashboard for ordered, shipped, invoiced, paid, and outstanding sales
-        metrics.
-      </p>
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-          marginBottom: 24,
-        }}
-      >
+    <PageShell
+      eyebrow="Sales"
+      title="Sales report"
+      description="Read-only commercial dashboard for ordered, shipped, invoiced, paid, and outstanding sales metrics."
+    >
+      <StatGrid>
         {SUMMARY_CARDS.map((card) => (
-          <article
-            key={card.key}
-            style={{
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              borderRadius: 8,
-              padding: 16,
-            }}
-          >
-            <p style={{ margin: 0, color: '#475569', fontSize: 14 }}>{card.label}</p>
-            <strong style={{ display: 'block', fontSize: 24, marginTop: 6 }}>
-              {report.summary[card.key]}
-            </strong>
-          </article>
+          <StatCard key={card.key} label={card.label} value={report.summary[card.key]} />
         ))}
-      </div>
+      </StatGrid>
       {report.orders.length === 0 ? (
-        <p>No sales orders found.</p>
+        <EmptyState title="No sales orders found" description="Sales report rows will appear when orders are created." />
       ) : (
-        <table
-          cellPadding={8}
-          style={{
-            borderCollapse: 'collapse',
-            width: '100%',
-            background: '#ffffff',
-            border: '1px solid #cbd5e1',
-          }}
-        >
-          <thead style={{ background: '#e2e8f0' }}>
-            <tr>
-              <th align="left">Order</th>
-              <th align="left">Customer</th>
-              <th align="left">Status</th>
-              <th align="left">Ordered</th>
-              <th align="left">Shipped</th>
-              <th align="left">Invoices</th>
-              <th align="left">Shipment Counts</th>
-              <th align="left">Updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.orders.map((order) => (
-              <tr key={order.salesOrderId} style={{ borderTop: '1px solid #e2e8f0' }}>
-                <td>
-                  <Link href={`/sales-orders/${order.salesOrderId}`}>
-                    Sales order #{order.salesOrderId}
-                  </Link>
-                  <div style={{ color: '#64748b', fontSize: 12 }}>Quote #{order.quoteId}</div>
-                </td>
-                <td>{order.customerName}</td>
-                <td>{order.salesOrderStatus}</td>
-                <td>
-                  Qty {order.orderedQuantity} / Amount {order.orderedAmount}
-                </td>
-                <td>
-                  Qty {order.shippedQuantity} / Amount {order.shippedAmount}
-                </td>
-                <td>
-                  Issued {order.invoiceIssuedAmount} / Paid {order.invoicePaidAmount} / Outstanding{' '}
-                  {order.outstandingInvoiceAmount}
-                </td>
-                <td>
-                  Total {order.shipmentCount} / Delivered {order.deliveredShipmentCount} / Invoices
-                  {' '}Issued {order.invoiceIssuedCount} / Paid {order.invoicePaidCount}
-                </td>
-                <td>{formatUpdatedAt(order.updatedAt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Panel title="Orders">
+          <DataTable
+            columns={[
+              {
+                header: 'Order',
+                cell: (order) => (
+                  <div className="stack stack--tight">
+                    <Link href={`/sales-orders/${order.salesOrderId}`}>Sales order #{order.salesOrderId}</Link>
+                    <span className="muted-copy--small">Quote #{order.quoteId}</span>
+                  </div>
+                ),
+              },
+              { header: 'Customer', cell: (order) => order.customerName },
+              { header: 'Status', cell: (order) => order.salesOrderStatus },
+              { header: 'Ordered', cell: (order) => `Qty ${order.orderedQuantity} / Amount ${order.orderedAmount}` },
+              { header: 'Shipped', cell: (order) => `Qty ${order.shippedQuantity} / Amount ${order.shippedAmount}` },
+              {
+                header: 'Invoices',
+                cell: (order) =>
+                  `Issued ${order.invoiceIssuedAmount} / Paid ${order.invoicePaidAmount} / Outstanding ${order.outstandingInvoiceAmount}`,
+              },
+              {
+                header: 'Shipment Counts',
+                cell: (order) =>
+                  `Total ${order.shipmentCount} / Delivered ${order.deliveredShipmentCount} / Issued ${order.invoiceIssuedCount} / Paid ${order.invoicePaidCount}`,
+              },
+              { header: 'Updated', cell: (order) => formatUpdatedAt(order.updatedAt) },
+            ]}
+            rows={report.orders}
+            getRowKey={(order) => String(order.salesOrderId)}
+          />
+        </Panel>
       )}
-    </section>
+    </PageShell>
   );
 }

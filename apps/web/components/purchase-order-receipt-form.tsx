@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, Notice } from './ui/primitives';
 import type { PurchaseOrderLineReceiptInput } from '../types/purchase-order-line';
 
 type PurchaseOrderReceiptFormProps = {
@@ -82,14 +83,14 @@ export function PurchaseOrderReceiptForm({
   };
 
   if (maxQuantity < 1) {
-    return <p>Fully received.</p>;
+    return <span className="muted-copy--small">Fully received.</span>;
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} style={{ display: 'grid', gap: 8, minWidth: 220 }}>
-      <label>
-        Receipt Quantity
+    <form noValidate onSubmit={handleSubmit} className="page-stack">
+      <Field label="Receipt Quantity">
         <input
+          className="control control--dense"
           type="number"
           min={1}
           max={maxQuantity}
@@ -97,11 +98,11 @@ export function PurchaseOrderReceiptForm({
           onChange={(event) => setQuantity(event.target.value)}
           name="quantity"
         />
-      </label>
+      </Field>
       {existingLots.length > 0 ? (
-        <label>
-          Existing Lot
+        <Field label="Existing Lot">
           <select
+            className="control control--dense"
             value={existingLotId}
             onChange={(event) => setExistingLotId(event.target.value)}
             name="existingLotId"
@@ -113,11 +114,11 @@ export function PurchaseOrderReceiptForm({
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       ) : null}
-      <label>
-        Lot Number
+      <Field label="Lot Number">
         <input
+          className="control control--dense"
           type="text"
           value={lotNumber}
           onChange={(event) => setLotNumber(event.target.value)}
@@ -125,31 +126,37 @@ export function PurchaseOrderReceiptForm({
           placeholder="LOT-2026-001"
           disabled={Boolean(existingLotId)}
         />
-      </label>
-      <label>
-        Receipt Date
+      </Field>
+      <Field label="Receipt Date">
         <input
+          className="control control--dense"
           type="date"
           value={receiptDate}
           onChange={(event) => setReceiptDate(event.target.value)}
           name="receiptDate"
         />
-      </label>
-      <label>
-        Notes
+      </Field>
+      <Field label="Notes">
         <input
+          className="control control--dense"
           type="text"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           name="notes"
           placeholder="Optional"
         />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+      </Field>
+      <div>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to receive line" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

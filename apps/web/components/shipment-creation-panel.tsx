@@ -20,7 +20,6 @@ type ShipmentCreationPanelProps = {
   shipments: Shipment[];
   invoicesByShipmentId: Record<number, Invoice | undefined>;
   onCreate: (input: ShipmentInput) => Promise<Shipment>;
-  onPack: (shipmentId: number) => Promise<Shipment>;
   onShip: (shipmentId: number) => Promise<Shipment>;
   onDeliver: (shipmentId: number) => Promise<Shipment>;
   onGenerateInvoice: (shipmentId: number) => Promise<Invoice>;
@@ -46,7 +45,6 @@ export function ShipmentCreationPanel({
   shipments,
   invoicesByShipmentId,
   onCreate,
-  onPack,
   onShip,
   onDeliver,
   onGenerateInvoice,
@@ -56,7 +54,7 @@ export function ShipmentCreationPanel({
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [transitioningShipment, setTransitioningShipment] = useState<{
-    action: 'pack' | 'ship' | 'deliver' | 'invoice' | 'pay';
+    action: 'ship' | 'deliver' | 'invoice' | 'pay';
     shipmentId: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -126,21 +124,6 @@ export function ShipmentCreationPanel({
       setError('Unable to create shipment.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePack = async (shipmentId: number): Promise<void> => {
-    setTransitioningShipment({ action: 'pack', shipmentId });
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const packed = await onPack(shipmentId);
-      setSuccess(`${formatShipmentLabel(packed)} picked.`);
-    } catch {
-      setError('Unable to pick shipment.');
-    } finally {
-      setTransitioningShipment(null);
     }
   };
 
@@ -357,20 +340,7 @@ export function ShipmentCreationPanel({
               cell: (shipment) => {
                 const invoice = invoicesByShipmentId[shipment.id];
                 if (shipment.status === 'draft') {
-                  return (
-                    <Button
-                      onClick={() => void handlePack(shipment.id)}
-                      disabled={
-                        transitioningShipment?.shipmentId === shipment.id &&
-                        transitioningShipment.action === 'pack'
-                      }
-                    >
-                      {transitioningShipment?.shipmentId === shipment.id &&
-                      transitioningShipment.action === 'pack'
-                        ? 'Picking...'
-                        : 'Pick shipment'}
-                    </Button>
-                  );
+                  return <span className="muted-copy--small">No action</span>;
                 }
                 if (shipment.status === 'picked') {
                   return (

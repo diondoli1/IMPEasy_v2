@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, FormGrid, Notice } from './ui/primitives';
 import type { Supplier, SupplierInput } from '../types/supplier';
 
 type SupplierFormProps = {
@@ -78,30 +79,44 @@ export function SupplierForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Name
-        <input value={name} onChange={(event) => setName(event.target.value)} name="name" />
-      </label>
-      <label>
-        Email
-        <input value={email} onChange={(event) => setEmail(event.target.value)} name="email" />
-      </label>
-      <label>
-        Phone
-        <input value={phone} onChange={(event) => setPhone(event.target.value)} name="phone" />
-      </label>
-      <label>
-        Payment Period
-        <input
-          value={paymentTerm}
-          onChange={(event) => setPaymentTerm(event.target.value)}
-          name="paymentTerm"
-          placeholder="e.g. Net 30"
-        />
-      </label>
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Name">
+          <input
+            className="control"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            name="name"
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            className="control"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            name="email"
+          />
+        </Field>
+        <Field label="Phone">
+          <input
+            className="control"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            name="phone"
+          />
+        </Field>
+        <Field label="Payment Period">
+          <input
+            className="control"
+            value={paymentTerm}
+            onChange={(event) => setPaymentTerm(event.target.value)}
+            name="paymentTerm"
+            placeholder="e.g. Net 30"
+          />
+        </Field>
+      </FormGrid>
       {allowStatusChange ? (
-        <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <label className="checkbox-control">
           <input
             type="checkbox"
             checked={isActive}
@@ -111,11 +126,17 @@ export function SupplierForm({
           Active supplier
         </label>
       ) : null}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to save supplier" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

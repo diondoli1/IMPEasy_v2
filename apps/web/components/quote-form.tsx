@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, FormGrid, Notice } from './ui/primitives';
 import type { QuoteInput } from '../types/quote';
 
 type CustomerOption = {
@@ -62,36 +63,44 @@ export function QuoteForm({ customers, submitLabel, onSubmit }: QuoteFormProps):
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Customer
-        <select
-          value={customerId}
-          onChange={(event) => setCustomerId(event.target.value)}
-          name="customerId"
-        >
-          <option value="">Select customer</option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={String(customer.id)}>
-              {customer.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Notes
-        <textarea
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          name="notes"
-          rows={4}
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Customer">
+          <select
+            className="control"
+            value={customerId}
+            onChange={(event) => setCustomerId(event.target.value)}
+            name="customerId"
+          >
+            <option value="">Select customer</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={String(customer.id)}>
+                {customer.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Notes">
+          <textarea
+            className="control"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            name="notes"
+            rows={4}
+          />
+        </Field>
+      </FormGrid>
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to save quote" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

@@ -10,7 +10,18 @@ import MuiButton from '@mui/material/Button';
 import { SupplierForm } from '../../../components/supplier-form';
 import { createSupplierItemTerm, getSupplier, listItems, updateSupplier } from '../../../lib/api';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
-import { Badge, Button, DataTable, EmptyState, Notice, Panel, Toolbar, ToolbarGroup } from '../../../components/ui/primitives';
+import {
+  Badge,
+  Button,
+  DataTable,
+  EmptyState,
+  Field,
+  FormGrid,
+  Notice,
+  Panel,
+  Toolbar,
+  ToolbarGroup,
+} from '../../../components/ui/primitives';
 import type { Item } from '../../../types/item';
 import type { SupplierDetail } from '../../../types/supplier';
 
@@ -157,69 +168,81 @@ export default function SupplierDetailPage(): JSX.Element {
                   })();
                 }}
               >
-                <label>
-                  Item
-                  <select
-                    value={termForm.itemId}
-                    onChange={(event) =>
-                      setTermForm((current) => ({ ...current, itemId: event.target.value }))
-                    }
-                  >
-                    <option value="">Select item</option>
-                    {items.map((item) => (
-                      <option key={item.id} value={String(item.id)}>
-                        {item.code} {item.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Vendor Item Code
-                  <input
-                    value={termForm.vendorItemCode}
-                    onChange={(event) =>
-                      setTermForm((current) => ({ ...current, vendorItemCode: event.target.value }))
-                    }
-                  />
-                </label>
-                <label>
-                  Lead Time (days)
-                  <input
-                    type="number"
-                    min={0}
-                    value={termForm.leadTimeDays}
-                    onChange={(event) =>
-                      setTermForm((current) => ({ ...current, leadTimeDays: event.target.value }))
-                    }
-                  />
-                </label>
-                <label>
-                  Unit Price
-                  <input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={termForm.unitPrice}
-                    onChange={(event) =>
-                      setTermForm((current) => ({ ...current, unitPrice: event.target.value }))
-                    }
-                  />
-                </label>
-                <label>
-                  Minimum Quantity
-                  <input
-                    type="number"
-                    min={1}
-                    value={termForm.minimumQuantity}
-                    onChange={(event) =>
-                      setTermForm((current) => ({
-                        ...current,
-                        minimumQuantity: event.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <FormGrid columns={3}>
+                  <Field label="Item">
+                    <select
+                      className="control"
+                      value={termForm.itemId}
+                      onChange={(event) =>
+                        setTermForm((current) => ({ ...current, itemId: event.target.value }))
+                      }
+                    >
+                      <option value="">Select item</option>
+                      {items.map((item) => (
+                        <option key={item.id} value={String(item.id)}>
+                          {item.code} {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Vendor Item Code">
+                    <input
+                      className="control"
+                      value={termForm.vendorItemCode}
+                      onChange={(event) =>
+                        setTermForm((current) => ({ ...current, vendorItemCode: event.target.value }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Lead Time (days)">
+                    <input
+                      className="control"
+                      type="number"
+                      min={0}
+                      value={termForm.leadTimeDays}
+                      onChange={(event) =>
+                        setTermForm((current) => ({ ...current, leadTimeDays: event.target.value }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Unit Price">
+                    <input
+                      className="control"
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={termForm.unitPrice}
+                      onChange={(event) =>
+                        setTermForm((current) => ({ ...current, unitPrice: event.target.value }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Minimum Quantity">
+                    <input
+                      className="control"
+                      type="number"
+                      min={1}
+                      value={termForm.minimumQuantity}
+                      onChange={(event) =>
+                        setTermForm((current) => ({
+                          ...current,
+                          minimumQuantity: event.target.value,
+                        }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Notes">
+                    <textarea
+                      className="control"
+                      rows={3}
+                      value={termForm.notes}
+                      onChange={(event) =>
+                        setTermForm((current) => ({ ...current, notes: event.target.value }))
+                      }
+                    />
+                  </Field>
+                </FormGrid>
+                <label className="checkbox-control">
                   <input
                     type="checkbox"
                     checked={termForm.isPreferred}
@@ -229,17 +252,9 @@ export default function SupplierDetailPage(): JSX.Element {
                   />
                   Preferred vendor for the item
                 </label>
-                <label>
-                  Notes
-                  <textarea
-                    rows={3}
-                    value={termForm.notes}
-                    onChange={(event) =>
-                      setTermForm((current) => ({ ...current, notes: event.target.value }))
-                    }
-                  />
-                </label>
-                <Button type="submit">Save item term</Button>
+                <div>
+                  <Button type="submit" tone="primary">Save item term</Button>
+                </div>
               </form>
               {termFeedback ? <Notice title="Item terms">{termFeedback}</Notice> : null}
             </Panel>

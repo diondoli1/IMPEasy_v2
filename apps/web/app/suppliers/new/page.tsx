@@ -4,31 +4,36 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import MuiButton from '@mui/material/Button';
 
 import { SupplierForm } from '../../../components/supplier-form';
+import { PageShell } from '../../../components/ui/page-templates';
+import { Panel } from '../../../components/ui/primitives';
 import { createSupplier } from '../../../lib/api';
 
 export default function NewSupplierPage(): JSX.Element {
   const router = useRouter();
 
   return (
-    <section>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Button component={Link} href="/suppliers" variant="outlined" startIcon={<ArrowBackIcon />}>
+    <PageShell
+      eyebrow="Procurement"
+      title="Create supplier"
+      description="Create a supplier record with core contact and payment defaults."
+      leadingActions={
+        <MuiButton component={Link} href="/suppliers" variant="outlined" startIcon={<ArrowBackIcon />}>
           Back
-        </Button>
-        <Typography variant="h6">Create Supplier</Typography>
-      </Box>
-      <SupplierForm
-        submitLabel="Create supplier"
-        onSubmit={async (payload) => {
-          const supplier = await createSupplier(payload);
-          router.replace(`/suppliers/${supplier.id}`);
-        }}
-      />
-    </section>
+        </MuiButton>
+      }
+    >
+      <Panel title="Supplier details" description="These defaults are used in procurement and purchase order flows.">
+        <SupplierForm
+          submitLabel="Create supplier"
+          onSubmit={async (payload) => {
+            const supplier = await createSupplier(payload);
+            router.replace(`/suppliers/${supplier.id}`);
+          }}
+        />
+      </Panel>
+    </PageShell>
   );
 }

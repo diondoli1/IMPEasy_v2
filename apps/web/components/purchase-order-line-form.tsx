@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, FormGrid, Notice } from './ui/primitives';
 import type { PurchaseOrderLineInput } from '../types/purchase-order-line';
 
 type ItemOption = {
@@ -75,44 +76,56 @@ export function PurchaseOrderLineForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Item
-        <select value={itemId} onChange={(event) => setItemId(event.target.value)} name="itemId">
-          <option value="">Select item</option>
-          {items.map((item) => (
-            <option key={item.id} value={String(item.id)}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Quantity
-        <input
-          type="number"
-          min={1}
-          value={quantity}
-          onChange={(event) => setQuantity(event.target.value)}
-          name="quantity"
-        />
-      </label>
-      <label>
-        Unit Price
-        <input
-          type="number"
-          min={0}
-          step="0.01"
-          value={unitPrice}
-          onChange={(event) => setUnitPrice(event.target.value)}
-          name="unitPrice"
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={3}>
+        <Field label="Item">
+          <select
+            className="control"
+            value={itemId}
+            onChange={(event) => setItemId(event.target.value)}
+            name="itemId"
+          >
+            <option value="">Select item</option>
+            {items.map((item) => (
+              <option key={item.id} value={String(item.id)}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Quantity">
+          <input
+            className="control"
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            name="quantity"
+          />
+        </Field>
+        <Field label="Unit Price">
+          <input
+            className="control"
+            type="number"
+            min={0}
+            step="0.01"
+            value={unitPrice}
+            onChange={(event) => setUnitPrice(event.target.value)}
+            name="unitPrice"
+          />
+        </Field>
+      </FormGrid>
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to add line" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

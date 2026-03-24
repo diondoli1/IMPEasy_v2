@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
+import { Button, DataTable, EmptyState, Notice, Panel } from './ui/primitives';
 import type { WorkOrder } from '../types/work-order';
 
 type WorkOrderGenerationActionProps = {
@@ -40,43 +41,33 @@ export function WorkOrderGenerationAction({
   };
 
   return (
-    <section>
-      <h2>Work Orders</h2>
+    <Panel title="Work orders">
       {status === 'released' ? (
-        <button type="button" disabled={loading} onClick={() => void handleGenerate()}>
+        <Button type="button" tone="primary" disabled={loading} onClick={() => void handleGenerate()}>
           {loading ? 'Generating...' : 'Generate work orders'}
-        </button>
+        </Button>
       ) : null}
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+      {error ? (
+        <Notice title="Unable to generate work orders" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
       {workOrders.length === 0 ? (
-        <p>No work orders generated.</p>
+        <EmptyState title="No work orders generated" description="Generate work orders once the sales order is released." />
       ) : (
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">ID</th>
-              <th align="left">Sales Order Line ID</th>
-              <th align="left">Routing ID</th>
-              <th align="left">Quantity</th>
-              <th align="left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {workOrders.map((workOrder) => (
-              <tr key={workOrder.id}>
-                <td>
-                  <Link href={`/work-orders/${workOrder.id}`}>{workOrder.id}</Link>
-                </td>
-                <td>{workOrder.salesOrderLineId}</td>
-                <td>{workOrder.routingId}</td>
-                <td>{workOrder.quantity}</td>
-                <td>{workOrder.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          columns={[
+            { header: 'ID', cell: (workOrder) => <Link href={`/work-orders/${workOrder.id}`}>{workOrder.id}</Link> },
+            { header: 'Sales Order Line ID', cell: (workOrder) => workOrder.salesOrderLineId },
+            { header: 'Routing ID', cell: (workOrder) => workOrder.routingId },
+            { header: 'Quantity', cell: (workOrder) => workOrder.quantity },
+            { header: 'Status', cell: (workOrder) => workOrder.status },
+          ]}
+          rows={workOrders}
+          getRowKey={(workOrder) => String(workOrder.id)}
+        />
       )}
-    </section>
+    </Panel>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, FormGrid, Notice } from './ui/primitives';
 import type { InventoryItemInput } from '../types/inventory';
 
 type ItemOption = {
@@ -67,33 +68,40 @@ export function InventoryItemForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Item
-        <select value={itemId} onChange={(event) => setItemId(event.target.value)} name="itemId">
-          <option value="">Select item</option>
-          {items.map((item) => (
-            <option key={item.id} value={String(item.id)}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Quantity On Hand
-        <input
-          type="number"
-          min={0}
-          value={quantityOnHand}
-          onChange={(event) => setQuantityOnHand(event.target.value)}
-          name="quantityOnHand"
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Item">
+          <select className="control" value={itemId} onChange={(event) => setItemId(event.target.value)} name="itemId">
+            <option value="">Select item</option>
+            {items.map((item) => (
+              <option key={item.id} value={String(item.id)}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Quantity On Hand">
+          <input
+            className="control"
+            type="number"
+            min={0}
+            value={quantityOnHand}
+            onChange={(event) => setQuantityOnHand(event.target.value)}
+            name="quantityOnHand"
+          />
+        </Field>
+      </FormGrid>
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to save inventory item" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

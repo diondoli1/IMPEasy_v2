@@ -105,7 +105,7 @@ export default function OperationDetailPage(): JSX.Element {
   const producedQuantity = productionLogs.reduce((sum, log) => sum + log.quantity, 0);
 
   return (
-    <section style={{ display: 'grid', gap: 24 }}>
+    <section className="page-stack">
       <OperatorProductionScreen
         operation={operation}
         productionLogs={productionLogs}

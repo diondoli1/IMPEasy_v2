@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 
 import { ItemRoutingLinks } from '../../../components/item-routing-links';
 import { ItemForm } from '../../../components/item-form';
+import { PageShell } from '../../../components/ui/page-templates';
+import { ButtonLink, Panel } from '../../../components/ui/primitives';
 import { getItem, listRoutingsByItem, setRoutingAsDefault, updateItem } from '../../../lib/api';
 import type { Item } from '../../../types/item';
 import type { Routing } from '../../../types/routing';
@@ -48,38 +50,42 @@ export default function ItemDetailPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <h1>Item #{item.id}</h1>
-      <p>
-        <Link href="/items">Back to items</Link>
-      </p>
-      <ItemForm
-        initial={item}
-        submitLabel="Update item"
-        onSubmit={async (payload) => {
-          const updated = await updateItem(id, payload);
-          setItem(updated);
-        }}
-      />
-      <hr style={{ margin: '24px 0' }} />
-      <h2>Routing Linkage</h2>
-      <p>Default routing ID: {item.defaultRoutingId ?? '-'}</p>
-      <ItemRoutingLinks
-        itemId={item.id}
-        routings={routings}
-        defaultRoutingId={item.defaultRoutingId}
-        onSetDefault={async (routingId) => {
-          const linked = await setRoutingAsDefault(routingId);
-          setItem((current) =>
-            current
-              ? {
-                  ...current,
-                  defaultRoutingId: linked.routingId,
-                }
-              : current,
-          );
-        }}
-      />
-    </section>
+    <PageShell
+      eyebrow="Stock"
+      title={`Item #${item.id}`}
+      actions={<ButtonLink href="/items">Back to items</ButtonLink>}
+    >
+      <Panel title="Item details">
+        <ItemForm
+          initial={item}
+          submitLabel="Update item"
+          onSubmit={async (payload) => {
+            const updated = await updateItem(id, payload);
+            setItem(updated);
+          }}
+        />
+      </Panel>
+      <Panel
+        title="Routing linkage"
+        description={`Default routing ID: ${item.defaultRoutingId ?? '-'}`}
+      >
+        <ItemRoutingLinks
+          itemId={item.id}
+          routings={routings}
+          defaultRoutingId={item.defaultRoutingId}
+          onSetDefault={async (routingId) => {
+            const linked = await setRoutingAsDefault(routingId);
+            setItem((current) =>
+              current
+                ? {
+                    ...current,
+                    defaultRoutingId: linked.routingId,
+                  }
+                : current,
+            );
+          }}
+        />
+      </Panel>
+    </PageShell>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { Button, Field, FormGrid, Notice } from './ui/primitives';
 import type { MaterialIssueInput } from '../types/inventory';
 
 type MaterialIssueFormProps = {
@@ -55,32 +56,40 @@ export function MaterialIssueForm({ submitLabel, onSubmit }: MaterialIssueFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-      <label>
-        Issue Quantity
-        <input
-          type="number"
-          min={1}
-          value={quantity}
-          onChange={(event) => setQuantity(event.target.value)}
-          name="quantity"
-        />
-      </label>
-      <label>
-        Notes
-        <input
-          type="text"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          name="notes"
-          placeholder="Optional"
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : submitLabel}
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {success ? <p>{success}</p> : null}
+    <form onSubmit={handleSubmit} className="page-stack">
+      <FormGrid columns={2}>
+        <Field label="Issue Quantity">
+          <input
+            className="control"
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            name="quantity"
+          />
+        </Field>
+        <Field label="Notes">
+          <input
+            className="control"
+            type="text"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            name="notes"
+            placeholder="Optional"
+          />
+        </Field>
+      </FormGrid>
+      <div>
+        <Button type="submit" tone="primary" disabled={loading}>
+          {loading ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+      {error ? (
+        <Notice title="Unable to record material issue" tone="warning">
+          {error}
+        </Notice>
+      ) : null}
+      {success ? <Notice title="Success">{success}</Notice> : null}
     </form>
   );
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 
+import { DataTable, EmptyState, Panel } from './ui/primitives';
 import type { SalesOrderDetail } from '../types/sales-order';
 
 type SalesOrderDetailProps = {
@@ -9,7 +10,7 @@ type SalesOrderDetailProps = {
 
 export function SalesOrderDetailView({ salesOrder }: SalesOrderDetailProps): JSX.Element {
   return (
-    <section>
+    <div className="page-stack">
       <h1>Sales Order #{salesOrder.id}</h1>
       <p>
         <Link href={`/quotes/${salesOrder.quoteId}`}>Back to quote #{salesOrder.quoteId}</Link>
@@ -22,33 +23,23 @@ export function SalesOrderDetailView({ salesOrder }: SalesOrderDetailProps): JSX
         <dt>Status</dt>
         <dd>{salesOrder.status}</dd>
       </dl>
-      <h2>Sales Order Lines</h2>
+      <Panel title="Sales order lines">
       {salesOrder.salesOrderLines.length === 0 ? (
-        <p>No sales order lines found.</p>
+        <EmptyState title="No sales order lines found" description="Lines appear here once added to the sales order." />
       ) : (
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">ID</th>
-              <th align="left">Item ID</th>
-              <th align="left">Quantity</th>
-              <th align="left">Unit Price</th>
-              <th align="left">Line Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {salesOrder.salesOrderLines.map((line) => (
-              <tr key={line.id}>
-                <td>{line.id}</td>
-                <td>{line.itemId}</td>
-                <td>{line.quantity}</td>
-                <td>{line.unitPrice.toFixed(2)}</td>
-                <td>{line.lineTotal.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          columns={[
+            { header: 'ID', cell: (line) => line.id },
+            { header: 'Item ID', cell: (line) => line.itemId },
+            { header: 'Quantity', cell: (line) => line.quantity },
+            { header: 'Unit Price', cell: (line) => line.unitPrice.toFixed(2) },
+            { header: 'Line Total', cell: (line) => line.lineTotal.toFixed(2) },
+          ]}
+          rows={salesOrder.salesOrderLines}
+          getRowKey={(line) => String(line.id)}
+        />
       )}
-    </section>
+      </Panel>
+    </div>
   );
 }

@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
+import { PageShell } from '../../components/ui/page-templates';
+import { ButtonLink, DataTable, EmptyState, Panel, StatCard, StatGrid } from '../../components/ui/primitives';
 import { getInventorySummaryReport } from '../../lib/api';
 import type { InventorySummaryReportResponse } from '../../types/inventory';
 
@@ -59,90 +61,61 @@ export default function InventorySummaryPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <h1>Inventory Summary</h1>
-      <p>
-        Read-only inventory dashboard for current stock, transaction movement, and purchasing
-        quantity context.
-      </p>
-      <p>
-        <Link href="/inventory/items">Manage inventory items</Link> |{' '}
-        <Link href="/purchase-orders">Review purchase orders</Link>
-      </p>
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-          marginBottom: 24,
-        }}
-      >
+    <PageShell
+      eyebrow="Inventory"
+      title="Inventory summary"
+      description="Read-only inventory dashboard for current stock, transaction movement, and purchasing quantity context."
+      actions={
+        <>
+          <ButtonLink href="/inventory/items">Manage inventory items</ButtonLink>
+          <ButtonLink href="/purchase-orders">Review purchase orders</ButtonLink>
+        </>
+      }
+    >
+      <StatGrid>
         {SUMMARY_CARDS.map((card) => (
-          <article
-            key={card.key}
-            style={{
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              borderRadius: 8,
-              padding: 16,
-            }}
-          >
-            <p style={{ margin: 0, color: '#475569', fontSize: 14 }}>{card.label}</p>
-            <strong style={{ display: 'block', fontSize: 24, marginTop: 6 }}>
-              {dashboard.summary[card.key]}
-            </strong>
-          </article>
+          <StatCard key={card.key} label={card.label} value={dashboard.summary[card.key]} />
         ))}
-      </div>
+      </StatGrid>
       {dashboard.items.length === 0 ? (
-        <p>No inventory items found.</p>
+        <EmptyState title="No inventory items found" description="Inventory rows will appear when items are stocked." />
       ) : (
-        <table
-          cellPadding={8}
-          style={{
-            borderCollapse: 'collapse',
-            width: '100%',
-            background: '#ffffff',
-            border: '1px solid #cbd5e1',
-          }}
-        >
-          <thead style={{ background: '#e2e8f0' }}>
-            <tr>
-              <th align="left">Inventory</th>
-              <th align="left">Item</th>
-              <th align="left">On Hand</th>
-              <th align="left">Transactions</th>
-              <th align="left">Purchasing</th>
-              <th align="left">Updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dashboard.items.map((row) => (
-              <tr key={row.inventoryItemId} style={{ borderTop: '1px solid #e2e8f0' }}>
-                <td>
-                  <Link href={`/inventory/items/${row.inventoryItemId}`}>
-                    Inventory #{row.inventoryItemId}
-                  </Link>
-                </td>
-                <td>
-                  <Link href={`/items/${row.itemId}`}>{row.itemName}</Link>
-                  <div style={{ color: '#64748b', fontSize: 12 }}>Item #{row.itemId}</div>
-                </td>
-                <td>{row.quantityOnHand}</td>
-                <td>
-                  Recv {row.receivedQuantity} / Issue {row.issuedQuantity} / Adj{' '}
-                  {row.adjustmentQuantity} / Return {row.returnedQuantity}
-                </td>
-                <td>
-                  Ordered {row.purchaseOrderedQuantity} / Received {row.purchaseReceivedQuantity} /
-                  {' '}Open {row.purchaseOpenQuantity}
-                </td>
-                <td>{formatUpdatedAt(row.updatedAt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Panel title="Inventory items">
+          <DataTable
+            columns={[
+              {
+                header: 'Inventory',
+                cell: (row) => (
+                  <Link href={`/inventory/items/${row.inventoryItemId}`}>Inventory #{row.inventoryItemId}</Link>
+                ),
+              },
+              {
+                header: 'Item',
+                cell: (row) => (
+                  <div className="stack stack--tight">
+                    <Link href={`/items/${row.itemId}`}>{row.itemName}</Link>
+                    <span className="muted-copy--small">Item #{row.itemId}</span>
+                  </div>
+                ),
+              },
+              { header: 'On Hand', cell: (row) => row.quantityOnHand },
+              {
+                header: 'Transactions',
+                cell: (row) =>
+                  `Recv ${row.receivedQuantity} / Issue ${row.issuedQuantity} / Adj ${row.adjustmentQuantity} / Return ${row.returnedQuantity}`,
+              },
+              {
+                header: 'Purchasing',
+                cell: (row) =>
+                  `Ordered ${row.purchaseOrderedQuantity} / Received ${row.purchaseReceivedQuantity} / Open ${row.purchaseOpenQuantity}`,
+              },
+              { header: 'Updated', cell: (row) => formatUpdatedAt(row.updatedAt) },
+            ]}
+            rows={dashboard.items}
+            getRowKey={(row) => String(row.inventoryItemId)}
+          />
+        </Panel>
       )}
-    </section>
+    </PageShell>
   );
 }

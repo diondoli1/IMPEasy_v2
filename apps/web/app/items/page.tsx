@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { PageShell } from '../../components/ui/page-templates';
+import { Badge, ButtonLink, DataTable, EmptyState, Panel } from '../../components/ui/primitives';
 import { listItems } from '../../lib/api';
 import type { Item } from '../../types/item';
 
@@ -33,37 +35,34 @@ export default function ItemsPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <h1>Items</h1>
-      <p>
-        <Link href="/items/new">Create item</Link>
-      </p>
+    <PageShell
+      eyebrow="Stock"
+      title="Items"
+      actions={<ButtonLink href="/items/new">Create item</ButtonLink>}
+    >
       {items.length === 0 ? (
-        <p>No items found.</p>
+        <EmptyState title="No items found" description="Create your first item to populate this list." />
       ) : (
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">ID</th>
-              <th align="left">Name</th>
-              <th align="left">Description</th>
-              <th align="left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <Link href={`/items/${item.id}`}>{item.id}</Link>
-                </td>
-                <td>{item.name}</td>
-                <td>{item.description ?? '-'}</td>
-                <td>{item.isActive ? 'Active' : 'Inactive'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Panel title="Item list">
+          <DataTable
+            columns={[
+              { header: 'ID', cell: (item) => <Link href={`/items/${item.id}`}>{item.id}</Link> },
+              { header: 'Name', cell: (item) => item.name },
+              { header: 'Description', cell: (item) => item.description ?? '-' },
+              {
+                header: 'Status',
+                cell: (item) => (
+                  <Badge tone={item.isActive ? 'success' : 'warning'}>
+                    {item.isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                ),
+              },
+            ]}
+            rows={items}
+            getRowKey={(item) => String(item.id)}
+          />
+        </Panel>
       )}
-    </section>
+    </PageShell>
   );
 }

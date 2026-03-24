@@ -11,6 +11,7 @@ import type {
 import type { Item } from '../types/item';
 import { InventoryAdjustmentForm } from './inventory-adjustment-form';
 import { MaterialIssueForm } from './material-issue-form';
+import { DataTable, EmptyState, Panel } from './ui/primitives';
 
 type InventoryItemDetailViewProps = {
   inventoryItem: InventoryItem;
@@ -28,7 +29,7 @@ export function InventoryItemDetailView({
   onAdjustInventory,
 }: InventoryItemDetailViewProps): JSX.Element {
   return (
-    <section>
+    <div className="page-stack">
       <h1>Inventory Item #{inventoryItem.id}</h1>
       <dl>
         <dt>Tracked Item</dt>
@@ -38,36 +39,28 @@ export function InventoryItemDetailView({
         <dt>Quantity On Hand</dt>
         <dd>{inventoryItem.quantityOnHand}</dd>
       </dl>
-      <hr style={{ margin: '24px 0' }} />
-      <h2>Manual Material Issue</h2>
-      <MaterialIssueForm submitLabel="Issue material" onSubmit={onIssueMaterial} />
-      <h2>Inventory Adjustment</h2>
-      <InventoryAdjustmentForm submitLabel="Adjust inventory" onSubmit={onAdjustInventory} />
-      <h2>Transactions</h2>
+      <Panel title="Manual material issue">
+        <MaterialIssueForm submitLabel="Issue material" onSubmit={onIssueMaterial} />
+      </Panel>
+      <Panel title="Inventory adjustment">
+        <InventoryAdjustmentForm submitLabel="Adjust inventory" onSubmit={onAdjustInventory} />
+      </Panel>
+      <Panel title="Transactions">
       {transactions.length === 0 ? (
-        <p>No transactions found.</p>
+        <EmptyState title="No transactions found" description="Inventory movements will appear here." />
       ) : (
-        <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th align="left">Transaction ID</th>
-              <th align="left">Type</th>
-              <th align="left">Quantity</th>
-              <th align="left">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((transaction) => (
-              <tr key={transaction.id}>
-                <td>{transaction.id}</td>
-                <td>{transaction.transactionType}</td>
-                <td>{transaction.quantity}</td>
-                <td>{transaction.notes ?? '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          columns={[
+            { header: 'Transaction ID', cell: (transaction) => transaction.id },
+            { header: 'Type', cell: (transaction) => transaction.transactionType },
+            { header: 'Quantity', cell: (transaction) => transaction.quantity },
+            { header: 'Notes', cell: (transaction) => transaction.notes ?? '-' },
+          ]}
+          rows={transactions}
+          getRowKey={(transaction) => String(transaction.id)}
+        />
       )}
-    </section>
+      </Panel>
+    </div>
   );
 }

@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
+import { PageShell } from '../../components/ui/page-templates';
+import { DataTable, EmptyState, Notice, Panel, StatCard, StatGrid } from '../../components/ui/primitives';
 import { getProductionPerformanceDashboard } from '../../lib/api';
 import type { ProductionPerformanceDashboardResponse } from '../../types/work-order';
 
@@ -59,110 +61,73 @@ export default function ProductionPage(): JSX.Element {
   }
 
   return (
-    <section>
-      <h1>Production Performance</h1>
-      <p>
-        Read-only production dashboard for work-order progress, operation execution, inspection
-        outcomes, and recorded production quantities.
-      </p>
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-          marginBottom: 24,
-        }}
-      >
+    <PageShell
+      eyebrow="Production"
+      title="Production performance"
+      description="Read-only production dashboard for work-order progress, operation execution, inspection outcomes, and recorded production quantities."
+    >
+      <StatGrid>
         {SUMMARY_CARDS.map((card) => (
-          <article
-            key={card.key}
-            style={{
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              borderRadius: 8,
-              padding: 16,
-            }}
-          >
-            <p style={{ margin: 0, color: '#475569', fontSize: 14 }}>{card.label}</p>
-            <strong style={{ display: 'block', fontSize: 24, marginTop: 6 }}>
-              {dashboard.summary[card.key]}
-            </strong>
-          </article>
+          <StatCard key={card.key} label={card.label} value={dashboard.summary[card.key]} />
         ))}
-      </div>
+      </StatGrid>
       {dashboard.workOrders.length === 0 ? (
-        <p>No work orders found.</p>
+        <EmptyState title="No work orders found" description="Production rows will appear as work orders are created." />
       ) : (
-        <>
-          <p style={{ color: '#475569' }}>
+        <Panel title="Work orders">
+          <Notice title="Operation status">
             Operation status shows Queued / Ready / Running / Paused / Completed. Inspection status
             shows Pending / Passed / Failed / Rework Required.
-          </p>
-          <table
-            cellPadding={8}
-            style={{
-              borderCollapse: 'collapse',
-              width: '100%',
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-            }}
-          >
-            <thead style={{ background: '#e2e8f0' }}>
-              <tr>
-                <th align="left">Work Order</th>
-                <th align="left">Customer</th>
-                <th align="left">Item</th>
-                <th align="left">WO Status</th>
-                <th align="left">Planned Qty</th>
-                <th align="left">Operations</th>
-                <th align="left">Inspections</th>
-                <th align="left">Recorded Qty</th>
-                <th align="left">Quality Qty</th>
-                <th align="left">Scrapped Qty</th>
-                <th align="left">Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dashboard.workOrders.map((row) => (
-                <tr key={row.workOrderId} style={{ borderTop: '1px solid #e2e8f0' }}>
-                  <td>
+          </Notice>
+          <DataTable
+            columns={[
+              {
+                header: 'Work Order',
+                cell: (row) => (
+                  <div className="stack stack--tight">
                     <Link href={`/work-orders/${row.workOrderId}`}>Work order #{row.workOrderId}</Link>
-                    <div style={{ color: '#64748b', fontSize: 12 }}>
-                      <Link href={`/sales-orders/${row.salesOrderId}`}>
-                        Sales order #{row.salesOrderId}
-                      </Link>{' '}
-                      | Line #{row.salesOrderLineId}
-                    </div>
-                  </td>
-                  <td>{row.customerName}</td>
-                  <td>
-                    {row.itemName}
-                    <div style={{ color: '#64748b', fontSize: 12 }}>Item #{row.itemId}</div>
-                  </td>
-                  <td>{row.workOrderStatus}</td>
-                  <td>{row.plannedQuantity}</td>
-                  <td>
-                    Q {row.queuedOperationCount} / R {row.readyOperationCount} / Run{' '}
-                    {row.runningOperationCount} / P {row.pausedOperationCount} / Done{' '}
-                    {row.completedOperationCount}
-                  </td>
-                  <td>
-                    Pending {row.pendingInspectionCount} / Passed {row.passedInspectionCount} / Failed{' '}
-                    {row.failedInspectionCount} / Rework {row.reworkRequiredInspectionCount}
-                  </td>
-                  <td>{row.recordedProductionQuantity}</td>
-                  <td>
-                    Pass {row.qualityPassedQuantity} / Fail {row.qualityFailedQuantity} / Rework{' '}
-                    {row.qualityReworkQuantity}
-                  </td>
-                  <td>{row.scrappedQuantity}</td>
-                  <td>{formatUpdatedAt(row.updatedAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
+                    <span className="muted-copy--small">
+                      <Link href={`/sales-orders/${row.salesOrderId}`}>Sales order #{row.salesOrderId}</Link> | Line #{row.salesOrderLineId}
+                    </span>
+                  </div>
+                ),
+              },
+              { header: 'Customer', cell: (row) => row.customerName },
+              {
+                header: 'Item',
+                cell: (row) => (
+                  <div className="stack stack--tight">
+                    <span>{row.itemName}</span>
+                    <span className="muted-copy--small">Item #{row.itemId}</span>
+                  </div>
+                ),
+              },
+              { header: 'WO Status', cell: (row) => row.workOrderStatus },
+              { header: 'Planned Qty', cell: (row) => row.plannedQuantity },
+              {
+                header: 'Operations',
+                cell: (row) =>
+                  `Q ${row.queuedOperationCount} / R ${row.readyOperationCount} / Run ${row.runningOperationCount} / P ${row.pausedOperationCount} / Done ${row.completedOperationCount}`,
+              },
+              {
+                header: 'Inspections',
+                cell: (row) =>
+                  `Pending ${row.pendingInspectionCount} / Passed ${row.passedInspectionCount} / Failed ${row.failedInspectionCount} / Rework ${row.reworkRequiredInspectionCount}`,
+              },
+              { header: 'Recorded Qty', cell: (row) => row.recordedProductionQuantity },
+              {
+                header: 'Quality Qty',
+                cell: (row) =>
+                  `Pass ${row.qualityPassedQuantity} / Fail ${row.qualityFailedQuantity} / Rework ${row.qualityReworkQuantity}`,
+              },
+              { header: 'Scrapped Qty', cell: (row) => row.scrappedQuantity },
+              { header: 'Updated', cell: (row) => formatUpdatedAt(row.updatedAt) },
+            ]}
+            rows={dashboard.workOrders}
+            getRowKey={(row) => String(row.workOrderId)}
+          />
+        </Panel>
       )}
-    </section>
+    </PageShell>
   );
 }

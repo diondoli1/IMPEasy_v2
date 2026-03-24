@@ -244,9 +244,6 @@ function renderPanel(overrides: Partial<React.ComponentProps<typeof ShipmentCrea
     onCreate: async () => {
       throw new Error('not expected');
     },
-    onPack: async () => {
-      throw new Error('not expected');
-    },
     onShip: async () => {
       throw new Error('not expected');
     },
@@ -347,64 +344,10 @@ describe('ShipmentCreationPanel', () => {
     });
   });
 
-  it('picks a draft shipment and updates the rendered status', async () => {
-    function Harness(): JSX.Element {
-      const [currentShipments, setCurrentShipments] = React.useState<Shipment[]>(createShipments());
-
-      return (
-        <ShipmentCreationPanel
-          salesOrderId={1}
-          salesOrderStatus="released"
-          availability={availability}
-          shipments={currentShipments}
-          invoicesByShipmentId={createInvoicesByShipmentId()}
-          onCreate={async () => {
-            throw new Error('not expected');
-          }}
-          onPack={async (shipmentId) => {
-            const updatedShipment = {
-              ...currentShipments.find((shipment) => shipment.id === shipmentId)!,
-              status: 'picked',
-              shipmentLines: [createShipmentLine(901, shipmentId, 10, 10)],
-            };
-            setCurrentShipments((existing) =>
-              existing.map((shipment) =>
-                shipment.id === shipmentId ? updatedShipment : shipment,
-              ),
-            );
-            return updatedShipment;
-          }}
-          onShip={async () => {
-            throw new Error('not expected');
-          }}
-          onDeliver={async () => {
-            throw new Error('not expected');
-          }}
-          onGenerateInvoice={async () => {
-            throw new Error('not expected');
-          }}
-          onMarkInvoicePaid={async () => {
-            throw new Error('not expected');
-          }}
-        />
-      );
-    }
-
-    render(<Harness />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Pick shipment 801' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('SHP-0801 picked.')).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Pick shipment 801' })).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Ship shipment 801' })).toBeInTheDocument();
-    });
-  });
-
-  it('shows pick, ship, deliver, invoice, and payment actions only for matching shipment and invoice states', () => {
+  it('shows ship, deliver, invoice, and payment actions only for matching shipment and invoice states', () => {
     renderPanel();
 
-    expect(screen.getByRole('button', { name: 'Pick shipment 801' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Pick shipment 801' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ship shipment 803' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Deliver shipment 804' })).toBeInTheDocument();
     expect(
@@ -433,9 +376,6 @@ describe('ShipmentCreationPanel', () => {
           shipments={currentShipments}
           invoicesByShipmentId={createInvoicesByShipmentId()}
           onCreate={async () => {
-            throw new Error('not expected');
-          }}
-          onPack={async () => {
             throw new Error('not expected');
           }}
           onShip={async (shipmentId) => {
@@ -487,9 +427,6 @@ describe('ShipmentCreationPanel', () => {
           shipments={currentShipments}
           invoicesByShipmentId={createInvoicesByShipmentId()}
           onCreate={async () => {
-            throw new Error('not expected');
-          }}
-          onPack={async () => {
             throw new Error('not expected');
           }}
           onShip={async () => {
@@ -546,9 +483,6 @@ describe('ShipmentCreationPanel', () => {
           shipments={createShipments()}
           invoicesByShipmentId={currentInvoicesByShipmentId}
           onCreate={async () => {
-            throw new Error('not expected');
-          }}
-          onPack={async () => {
             throw new Error('not expected');
           }}
           onShip={async () => {
@@ -633,9 +567,6 @@ describe('ShipmentCreationPanel', () => {
           onCreate={async () => {
             throw new Error('not expected');
           }}
-          onPack={async () => {
-            throw new Error('not expected');
-          }}
           onShip={async () => {
             throw new Error('not expected');
           }}
@@ -675,20 +606,6 @@ describe('ShipmentCreationPanel', () => {
       expect(
         screen.queryByRole('button', { name: 'Mark invoice paid for shipment 806' }),
       ).not.toBeInTheDocument();
-    });
-  });
-
-  it('shows a pick error when the pick request fails', async () => {
-    renderPanel({
-      onPack: async () => {
-        throw new Error('pick failed');
-      },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Pick shipment 801' }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Unable to pick shipment.');
     });
   });
 

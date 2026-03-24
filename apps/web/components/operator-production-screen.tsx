@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 
+import { Button, DataTable, EmptyState, Field, FormGrid, Notice, Panel } from './ui/primitives';
 import type { OperationDetail, ProductionLog, ProductionLogInput } from '../types/operation';
 
 type OperatorProductionScreenProps = {
@@ -82,7 +83,7 @@ export function OperatorProductionScreen({
   };
 
   return (
-    <section>
+    <div className="page-stack">
       <h1>Operator Screen - Operation #{operation.id}</h1>
       <p>
         <Link href="/operations/queue">Back to operation queue</Link>
@@ -115,98 +116,97 @@ export function OperatorProductionScreen({
           </>
         ) : null}
       </dl>
-      <section>
-        <h2>Execution Actions</h2>
+      <Panel title="Execution actions">
         {operation.status === 'ready' ? (
-          <button
+          <Button
             type="button"
             onClick={() => void handleAction('start')}
             disabled={pendingAction !== null}
           >
             {pendingAction === 'start' ? 'Starting...' : 'Start operation'}
-          </button>
+          </Button>
         ) : null}
         {operation.status === 'running' ? (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button
+          <div className="toolbar">
+            <Button
               type="button"
               onClick={() => void handleAction('pause')}
               disabled={pendingAction !== null}
             >
               {pendingAction === 'pause' ? 'Pausing...' : 'Pause operation'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => void handleAction('complete')}
               disabled={pendingAction !== null}
             >
               {pendingAction === 'complete' ? 'Completing...' : 'Complete operation'}
-            </button>
+            </Button>
           </div>
         ) : null}
         {operation.status !== 'ready' && operation.status !== 'running' ? (
-          <p>No execution action available for current status.</p>
+          <span className="muted-copy">No execution action available for current status.</span>
         ) : null}
-        {error ? <p role="alert">{error}</p> : null}
-      </section>
-      <section>
-        <h2>Production Logs</h2>
+        {error ? (
+          <Notice title="Execution action failed" tone="warning">
+            {error}
+          </Notice>
+        ) : null}
+      </Panel>
+      <Panel title="Production logs">
         {operation.status === 'running' ? (
-          <div style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
-            <label>
-              Quantity
-              <input
-                type="number"
-                min={1}
-                value={logQuantity}
-                onChange={(event) => setLogQuantity(event.target.value)}
-              />
-            </label>
-            <label>
-              Notes
-              <input
-                type="text"
-                value={logNotes}
-                onChange={(event) => setLogNotes(event.target.value)}
-                placeholder="Optional"
-              />
-            </label>
-            <button
+          <div className="page-stack">
+            <FormGrid columns={2}>
+              <Field label="Quantity">
+                <input
+                  className="control"
+                  type="number"
+                  min={1}
+                  value={logQuantity}
+                  onChange={(event) => setLogQuantity(event.target.value)}
+                />
+              </Field>
+              <Field label="Notes">
+                <input
+                  className="control"
+                  type="text"
+                  value={logNotes}
+                  onChange={(event) => setLogNotes(event.target.value)}
+                  placeholder="Optional"
+                />
+              </Field>
+            </FormGrid>
+            <Button
               type="button"
               onClick={() => void handleCreateProductionLog()}
               disabled={isCreatingLog}
             >
               {isCreatingLog ? 'Recording...' : 'Record production'}
-            </button>
-            {logError ? <p role="alert">{logError}</p> : null}
-            {logSuccess ? <p>{logSuccess}</p> : null}
+            </Button>
+            {logError ? (
+              <Notice title="Unable to record production log" tone="warning">
+                {logError}
+              </Notice>
+            ) : null}
+            {logSuccess ? <Notice title="Success">{logSuccess}</Notice> : null}
           </div>
         ) : (
-          <p>Production logs can be recorded only while operation is running.</p>
+          <span className="muted-copy">Production logs can be recorded only while operation is running.</span>
         )}
         {productionLogs.length === 0 ? (
-          <p>No production logs recorded.</p>
+          <EmptyState title="No production logs recorded" description="Logs will appear after production is recorded." />
         ) : (
-          <table cellPadding={8} style={{ borderCollapse: 'collapse', width: '100%', marginTop: 8 }}>
-            <thead>
-              <tr>
-                <th align="left">Log ID</th>
-                <th align="left">Quantity</th>
-                <th align="left">Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productionLogs.map((log) => (
-                <tr key={log.id}>
-                  <td>{log.id}</td>
-                  <td>{log.quantity}</td>
-                  <td>{log.notes ?? '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={[
+              { header: 'Log ID', cell: (log) => log.id },
+              { header: 'Quantity', cell: (log) => log.quantity },
+              { header: 'Notes', cell: (log) => log.notes ?? '-' },
+            ]}
+            rows={productionLogs}
+            getRowKey={(log) => String(log.id)}
+          />
         )}
-      </section>
-    </section>
+      </Panel>
+    </div>
   );
 }

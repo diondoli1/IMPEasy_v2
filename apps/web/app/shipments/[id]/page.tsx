@@ -8,7 +8,21 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MuiButton from '@mui/material/Button';
 
 import { PageShell } from '../../../components/ui/page-templates';
-import { Badge, Button, DataTable, EmptyState, Notice, Panel, StatCard, StatGrid, Toolbar, ToolbarGroup } from '../../../components/ui/primitives';
+import {
+  Badge,
+  Button,
+  ButtonLink,
+  DataTable,
+  EmptyState,
+  Field,
+  FormGrid,
+  Notice,
+  Panel,
+  StatCard,
+  StatGrid,
+  Toolbar,
+  ToolbarGroup,
+} from '../../../components/ui/primitives';
 import { formatCurrency, formatDate } from '../../../lib/commercial';
 import {
   createShipmentInvoice,
@@ -87,9 +101,9 @@ export default function ShipmentDetailPage(): JSX.Element {
       actions={
         <>
           <Badge tone="info">{shipment.status}</Badge>
-          <Link className="button button--secondary" href={`/customer-orders/sales-order-${shipment.salesOrderId}`}>
+          <ButtonLink href={`/customer-orders/sales-order-${shipment.salesOrderId}`}>
             Open customer order
-          </Link>
+          </ButtonLink>
         </>
       }
     >
@@ -199,50 +213,52 @@ export default function ShipmentDetailPage(): JSX.Element {
                   })();
                 }}
               >
-                <label>
-                  Ship Date
-                  <input
-                    type="date"
-                    value={headerForm.shipDate}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({ ...current, shipDate: event.target.value }))
-                    }
-                  />
-                </label>
-                <label>
-                  Carrier / Method
-                  <input
-                    value={headerForm.carrierMethod}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({
-                        ...current,
-                        carrierMethod: event.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label>
-                  Tracking
-                  <input
-                    value={headerForm.trackingNumber}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({
-                        ...current,
-                        trackingNumber: event.target.value,
-                      }))
-                    }
-                  />
-                </label>
-                <label>
-                  Notes
-                  <textarea
-                    rows={4}
-                    value={headerForm.notes}
-                    onChange={(event) =>
-                      setHeaderForm((current) => ({ ...current, notes: event.target.value }))
-                    }
-                  />
-                </label>
+                <FormGrid columns={2}>
+                  <Field label="Ship Date">
+                    <input
+                      className="control"
+                      type="date"
+                      value={headerForm.shipDate}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({ ...current, shipDate: event.target.value }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Carrier / Method">
+                    <input
+                      className="control"
+                      value={headerForm.carrierMethod}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({
+                          ...current,
+                          carrierMethod: event.target.value,
+                        }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Tracking">
+                    <input
+                      className="control"
+                      value={headerForm.trackingNumber}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({
+                          ...current,
+                          trackingNumber: event.target.value,
+                        }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Notes">
+                    <textarea
+                      className="control"
+                      rows={4}
+                      value={headerForm.notes}
+                      onChange={(event) =>
+                        setHeaderForm((current) => ({ ...current, notes: event.target.value }))
+                      }
+                    />
+                  </Field>
+                </FormGrid>
                 <Button type="submit">Save header</Button>
               </form>
             </Panel>
@@ -340,56 +356,67 @@ export default function ShipmentDetailPage(): JSX.Element {
                           })();
                         }}
                       >
-                        <select
-                          value={allocationForms[line.id]?.stockLotId ?? ''}
-                          onChange={(event) =>
-                            setAllocationForms((forms) => ({
-                              ...forms,
-                              [line.id]: {
-                                stockLotId: event.target.value,
-                                quantity: forms[line.id]?.quantity ?? '',
-                                notes: forms[line.id]?.notes ?? '',
-                              },
-                            }))
-                          }
-                        >
-                          <option value="">Select lot</option>
-                          {line.availableLots.map((lot) => (
-                            <option key={lot.id} value={String(lot.id)}>
-                              {lot.lotNumber} ({lot.availableQuantity})
-                            </option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          min={1}
-                          value={allocationForms[line.id]?.quantity ?? ''}
-                          onChange={(event) =>
-                            setAllocationForms((forms) => ({
-                              ...forms,
-                              [line.id]: {
-                                stockLotId: forms[line.id]?.stockLotId ?? '',
-                                quantity: event.target.value,
-                                notes: forms[line.id]?.notes ?? '',
-                              },
-                            }))
-                          }
-                          placeholder="Pick quantity"
-                        />
-                        <input
-                          value={allocationForms[line.id]?.notes ?? ''}
-                          onChange={(event) =>
-                            setAllocationForms((forms) => ({
-                              ...forms,
-                              [line.id]: {
-                                stockLotId: forms[line.id]?.stockLotId ?? '',
-                                quantity: forms[line.id]?.quantity ?? '',
-                                notes: event.target.value,
-                              },
-                            }))
-                          }
-                          placeholder="Allocation notes"
-                        />
+                        <FormGrid columns={3}>
+                          <Field label="Stock lot">
+                            <select
+                              className="control"
+                              value={allocationForms[line.id]?.stockLotId ?? ''}
+                              onChange={(event) =>
+                                setAllocationForms((forms) => ({
+                                  ...forms,
+                                  [line.id]: {
+                                    stockLotId: event.target.value,
+                                    quantity: forms[line.id]?.quantity ?? '',
+                                    notes: forms[line.id]?.notes ?? '',
+                                  },
+                                }))
+                              }
+                            >
+                              <option value="">Select lot</option>
+                              {line.availableLots.map((lot) => (
+                                <option key={lot.id} value={String(lot.id)}>
+                                  {lot.lotNumber} ({lot.availableQuantity})
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field label="Pick quantity">
+                            <input
+                              className="control"
+                              type="number"
+                              min={1}
+                              value={allocationForms[line.id]?.quantity ?? ''}
+                              onChange={(event) =>
+                                setAllocationForms((forms) => ({
+                                  ...forms,
+                                  [line.id]: {
+                                    stockLotId: forms[line.id]?.stockLotId ?? '',
+                                    quantity: event.target.value,
+                                    notes: forms[line.id]?.notes ?? '',
+                                  },
+                                }))
+                              }
+                              placeholder="Pick quantity"
+                            />
+                          </Field>
+                          <Field label="Allocation notes">
+                            <input
+                              className="control"
+                              value={allocationForms[line.id]?.notes ?? ''}
+                              onChange={(event) =>
+                                setAllocationForms((forms) => ({
+                                  ...forms,
+                                  [line.id]: {
+                                    stockLotId: forms[line.id]?.stockLotId ?? '',
+                                    quantity: forms[line.id]?.quantity ?? '',
+                                    notes: event.target.value,
+                                  },
+                                }))
+                              }
+                              placeholder="Allocation notes"
+                            />
+                          </Field>
+                        </FormGrid>
                         <Button type="submit">Allocate lot</Button>
                       </form>
                     ) : null}
@@ -422,28 +449,28 @@ export default function ShipmentDetailPage(): JSX.Element {
                   ]}
                   getRowKey={(row) => row.id}
                 />
-                <div className="page-shell__actions">
-                  <Link className="button button--secondary" href={`/invoices/${shipment.invoice.id}`}>
-                    Open invoice
-                  </Link>
-                  {shipment.invoice.status === 'issued' ? (
-                    <Button
-                      onClick={() => {
-                        void (async () => {
-                          try {
-                            await payShipmentInvoice(shipment.id);
-                            await loadShipment();
-                            setMessage('Invoice marked paid.');
-                          } catch {
-                            setMessage('Unable to record invoice payment.');
-                          }
-                        })();
-                      }}
-                    >
-                      Mark paid
-                    </Button>
-                  ) : null}
-                </div>
+                <Toolbar>
+                  <ToolbarGroup>
+                    <ButtonLink href={`/invoices/${shipment.invoice.id}`}>Open invoice</ButtonLink>
+                    {shipment.invoice.status === 'issued' ? (
+                      <Button
+                        onClick={() => {
+                          void (async () => {
+                            try {
+                              await payShipmentInvoice(shipment.id);
+                              await loadShipment();
+                              setMessage('Invoice marked paid.');
+                            } catch {
+                              setMessage('Unable to record invoice payment.');
+                            }
+                          })();
+                        }}
+                      >
+                        Mark paid
+                      </Button>
+                    ) : null}
+                  </ToolbarGroup>
+                </Toolbar>
               </Panel>
             </div>
           ) : (
