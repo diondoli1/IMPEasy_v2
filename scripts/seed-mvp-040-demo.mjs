@@ -899,6 +899,10 @@ async function ensureDraftShipment(accessToken, salesOrderId) {
 }
 
 async function main() {
+  if (process.env.RENDER === 'true' && process.env.IMPEASY_SKIP_REMOTE_SEEDS !== 'false') {
+    console.log('Skipping MVP-040 remote seed during Render build.');
+    return;
+  }
   console.log(`Seeding MVP-040 demo data against API ${API_BASE_URL} and web ${WEB_BASE_URL}`);
   if (DATABASE_URL) {
     console.log(`Resetting dedicated demo records using ${DATABASE_URL}`);

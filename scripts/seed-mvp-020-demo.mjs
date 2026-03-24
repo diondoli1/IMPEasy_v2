@@ -470,6 +470,10 @@ async function ensureConvertedSalesOrder(accessToken, customer, items) {
 }
 
 async function main() {
+  if (process.env.RENDER === 'true' && process.env.IMPEASY_SKIP_REMOTE_SEEDS !== 'false') {
+    console.log('Skipping MVP-020 remote seed during Render build.');
+    return;
+  }
   console.log(`Seeding MVP-020 demo data against ${API_BASE_URL}`);
 
   const userResults = await ensureUsers();

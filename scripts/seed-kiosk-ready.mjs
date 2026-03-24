@@ -40,6 +40,10 @@ async function loginAdmin() {
 }
 
 async function main() {
+  if (process.env.RENDER === 'true' && process.env.IMPEASY_SKIP_REMOTE_SEEDS !== 'false') {
+    console.log('Skipping kiosk-ready remote seed during Render build.');
+    return;
+  }
   console.log(`Seeding kiosk-ready manufacturing orders via ${API_BASE_URL}`);
 
   const token = await loginAdmin();

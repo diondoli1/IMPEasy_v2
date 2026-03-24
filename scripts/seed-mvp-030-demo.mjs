@@ -834,6 +834,10 @@ async function generatePlannedWorkOrders(salesOrderId, operatorUserId, accessTok
 }
 
 async function main() {
+  if (process.env.RENDER === 'true' && process.env.IMPEASY_SKIP_REMOTE_SEEDS !== 'false') {
+    console.log('Skipping MVP-030 remote seed during Render build.');
+    return;
+  }
   console.log(`Seeding MVP-030 demo data against API ${API_BASE_URL} and web ${WEB_BASE_URL}`);
 
   const userResults = await ensureUsers();

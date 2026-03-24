@@ -177,6 +177,10 @@ async function assignRoles(accessToken, roleIdsByName) {
 }
 
 async function main() {
+  if (process.env.RENDER === 'true' && process.env.IMPEASY_SKIP_REMOTE_SEEDS !== 'false') {
+    console.log('Skipping MVP-010 remote seed during Render build.');
+    return;
+  }
   console.log(`Seeding MVP-010 users against ${API_BASE_URL}`);
   const userResults = await ensureUsers();
   const accessToken = await loginFirstAvailableUser();
